@@ -25,7 +25,10 @@ export default function FAQ() {
   ];
 
   return (
-    <section className="py-24 bg-bg-section border-t border-border-default">
+    <section
+      id="faq"
+      className="py-24 bg-bg-section border-t border-border-default"
+    >
       <div className="container mx-auto px-6 max-w-4xl">
         <SectionHeader
           eyebrow="DUDAS COMUNES"
@@ -36,18 +39,23 @@ export default function FAQ() {
 
         <div className="grid gap-6">
           {faqs.map((faq, index) => (
-            <div
+            <article
               key={index}
               className="bg-bg-page p-8 rounded-xl border border-border-default shadow-sm hover:border-brand-accent/50 transition-colors duration-200"
             >
               <h3 className="font-heading font-bold text-lg text-ink-default mb-3 flex items-start">
-                <span className="text-brand-accent mr-3 text-xl">?</span>
+                <span
+                  className="text-brand-accent mr-3 text-xl"
+                  aria-hidden="true"
+                >
+                  ?
+                </span>
                 {faq.q}
               </h3>
               <p className="font-body text-ink-muted leading-relaxed pl-7">
                 {faq.a}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </div>
