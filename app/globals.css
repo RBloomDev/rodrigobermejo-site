@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
+@theme {
+  /* Colors - Brand */
+  --color-brand-primary: var(--color-primary-blue);
+  --color-brand-accent: var(--color-accent-teal);
+
+  /* Colors - Graphic/UI */
+  --color-highlight: var(--color-highlight);
+  --color-cta-bg: var(--color-cta-bg);
+
+  /* Colors - Backgrounds & Surfaces */
+  --color-bg-page: var(--color-neutral-white);
+  --color-bg-section: var(--color-gray-bg);
+  --color-bg-section-alt: var(--color-gray-bg-alt);
+
+  /* Colors - Text/Ink */
+  --color-ink-default: var(--color-dark-title);
+  --color-ink-balance: var(--color-dark-alt); /* Balanced dark */
+  --color-ink-muted: var(--color-gray-medium);
+  --color-ink-faint: var(--color-gray-text);
+
+  /* Colors - Borders */
+  --color-border-default: var(--color-gray-border);
+  --color-border-subtle: var(--color-gray-border-subtle);
+
+  /* Fonts */
+  --font-display: var(--font-display);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+  --font-quote: var(--font-quote);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- PALETA OFICIAL (Fuente de Verdad) --- */
+  --color-primary-blue: #14537e;
+  --color-accent-teal: #11abb0;
+  --color-neutral-white: #fff;
+
+  /* Escala de Grises / Tintas */
+  --color-dark-title: #212121;
+  --color-dark-alt: #313131;
+  --color-gray-dark: #474747;
+  --color-gray-medium: #6e757c;
+  --color-gray-text: #647373;
+  --color-gray-secondary: #a1a1a1;
+  --color-gray-portfolio: #95a3a3;
+  --color-gray-small: #8b9798;
+  --color-gray-border: #ccc;
+  --color-gray-border-subtle: #e8e8e8;
+  --color-gray-light: #dedede;
+  --color-gray-bg: #ebeeee;
+  --color-gray-bg-alt: #e6e6eb;
+  --color-gray-disabled: #c6c7c7;
+
+  /* Highlights & UI */
+  --color-highlight: #ff9;
+  --color-cta-bg: #212121;
+
+  /* Fonts will be injected by Next.js font loader in layout.tsx */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base Styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-bg-page);
+  color: var(--color-ink-default);
+  font-family: var(--font-body);
+  /* Smoother font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+h1, .font-display {
+  font-family: var(--font-display);
+}
+
+h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-heading);
+}
+
+blockquote {
+  font-family: var(--font-quote);
+}
+
+/* Custom Utilities for things that might need specific hex overrides if not covered by theme */
+.text-brand-primary { color: var(--color-primary-blue); }
+.bg-brand-primary { background-color: var(--color-primary-blue); }
+
+.text-brand-accent { color: var(--color-accent-teal); }
+.bg-brand-accent { background-color: var(--color-accent-teal); }

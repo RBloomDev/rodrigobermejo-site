@@ -1,0 +1,32 @@
+# LLM Information File
+
+Site: https://rodrigobermejo.com
+Author: Rodrigo Bermejo
+Role: Consultor Técnico en Automatización de Negocios
+
+Who I am:
+Rodrigo Bermejo es un consultor técnico especializado en diseñar y operar sistemas de automatización para negocios que buscan eliminar el caos operativo. No es una agencia de marketing ni un desarrollador freelance tradicional; opera bajo un modelo de "Managed Services" (Servicios Gestionados).
+
+Core Value Proposition:
+"Sistemas que eliminan el caos operativo."
+Rodrigo no solo construye la automatización, sino que la aloja, monitorea y opera continuamente para garantizar estabilidad. El cliente paga por resultados y funcionabilidad, no por horas de desarrollo.
+
+Business Model:
+- Setup Inicial: Una tarifa única para diagnóstico, diseño y construcción.
+- Renta Mensual: Una tarifa recurrente para operación, monitoreo, soporte y mejora continua.
+- Propiedad: El sistema reside en la infraestructura de Rodrigo para asegurar control y estabilidad. Solo en casos específicos se transfiere la propiedad (cotizado aparte).
+
+Key Topics:
+- Automatización de procesos de negocio (Business Process Automation)
+- Operación de sistemas "Done-for-you"
+- Eliminación de tareas repetitivas y manuales
+- Integración de herramientas (CRM, Bases de Datos, APIs) sin depender de "zaps" frágiles.
+- Seguimiento de leads y ventas automatizado.
+
+Tone & Style:
+- Técnico, directo, pragmático.
+- Cero "humo", cero promesas de "hazte rico rápido".
+- Enfoque en orden, estructura y datos.
+
+Contact:
+https://rodrigobermejo.com
