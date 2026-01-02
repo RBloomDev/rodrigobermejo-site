@@ -27,7 +27,7 @@ export default function FinalCTA() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
           <Button
-            href="https://calendly.com"
+            href="https://calendly.com/rodrigo-bermejo08/30min"
             external
             variant="secondary"
             size="lg"

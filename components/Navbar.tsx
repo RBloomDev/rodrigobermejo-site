@@ -36,7 +36,7 @@ export default function Navbar() {
           )}
           <div className="ml-4 pl-4 border-l border-border-subtle">
             <Button
-              href="https://calendly.com"
+              href="https://calendly.com/rodrigo-bermejo08/30min"
               external
               variant="primary"
               size="sm"

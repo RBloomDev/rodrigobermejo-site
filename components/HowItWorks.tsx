@@ -45,7 +45,7 @@ export default function HowItWorks() {
               dejar un sistema operando con claridad.
             </p>
             <Button
-              href="https://calendly.com"
+              href="https://calendly.com/rodrigo-bermejo08/30min"
               external
               variant="ghost"
               className="pl-0 hover:bg-transparent hover:text-brand-accent"

@@ -80,7 +80,7 @@ export default function Offers() {
                 + Setup inicial: $6,500 MXN (pago único)
               </p>
               <Button
-                href="https://calendly.com"
+                href="https://calendly.com/rodrigo-bermejo08/30min"
                 external
                 variant="primary"
                 className="w-full"
@@ -144,7 +144,7 @@ export default function Offers() {
                 + Setup inicial: $6,500 MXN (pago único)
               </p>
               <Button
-                href="https://calendly.com"
+                href="https://calendly.com/rodrigo-bermejo08/30min"
                 external
                 variant="secondary"
                 className="w-full"

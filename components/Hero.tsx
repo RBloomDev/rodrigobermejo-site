@@ -43,7 +43,7 @@ export default function Hero() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-5">
           <Button
-            href="https://calendly.com"
+            href="https://calendly.com/rodrigo-bermejo08/30min"
             external
             variant="secondary"
             size="lg"

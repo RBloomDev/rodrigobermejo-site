@@ -102,7 +102,7 @@ export default function Footer() {
 
           <div className="hidden md:block">
             <Button
-              href="https://calendly.com"
+              href="https://calendly.com/rodrigo-bermejo08/30min"
               external
               variant="primary"
               size="sm"
