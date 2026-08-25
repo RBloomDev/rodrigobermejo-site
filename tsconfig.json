@@ -11,6 +11,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Las pruebas las ejecuta `node --test`, no un bundler, y Node exige la
+    // extension en el especificador. Legal porque este proyecto es noEmit.
+    "allowImportingTsExtensions": true,
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [

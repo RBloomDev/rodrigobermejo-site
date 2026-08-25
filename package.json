@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/subscribe-policy.test.ts",
+    "guard:funnel": "node scripts/check-funnel-isolation.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",
