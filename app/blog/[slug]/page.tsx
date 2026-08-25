@@ -44,11 +44,11 @@ export default async function Post({ params }: PostProps) {
           <header className="mb-10 text-center">
             <Link
               href="/blog"
-              className="inline-block mb-8 text-sm font-semibold text-gray-500 hover:text-primary-blue transition-colors"
+              className="inline-block mb-8 text-sm font-semibold text-gray-500 hover:text-brand-primary transition-colors"
             >
               ← Volver al blog
             </Link>
-            <div className="mb-4 text-sm text-accent-teal font-bold uppercase tracking-wider">
+            <div className="mb-4 text-sm text-brand-accent font-bold uppercase tracking-wider">
               {postData.author || "Rodrigo Bermejo"} •{" "}
               <time dateTime={postData.date}>
                 {format(parseISO(postData.date), "d LLLL, yyyy", {
@@ -69,7 +69,7 @@ export default async function Post({ params }: PostProps) {
 
           {/* Content */}
           <div
-            className="prose prose-lg prose-blue mx-auto prose-headings:font-heading prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:font-body prose-blockquote:border-l-accent-teal prose-blockquote:text-gray-500 prose-blockquote:font-quote prose-blockquote:italic"
+            className="prose prose-lg mx-auto prose-headings:font-heading prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:font-body prose-blockquote:border-l-brand-accent prose-blockquote:text-gray-500 prose-blockquote:font-quote prose-blockquote:italic"
             dangerouslySetInnerHTML={{ __html: postData.contentHtml || "" }}
           />
 

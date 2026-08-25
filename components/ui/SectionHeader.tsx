@@ -13,7 +13,7 @@ export function SectionHeader({ eyebrow, title, subtitle, align = "center", clas
   return (
     <div className={clsx("max-w-3xl mb-16", align === "center" ? "mx-auto text-center" : "text-left", className)}>
       {eyebrow && (
-        <span className={clsx("block mb-3 font-heading font-semibold uppercase tracking-wider text-sm", light ? "text-accent-teal" : "text-accent-teal")}>
+        <span className="block mb-3 font-heading font-semibold uppercase tracking-wider text-sm text-brand-accent">
           {eyebrow}
         </span>
       )}
