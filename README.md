@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# rodrigobermejo.com
 
-## Getting Started
+Sitio público de Rodrigo Bermejo — consultor técnico en automatización.
+Next.js 16 (App Router), React 19, Tailwind v4, TypeScript strict. Estático por completo.
 
-First, run the development server:
+Este repositorio aloja tres cosas:
+
+| Qué | Dónde |
+|---|---|
+| El sitio público | `app/`, `components/`, `content/` |
+| La especificación del sistema de Proof of Work | `docs/` |
+| Los artefactos de evidencia publicados | `public/proof/` (desde Sprint 4) |
+
+El motor que produce esa evidencia **no vive aquí**: es `rodrigoBermejo/proof-engine` (privado).
+Este repo solo lee los artefactos y los renderiza. Ver `docs/04-architecture.md`.
+
+## Desarrollo
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+cp .env.example .env.local     # y rellena los valores
+npm run dev                    # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Comandos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Comando | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run lint` | ESLint, cero warnings tolerados |
+| `npm test` | `node --test` sobre la política de `/api/subscribe`. Sin runner externo ni dependencias: Node ≥ 22.18 ejecuta TypeScript directamente |
+| `npm run build` | Build de producción |
+| `npm run guard:funnel` | Comprueba que el funnel comercial no alcanza el sistema de evidencia por el cierre transitivo de imports |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Los cinco últimos son el gate de CI. Si fallan en local, fallan en el PR.
+Qué garantiza cada guard —y qué no— está en `docs/04-architecture.md` §4.1. Un verde no es prueba del invariante, solo de que no se rompió por la vía que el guard cubre.
 
-## Learn More
+## Variables de entorno
 
-To learn more about Next.js, take a look at the following resources:
+Ver `.env.example`. Resumen:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Requerida | Nota |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | En producción | Sin ella, metadata, OG, sitemap y robots caen al ápex mientras el sitio vive en `www.` |
+| `NEXT_PUBLIC_GA_ID` | No | Si falta, `components/Analytics.tsx` no renderiza nada |
+| `BUTTONDOWN_API_KEY` | Para el newsletter | Solo servidor. **Nunca** prefijar con `NEXT_PUBLIC_` |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Estructura
 
-## Deploy on Vercel
+```
+app/
+  page.tsx              landing: composición de las secciones de components/
+  blog/                 índice y artículo (estático, desde content/posts/)
+  api/subscribe/        newsletter (Buttondown). Frontera de PII.
+                        route.ts hace E/S; policy.ts decide y es puro
+                        (por eso se puede probar sin bundler)
+  layout.tsx            fuentes, metadata, analytics
+  globals.css           tokens (@theme) y paleta (:root) — leer el comentario de cabecera
+components/             secciones de la landing + ui/ (Button, SectionHeader)
+content/posts/*.md      artículos con frontmatter (gray-matter + remark)
+lib/posts.ts            lectura de contenido en build-time con fs
+scripts/                guards de CI (Node puro, sin dependencias)
+tests/                  `node --test`, sin dependencias
+docs/                   especificación del sistema de evidencia
+public/                 estáticos, llms.txt, y (futuro) proof/
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contenido
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Un artículo es un `.md` en `content/posts/` con frontmatter:
+
+```yaml
+---
+title: "Título"
+date: "2026-01-15"
+excerpt: "Una frase."
+---
+```
+
+El slug sale del **nombre del archivo**, no del campo `slug` del frontmatter (que hoy se ignora — ver la deuda #1 en `docs/audits/`).
+
+## Deploy
+
+Vercel, conectado a `main`. Sin `vercel.json`: configuración por defecto del framework.
+No hay push directo a `main`; todo entra por PR con CI verde.
+
+## Si eres un agente
+
+Lee **`AGENTS.md`** antes de tocar nada. Contiene el contrato de trabajo: roles Builder y
+Reviewer, reglas duras, y qué decisiones requieren un humano.
+
+Tres reglas que rompen cosas si se ignoran:
+
+1. `public/proof/**` lo escribe solo el motor. No lo edites a mano.
+2. Los tokens de color viven en `@theme`. Las variables de `:root` no generan clases:
+   `text-brand-primary` existe, `text-primary-blue` no.
+3. `app/api/subscribe/route.ts` maneja PII. No loguees payloads ahí. CI lo verifica.
