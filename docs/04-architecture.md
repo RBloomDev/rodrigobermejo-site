@@ -80,13 +80,13 @@ Los cinco invariantes se citan como **`§4` invariante N** desde el resto del re
 2. El sitio valida el feed con zod en build. **Feed inválido → build rojo.** Nunca se renderizan datos que no cumplen el contrato.
 3. **Feed ausente → build verde** con la vista solo-declarada, y el sitio lo dice. El sitio siempre muestra `meta.generated_at`, porque un artefacto en repo puede quedar viejo sin que nada falle.
 4. Las rutas de evidencia están **aisladas del funnel comercial**. Ningún componente del funnel (`Hero`, `Offers`, `FinalCTA`, `Navbar`, `Footer`, `FAQ`, `Problems`, `HowItWorks`) importa nada del feed. La ruta de conversión no puede romperse por un problema de evidencia.
-5. Ninguna afirmación se renderiza sin su par de etiquetas (procedencia, verificabilidad). El schema lo hace imposible.
+5. Ninguna afirmación se renderiza sin su par de etiquetas (procedencia, verificabilidad). El schema garantiza que **estén en los datos**; que la **UI las muestre** no lo comprueba nada mecánico y es revisión visual del Reviewer (§4.1). La versión anterior de este invariante decía «el schema lo hace imposible», y era el error que el párrafo de arriba prohíbe: el schema restringe datos, no rendering.
 
 ## 4.1 Qué garantiza el gate mecánico, y qué no
 
 Los guards de `.github/workflows/ci.yml` son controles **acotados**. Declararlos equivalentes al invariante que protegen sería exactamente el defecto que este documento acaba de corregir en §3.
 
-Las cinco primeras filas son los invariantes 1–5 de §4, en ese orden. Las dos últimas no son invariantes de §4: son la frontera de PII de `03-privacy-and-publication-policy.md` §4, y se tabulan aquí porque sus guards tienen el mismo problema de sobredeclaración.
+Las cinco primeras filas son los invariantes 1–5 de §4, en ese orden. Las tres últimas no son invariantes de §4: dos son la frontera de PII de `03-privacy-and-publication-policy.md` §4 y la tercera es el control 5 de la superficie de escritura (§6). Se tabulan aquí porque tienen el mismo problema de sobredeclaración.
 
 | Invariante | Control mecánico | Qué se le escapa |
 |---|---|---|
@@ -95,6 +95,7 @@ Las cinco primeras filas son los invariantes 1–5 de §4, en ese orden. Las dos
 | §4 · 3 — feed ausente → build verde | Ninguno hoy | Nada lo comprueba hasta que exista el consumidor del feed |
 | §4 · 4 — funnel desacoplado del feed | `scripts/check-funnel-isolation.mjs`: cierre **transitivo** de imports desde los 8 componentes del funnel hacia rutas de evidencia | Imports dinámicos (`import()` con expresión no literal), re-exports vía alias no resolubles estáticamente, y acoplamiento por copia de código en lugar de import |
 | §4 · 5 — etiquetas siempre presentes | El schema del feed (Sprint 1) | Que estén en los datos no garantiza que la UI las renderice. Es revisión visual |
+| §6 · control 5 — feed inválido bloquea el merge | **Ninguno hoy.** `ci.yml` no valida contra JSON Schema | Todo. No existe hasta que exista el primer artefacto (Sprint 4–5). Enunciarlo en presente era sobredeclaración, corregida el 2026-08-26 |
 | `03` §4 — sin logging de PII en `app/api/**` | ESLint `no-console` (solo `console.error` permitido), que es AST y cubre `console["log"]` y llamadas multilínea + grep de escrituras directas a stdout/stderr | Desestructurar o aliasar el global (`const { log } = console`), un logger propio o de terceros, un `console.error` cuyo argumento sí contenga PII, o el envío del payload a un tercero. Ninguna la detecta un chequeo estático de este tamaño |
 | `03` §4 — la ruta de PII no devuelve éxito por un fallo del proveedor, ni distingue una dirección ya suscrita de un alta nueva | `npm test` (`node --test`) sobre `app/api/subscribe/policy.ts`: clasificación de la respuesta upstream, validación de entrada, origen y rate limit | **No ejecuta la ruta**. No cubre el cableado de `route.ts`, la lectura real del cuerpo upstream, ni el comportamiento del rate limit entre instancias de serverless. Y los códigos de error del proveedor son un supuesto sobre su API, no un contrato verificado en CI: si Buttondown renombra el suyo, el test sigue verde y el comportamiento cambia |
 
@@ -127,7 +128,7 @@ El motor necesita `contents:write` + `pull_requests:write` sobre el repo del sit
 2. **Restricción de push en `main`: solo Rodrigo puede mergear.** Es el control que impide que el bot mergee su propio PR — con los permisos que necesita para abrirlo, podría mergearlo en cuanto el CI pasara a verde.
 3. PAT separado del de lectura, scopeado a un solo repo y dos permisos, con expiración. **Hoy se emite desde la cuenta personal de Rodrigo**, lo que significa que el control 2 no lo excluiría: la restricción de push está definida sobre `rodrigoBermejo`. No es explotable mientras no haya publicación automática. `decisions/0008` decide la identidad independiente que lo cierra —capaz de abrir PR, incapaz de mergear— y la sitúa como condición de entrada del primer publish automático. No implementada en V1.
 4. `public/proof/**` es zona de escritura exclusiva del bot. Ningún agente edita esos archivos a mano.
-5. CI valida el feed contra `schemas/*.json` en cada PR; feed inválido bloquea el merge.
+5. CI valida el feed contra `schemas/*.json` en cada PR; feed inválido bloquea el merge. **No implementado (2026-08-26).** `.github/workflows/ci.yml` no contiene hoy ningún paso de validación contra JSON Schema, y no puede contenerlo antes de que exista el primer artefacto (Sprint 4–5). Se anota igual que el control 3: un control enunciado en presente sin serlo es la falsa confianza que §4.1 existe para evitar.
 
 ## 6.1 Gobernanza de `main`
 
