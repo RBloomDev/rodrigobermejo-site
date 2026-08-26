@@ -6,7 +6,9 @@ Este documento existe porque hasta hoy solo había ejecuciones verdes. Un verde 
 
 Ejecutado en local (Node `v24.18.0`, Windows), rama `chore/proof-sprint-0`. Los seis experimentos son mutaciones **temporales**, revertidas inmediatamente; ninguna sobrevive en el árbol de trabajo.
 
-**Cobertura.** Los **cuatro** gates mecánicos (`typecheck`, `lint`, `test`, `build`) más el guard `guard:funnel` tienen aquí al menos un fallo provocado y observado. No queda ningún gate sin demostración: en la versión anterior de este documento `build` y `guard:funnel` no la tenían, y eso era el finding P1-GATE-01 reabierto por el Reviewer.
+**Cobertura.** Los **cuatro** gates mecánicos (`typecheck`, `lint`, `test`, `build`) más el guard `guard:funnel` tienen aquí al menos un fallo provocado y observado. En la versión anterior de este documento `build` y `guard:funnel` no la tenían, y eso era el finding P1-GATE-01 reabierto por el Reviewer.
+
+> **Corrección (2026-08-26).** Este párrafo decía además «no queda ningún gate sin demostración», y era **inexacto**. Los seis experimentos de abajo cubren `typecheck`, `lint`, `test`, `build`, `guard:funnel` y la regla ESLint `no-console`, pero **ninguno provoca el `exit 1` del paso `No direct stdout/stderr writes in PII routes`** del job `privacy guard`, que es parte de un status check obligatorio. Ese hueco quedó cubierto por el probe B de `2026-08-26-ci-gate-wiring.md`. La frase se retira en lugar de matizarse: declarar cobertura total teniendo un paso sin falsar es el mismo defecto que este documento existe para corregir.
 
 | Gate | Experimento | Falló |
 |---|---|---|
