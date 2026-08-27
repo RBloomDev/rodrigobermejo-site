@@ -127,7 +127,7 @@ El motor necesita `contents:write` + `pull_requests:write` sobre el repo del sit
 1. El motor abre PRs; **nunca** hace push a `main`.
 2. **Restricción de push en `main`: solo Rodrigo puede mergear.** Es el control que impide que el bot mergee su propio PR — con los permisos que necesita para abrirlo, podría mergearlo en cuanto el CI pasara a verde.
 3. PAT separado del de lectura, scopeado a un solo repo y dos permisos, con expiración. **Hoy se emite desde la cuenta personal de Rodrigo**, lo que significa que el control 2 no lo excluiría: la restricción de push está definida sobre `rodrigoBermejo`. No es explotable mientras no haya publicación automática. `decisions/0008` decide la identidad independiente que lo cierra —capaz de abrir PR, incapaz de mergear— y la sitúa como condición de entrada del primer publish automático. No implementada en V1.
-4. `public/proof/**` es zona de escritura exclusiva del bot. Ningún agente edita esos archivos a mano.
+4. `public/proof/v1/**` es zona de escritura exclusiva del bot. Ningún agente edita esos archivos a mano. `public/proof/schemas/**` queda fuera de esa zona y lo escribe el Builder por PR normal, derivándolo de `docs/05` y nunca del artefacto (`decisions/0009`).
 5. CI valida el feed contra `schemas/*.json` en cada PR; feed inválido bloquea el merge. **No implementado (2026-08-26).** `.github/workflows/ci.yml` no contiene hoy ningún paso de validación contra JSON Schema, y no puede contenerlo antes de que exista el primer artefacto (Sprint 4–5). Se anota igual que el control 3: un control enunciado en presente sin serlo es la falsa confianza que §4.1 existe para evitar.
 
 ## 6.1 Gobernanza de `main`

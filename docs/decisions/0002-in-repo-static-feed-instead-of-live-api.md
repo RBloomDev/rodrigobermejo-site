@@ -23,7 +23,7 @@ El motor publica JSON versionado en `public/proof/v1/` **dentro de `RBloomDev/ro
 ## Consecuencias
 
 - El motor necesita escritura sobre el repo del sitio (ADR 0005).
-- El repo del sitio contiene un directorio escrito por una máquina: `public/proof/**` es zona prohibida para agentes.
+- El repo del sitio contiene un directorio escrito por una máquina: `public/proof/v1/**` es zona prohibida para agentes (acotado a `v1/` por `decisions/0009`).
 - Un feed viejo no falla el build. Por eso `meta.generated_at` se muestra **siempre** en la UI.
 - Sin consultas interactivas. Aceptable: no hay caso de uso en V1.
 

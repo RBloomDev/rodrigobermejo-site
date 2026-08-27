@@ -30,7 +30,7 @@ npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de import
 
 1. ¿Existe la spec en `docs/` para lo que vas a hacer? Si no, escríbela y para.
 2. ¿Eres Builder o Reviewer en esta feature? Si es Reviewer, **no commitees**.
-3. ¿Toca `public/proof/**`? **Zona prohibida.** Corrige la causa en el motor o en el Registry.
+3. ¿Toca `public/proof/v1/**`? **Zona prohibida.** Corrige la causa en el motor o en el Registry. (`public/proof/schemas/**` sí lo escribe el Builder, derivándolo de `docs/05` y nunca del artefacto — `decisions/0009`.)
 4. ¿Cambia qué se vuelve público? Escala a un humano.
 5. Antes de decir "listo": corre el comando y lee la salida. No declares corregido lo que no verificaste, y si una corrección prevista no ocurrió, dilo. Detalle en el principio de verificación de `AGENTS.md`.
 
