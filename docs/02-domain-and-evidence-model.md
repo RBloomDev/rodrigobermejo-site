@@ -44,9 +44,13 @@ Claim — DECLARADO por un humano en el Registry
   statement      la afirmación, en primera persona, escrita por un humano
   dimension      build | lead | teach
   project_ids    [] uno o varios. Claim y Project son muchos-a-muchos
-  evidence_scope { project_ids: [], kinds?: [], since?: ISO }
+  evidence_scope? { project_ids: [], kinds?: [], since?: ISO }
                  └─ QUÉ evidencia adhiere el claim, no CUÁL. Ver la enmienda
                     de abajo: los ids concretos no son declarables.
+                 └─ OPCIONAL. Ausente = el claim no adhiere evidencia, y
+                    deriva a declared/unverifiable (§1.1). Es el caso normal
+                    de lead y teach en V1. La ausencia se declara callando,
+                    no con un scope vacío.
 
 Claim — DERIVADO por el motor (§1.1)
   evidence_ids[] resuelto desde evidence_scope sobre el ledger, sujeto a G3–G5
@@ -72,6 +76,8 @@ evidence_scope:
 ### Enmienda del 2026-08-27 — por qué `evidence_ids` dejó de ser declarado
 
 La versión anterior situaba `evidence_ids` en el bloque declarado, y era una **obligación que ningún mecanismo podía cumplir** (finding ESC-06). Los ids de `Evidence` son hashes content-addressed que produce la ingestión (§4), un sprint *después* de que se escriban los claims. Un humano tendría que copiarlos a mano —contra el criterio 1 del Definition of Done, «sin escribir código»— y, peor, la lista quedaría **congelada** en lo que copió la última vez mientras el ledger sigue creciendo: un claim con evidencia `third_party_public` nueva seguiría publicándose como `declared` / `unverifiable`.
+
+El scope es **opcional y no tiene default implícito**: si un claim no lo declara, no adhiere evidencia. Adherirla automáticamente —«toda la de sus proyectos»— habría sido cómodo y equivocado: un claim absorbería en silencio evidencia que quien lo escribió nunca consideró, y la verificabilidad publicada dejaría de ser algo que alguien afirmó.
 
 Lo declarable no es *cuál* evidencia sostiene un claim, sino **qué clase de evidencia**. `evidence_scope` declara el criterio; el motor lo resuelve sobre el ledger en cada corrida y la adhesión se mantiene viva sola. La separación normativa se conserva intacta: un `evidence_ids` **escrito a mano sigue haciendo fallar al validador**, porque ahora es un campo derivado.
 
