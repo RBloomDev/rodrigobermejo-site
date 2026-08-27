@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/meta.schema.json",
+  "title": "meta.json — v1",
+  "description": "Estado de la publicacion. Siempre presente si existe cualquier otro archivo de v1/, y es lo primero que lee el sitio. NINGUN campo de este archivo es una metrica de evidencia, y por eso ninguno lleva claim_ids: son metadata de presentacion (cardinalidad e integridad del artefacto) y metadata operativa (salud del sistema que produce la evidencia). Ver docs/02 §7.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "engine_version",
+    "source_coverage",
+    "counts",
+    "unassigned_events",
+    "digest"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Se muestra SIEMPRE en la UI: un artefacto en repo puede quedar viejo sin que nada falle, y ocultar la fecha convertiria eso en engano."
+    },
+    "engine_version": { "type": "string", "minLength": 1 },
+    "source_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "repos_public", "repos_private", "last_success_at"],
+        "properties": {
+          "source": { "enum": ["github"] },
+          "repos_public": { "type": "integer", "minimum": 0 },
+          "repos_private": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "El CONTEO de repos privados, nunca sus nombres. Metadata operativa."
+          },
+          "last_success_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "description": "Metadata de PRESENTACION: cardinalidad del propio artefacto. Dice cuantos registros hay en el archivo, no cuanto trabaja nadie. No puede renderizarse como logro.",
+      "required": ["projects", "claims", "evidence"],
+      "properties": {
+        "projects": { "type": "integer", "minimum": 0 },
+        "claims": { "type": "integer", "minimum": 0 },
+        "evidence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "unassigned_events": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Metadata OPERATIVA, publicada a proposito precisamente porque es una mala noticia sobre el sistema: no hay incentivo para inflarlo. Un unassigned creciendo es la senal de que al Registry le falta una entrada."
+    },
+    "digest": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "$comment": "Los campos prohibidos permanentemente por docs/05. Se enumeran uno a uno en vez de cerrar el objeto porque la regla 3 del contrato exige que un consumidor ignore los campos que no conoce.",
+      "not": { "required": ["score"] }
+    },
+    { "not": { "required": ["rank"] } },
+    { "not": { "required": ["streak"] } },
+    { "not": { "required": ["stars"] } },
+    { "not": { "required": ["forks"] } },
+    { "not": { "required": ["followers"] } },
+    { "not": { "required": ["tokens_used"] } },
+    { "not": { "required": ["prompts"] } },
+    { "not": { "required": ["agent_sessions"] } },
+    { "not": { "required": ["tool_calls"] } },
+    { "not": { "required": ["hours"] } },
+    { "not": { "required": ["lines_of_code"] } },
+    { "not": { "required": ["language_percentages"] } },
+    { "not": { "required": ["experience_level"] } }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/evidence.schema.json",
+  "title": "evidence.json — v1",
+  "description": "Contrato ejecutable de evidence.json. DERIVADO de docs/05-feed-contract.md. Este archivo es la AUTORIDAD sobre provenance y verifiability: claims.json los deriva de aqui y no puede contradecirlos.",
+  "type": "object",
+  "required": ["schema_version", "evidence"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": [
+        "id",
+        "project_id",
+        "source",
+        "kind",
+        "occurred_at",
+        "actor_role",
+        "provenance",
+        "verifiability"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "project_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "REGLA G5: requerido y NO puede ser null en el artefacto publicado. Un evento 'unassigned' no sostiene ninguna afirmacion y no se publica; su existencia se refleja en meta.unassigned_events, que es metadata operativa."
+        },
+        "source": { "enum": ["github"] },
+        "kind": {
+          "enum": [
+            "commit",
+            "pull_request",
+            "review",
+            "release",
+            "tag",
+            "check_run",
+            "deployment"
+          ]
+        },
+        "occurred_at": { "type": "string", "format": "date-time" },
+        "actor_role": { "enum": ["author", "reviewer", "approver", "operator"] },
+        "provenance": {
+          "enum": ["declared", "collected", "derived", "correlated"],
+          "description": "Sin 'attested': en V1 los siete kinds de github son todos 'collected' y no hay via por la que una atestiguacion entre al modelo."
+        },
+        "verifiability": {
+          "enum": ["unverifiable", "self_link", "third_party_public", "cryptographic"]
+        },
+        "public_url": { "type": "string", "pattern": "^https?://" },
+        "signed": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "$comment": "TEOREMA de docs/02 §1.1, comprobado aqui como asercion redundante: third_party_public y cryptographic solo existen en Evidence CON public_url. Si esto falla, el bug esta en la normalizacion, no en el schema.",
+          "if": {
+            "properties": {
+              "verifiability": { "enum": ["third_party_public", "cryptographic"] }
+            },
+            "required": ["verifiability"]
+          },
+          "then": { "required": ["public_url"] }
+        },
+        {
+          "$comment": "Regla 6 de docs/03 §3: un registro con procedencia privada NUNCA lleva public_url. Aqui se expresa por su contrapositiva observable: si no es comprobable por un tercero, no hay URL que ofrecer.",
+          "if": {
+            "properties": { "verifiability": { "const": "unverifiable" } },
+            "required": ["verifiability"]
+          },
+          "then": { "not": { "required": ["public_url"] } }
+        },
+        {
+          "not": { "required": ["assistance"] },
+          "$comment": "ELIMINADO del contrato: estaba documentado como 'reservado, ausente en V1', es decir un campo definido para un consumidor que no existe. Anadirlo en V2 sera aditivo, que la regla 2 del contrato ya declara compatible; reservarlo hoy no compraba nada y congelaba una forma sin implementar."
+        },
+        {
+          "not": { "required": ["visibility"] },
+          "$comment": "El artefacto publicado solo contiene registros publicables. La visibilidad interna del registro no viaja al feed."
+        }
+      ]
+    }
+  }
+}
