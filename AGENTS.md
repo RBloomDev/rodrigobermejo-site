@@ -59,6 +59,7 @@ El Reviewer parte de la hipótesis de que el cambio está mal. Un APPROVE sin ha
 - **Nunca** se publica nada de un proyecto `confidential` ni de `context: client` sin un `release` humano registrado. El umbral k **no anonimiza**: cuenta eventos, no sujetos (`docs/03-privacy-and-publication-policy.md` §2–§3).
 - **`docs/` es autoridad sobre el schema y sobre el código**, no al revés. Si `public/proof/schemas/*.json` o la implementación divergen de la spec, el derivado está mal y se corrige el derivado. Divergencia = FAIL, no deuda.
 - **Nunca** se usa el botón de aprobación de GitHub desde un agente.
+- **Nunca** se mergea a `main` desde un agente. A `develop` sí, y solo con los dos status checks en verde.
 - **Nunca** se infiere el proyecto de un evento por heurística. Sin match, va a `unassigned`.
 - Sin dependencias nuevas sin que lo decida Rodrigo.
 
@@ -66,8 +67,21 @@ El Reviewer parte de la hipótesis de que el cambio está mal. Un APPROVE sin ha
 
 - Conventional Commits: `feat:`, `fix:`, `docs:`, `chore:`, `test:`, `refactor:`.
 - Trailer `Project-Id: <slug>` cuando el trabajo pertenezca a un proyecto del Registry (alimenta la correlación).
-- Ramas `feat/`, `fix/`, `docs/`, `chore/` desde `main`. **Sin push directo a `main`.**
-- Un PR por feature. CI verde es requisito, no logro.
+- Ramas `feat/`, `fix/`, `docs/`, `chore/` **desde `develop`**. Sin push directo a `develop` ni a `main`.
+- Un PR por feature, **contra `develop`**. CI verde es requisito, no logro.
+
+### Quién mergea qué (`decisions/0010`)
+
+| Merge | Quién |
+|---|---|
+| `feat/*`, `fix/*`, `docs/*`, `chore/*` → **`develop`** | **Un agente**, con CI en verde |
+| **`develop` → `main`** | **Solo Rodrigo** |
+
+Los agentes suben todo a `develop`. Rodrigo revisa ahí, y de ahí sale **un solo PR a `main`**.
+
+La regla anterior decía «ningún agente mergea» sin distinguir destino, y el efecto fue un cuello de botella: cuatro PRs con CI verde esperando horas mientras el trabajo que dependía de ellos se detenía. El control que importa no es que un humano apruebe cada commit, sino que **decida qué se vuelve público** — y lo público es `main`. `develop` no publica nada.
+
+**Límite honesto:** que un agente no mergee a `main` **no lo impone un mecanismo** frente al agente que opera hoy, porque actúa con las credenciales de `rodrigoBermejo`. Es disciplina, no plataforma. Se cierra con `decisions/0008`. Hasta entonces es una convención declarada, no un control.
 
 Gobernanza de `main` — **aplicada en GitHub y verificada el 2026-08-24**, no solo acordada. El detalle de qué se comprobó está en `docs/04-architecture.md` §6.1:
 
@@ -79,7 +93,7 @@ Gobernanza de `main` — **aplicada en GitHub y verificada el 2026-08-24**, no s
 | Aprobaciones formales de GitHub | No requeridas |
 | Quién mergea | **Solo Rodrigo** (push a `main` restringido, admins incluidos) |
 
-Ningún agente mergea. Ni su propio PR, ni el de otro, ni uno automático de publicación.
+Ningún agente mergea **a `main`**. Ni su propio PR, ni el de otro, ni uno automático de publicación. A `develop` sí, con CI en verde (`decisions/0010`).
 
 ## Principio de verificación
 

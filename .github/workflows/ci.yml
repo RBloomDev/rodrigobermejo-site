@@ -1,10 +1,19 @@
 name: CI
 
 on:
+  # SIN filtro de `branches` en pull_request, a proposito. El filtro aplica a la
+  # rama BASE, asi que `branches: [main]` dejaba sin CI a cualquier PR que no
+  # apuntara a main -- incluidos todos los que ahora apuntan a `develop`, que es
+  # donde Rodrigo revisa.
+  #
+  # El modo de fallo era el peor posible: un PR sin checks no se ve como
+  # "no comprobado", se ve como "no esta fallando". Y el ruleset tampoco lo
+  # cubre, porque solo aplica a los PR que apuntan a su rama.
+  #
+  # Mismo defecto que se encontro y corrigio en proof-engine el 2026-08-27.
   pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [main, develop]
 
 # El gate mecánico del que depende el workflow Builder/Reviewer.
 # Ver AGENTS.md y docs/01-scope-v1.md (Sprint 0).
