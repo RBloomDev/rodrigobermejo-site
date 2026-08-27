@@ -49,7 +49,7 @@ rodrigoBermejo/rodrigobermejo                          PÚBLICO
 - La **spec** (`docs/`) — canónica, pública, auditable
 - Los **artefactos publicados** (`public/proof/v1/`) — ya redactados
 - El **contrato ejecutable** (`public/proof/schemas/`) — **derivado** de `docs/05-feed-contract.md`, nunca autoridad sobre él. Si divergen, el schema está mal (`05` §cabecera)
-- El **rendering**: `/proyectos`, `/proyectos/[slug]`, `/evidencia`, `/actividad`
+- El **rendering**: `/proyectos`, `/proyectos/[slug]`, `/evidencia` — y `/actividad` en **V1.1**, junto con `activity.json` (`01-scope-v1.md`, tabla de *Fuera de V1*)
 - Un cliente tipado delgado que lee del filesystem y valida con zod
 
 ### Fuera del sitio, sin excepción
