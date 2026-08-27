@@ -1,30 +1,57 @@
 @import "tailwindcss";
 
+/*
+ * DOS CAPAS, NOMBRES DISTINTOS.
+ *
+ *   @theme  -> capa de tokens. Tailwind v4 genera utilidades desde aqui
+ *              (--color-brand-accent produce text-brand-accent, bg-brand-accent...).
+ *   :root   -> capa de paleta. Valores crudos. NO genera utilidades.
+ *
+ * Regla: un nombre no puede existir en las dos capas. @theme tambien emite en
+ * :root, asi que un nombre repetido se resuelve por orden de declaracion y el
+ * token queda sombreado por el valor crudo. Si necesitas un token nuevo, dale
+ * al valor crudo un nombre distinto del token.
+ *
+ * Corolario practico: `text-brand-primary` existe, `text-primary-blue` NO.
+ * Las variables de :root no producen clases.
+ *
+ * EXCEPCION VIVA, y es deliberada: los tokens de tipografia (--font-*) SI
+ * repiten el nombre de la variable que inyecta next/font, asi que siguen
+ * resolviendose por orden de declaracion y scope. No se corrige aqui: la
+ * tipografia es deuda #9, decidida el 2026-08-20 como tarea visual
+ * independiente con revision de diseno. Tocarla desde este trabajo cambiaria
+ * el rendering del sitio entero dentro de un diff que no es de diseno.
+ * Ver docs/audits/2026-08-19-site-baseline.md
+ */
+
 @theme {
-  /* Colors - Brand */
+  /* Marca */
   --color-brand-primary: var(--color-primary-blue);
   --color-brand-accent: var(--color-accent-teal);
 
-  /* Colors - Graphic/UI */
-  --color-highlight: var(--color-highlight);
-  --color-cta-bg: var(--color-cta-bg);
+  /* UI */
+  --color-highlight: var(--color-highlight-yellow);
+  --color-cta-bg: var(--color-cta-dark);
 
-  /* Colors - Backgrounds & Surfaces */
+  /* Fondos y superficies */
   --color-bg-page: var(--color-neutral-white);
   --color-bg-section: var(--color-gray-bg);
   --color-bg-section-alt: var(--color-gray-bg-alt);
 
-  /* Colors - Text/Ink */
+  /* Tintas */
   --color-ink-default: var(--color-dark-title);
-  --color-ink-balance: var(--color-dark-alt); /* Balanced dark */
+  --color-ink-balance: var(--color-dark-alt);
   --color-ink-muted: var(--color-gray-medium);
   --color-ink-faint: var(--color-gray-text);
 
-  /* Colors - Borders */
+  /* Bordes */
   --color-border-default: var(--color-gray-border);
   --color-border-subtle: var(--color-gray-border-subtle);
 
-  /* Fonts */
+  /* Tipografias. next/font inyecta estas mismas variables en <body>
+     (app/layout.tsx): el nombre esta repetido a proposito porque cambiarlo es
+     un cambio tipografico, y la tipografia no se toca en este trabajo
+     (deuda #9). Ver el bloque de cabecera. */
   --font-display: var(--font-display);
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
@@ -54,18 +81,24 @@
   --color-gray-disabled: #c6c7c7;
 
   /* Highlights & UI */
-  --color-highlight: #ff9;
-  --color-cta-bg: #212121;
+  --color-highlight-yellow: #ff9;
+  --color-cta-dark: #212121;
 
-  /* Fonts will be injected by Next.js font loader in layout.tsx */
+  /* Las fuentes las inyecta el loader de Next.js en layout.tsx */
 }
 
 /* Base Styles */
 body {
   background-color: var(--color-bg-page);
   color: var(--color-ink-default);
+  /* NOTA: la clase `font-sans` en <body> (app/layout.tsx) gana en especificidad
+     sobre esta regla, asi que el texto sin clase usa la pila sans por defecto
+     de Tailwind, no --font-body. Es un desajuste heredado.
+     DECIDIDO (2026-08-20): no se toca durante este proyecto. Cualquier cambio
+     tipografico sera una tarea visual independiente con revision de diseno.
+     No elimines `font-sans` ni generalices `font-body` sin esa tarea.
+     Deuda #9 en docs/audits/2026-08-19-site-baseline.md */
   font-family: var(--font-body);
-  /* Smoother font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -82,9 +115,8 @@ blockquote {
   font-family: var(--font-quote);
 }
 
-/* Custom Utilities for things that might need specific hex overrides if not covered by theme */
-.text-brand-primary { color: var(--color-primary-blue); }
-.bg-brand-primary { background-color: var(--color-primary-blue); }
-
-.text-brand-accent { color: var(--color-accent-teal); }
-.bg-brand-accent { background-color: var(--color-accent-teal); }
+/* Las utilidades .text-brand-* y .bg-brand-* las genera Tailwind desde @theme.
+   No se escriben a mano: hacerlo duplicaba la utilidad y era el defecto P2 de
+   docs/audits/2026-08-19-site-baseline.md.
+   Las clases .font-* de arriba son las heredadas y se conservan tal cual:
+   tipografia = deuda #9, fuera de alcance. */

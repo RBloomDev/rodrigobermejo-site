@@ -31,16 +31,16 @@ export default function BlogIndex() {
             {allPostsData.map(({ id, date, title, excerpt }) => (
               <article key={id} className="bg-white p-8 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group">
                 <div className="mb-2 text-sm text-gray-500 font-medium font-body flex items-center gap-2">
-                   <span className="w-1 h-1 rounded-full bg-accent-teal"></span>
+                   <span className="w-1 h-1 rounded-full bg-brand-accent"></span>
                    <time dateTime={date}>{format(parseISO(date), 'd LLLL, yyyy', { locale: es })}</time>
                 </div>
-                <Link href={`/blog/${id}`} className="block group-hover:text-primary-blue transition-colors">
+                <Link href={`/blog/${id}`} className="block group-hover:text-brand-primary transition-colors">
                   <h2 className="text-2xl font-heading font-bold mb-3 text-gray-900">{title}</h2>
                 </Link>
                 <p className="text-gray-600 font-body mb-4 leading-relaxed">
                   {excerpt}
                 </p>
-                <Link href={`/blog/${id}`} className="text-primary-blue font-semibold hover:text-accent-teal transition-colors inline-flex items-center">
+                <Link href={`/blog/${id}`} className="text-brand-primary font-semibold hover:text-brand-accent transition-colors inline-flex items-center">
                   Leer artículo
                   <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />

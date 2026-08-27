@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# El gate mecánico del que depende el workflow Builder/Reviewer.
+# Ver AGENTS.md y docs/01-scope-v1.md (Sprint 0).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck / lint / test / build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 24: `npm test` usa el runner nativo con type stripping, que solo
+      # esta activo por defecto desde 22.18. Fijar 24 evita que el gate dependa
+      # de que minor de 22 resuelva el setup.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # Las ramas de decision de la ruta de PII. Sin esto, `npm test` seria un
+      # script que nadie ejecuta, y un test que no corre no es un gate.
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://www.rodrigobermejo.com
+
+  # Estos guards son MITIGACIONES ACOTADAS, no garantias del invariante que
+  # protegen. El alcance exacto de cada uno -- lo que garantiza y lo que se le
+  # escapa -- esta tabulado en docs/04-architecture.md §4.1, y hay que leerlo
+  # antes de confiar en un verde. Un guard que se presenta como mas de lo que es
+  # produce falsa confianza, que es peor que no tenerlo.
+  #
+  # Version anterior: los dos eran grep de literales (`console.log`, y las
+  # palabras proof/evidence). Un logger equivalente o un import indirecto los
+  # evadian sin esfuerzo. Finding P2-CI-01 del review de Codex.
+  privacy-guard:
+    name: privacy guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # docs/03-privacy-and-publication-policy.md: /api/subscribe maneja PII.
+      # Loguear payloads ahi vuelca emails a los logs de la plataforma.
+      #
+      # GARANTIZA: ningun `console.*` distinto de `error` en app/api/**, via AST
+      # (regla no-console en eslint.config.mjs). No se evade escribiendo
+      # console["log"] ni partiendo la llamada en varias lineas, que es lo que
+      # el grep anterior no cubria.
+      # NO GARANTIZA: desestructurar o aliasar el global (`const { log } =
+      # console`), un logger propio o de terceros, un console.error cuyo
+      # argumento SI contenga PII, ni el envio del payload a un tercero.
+      - name: No console logging in PII routes (AST)
+        run: npx eslint "app/api/**/*.{ts,tsx}" --max-warnings 0
+
+      # Escritura directa al stream, que la regla no-console no ve.
+      - name: No direct stdout/stderr writes in PII routes
+        run: |
+          if grep -rnE "process\.(stdout|stderr)\.write" app/api/ ; then
+            echo "::error::Escritura directa a stdout/stderr en una ruta que maneja PII. Ver docs/03-privacy-and-publication-policy.md"
+            exit 1
+          fi
+          echo "OK: sin escrituras directas al stream en rutas de API."
+
+      # docs/04-architecture.md §4, invariante 4: el funnel comercial no puede
+      # depender del feed.
+      #
+      # GARANTIZA: ningun modulo del sistema de evidencia es alcanzable desde los
+      # 8 componentes del funnel por el cierre TRANSITIVO de imports estaticos.
+      # Un import indirecto (Hero -> lib/algo -> lib/proof/feed) ya no pasa.
+      # Tambien falla si un componente del funnel se renombra y la lista queda
+      # apuntando a archivos inexistentes, que es como este guard se volveria
+      # verde sin comprobar nada.
+      # NO GARANTIZA: import() con argumento no literal, re-exports via alias no
+      # resolubles estaticamente, ni acoplamiento por copia de codigo.
+      - name: Funnel decoupled from evidence feed (transitive imports)
+        run: npm run guard:funnel
