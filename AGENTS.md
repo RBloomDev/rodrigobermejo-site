@@ -51,7 +51,8 @@ El Reviewer parte de la hipótesis de que el cambio está mal. Un APPROVE sin ha
 
 ## Reglas duras
 
-- **Zona prohibida:** `public/proof/**` lo escribe **solo** el motor vía PR automatizado. Ningún agente edita esos archivos a mano, ni para corregir un dato. Si un dato está mal, se corrige la causa en el motor o en el Registry.
+- **Zona prohibida:** `public/proof/v1/**` lo escribe **solo** el motor vía PR automatizado. Ningún agente edita esos archivos a mano, ni para corregir un dato. Si un dato está mal, se corrige la causa en el motor o en el Registry.
+- **`public/proof/schemas/**` no es zona prohibida**, y es la única excepción (`decisions/0009`). Lo escribe el Builder por PR normal, con una restricción que es la que importa: **se deriva de `docs/05-feed-contract.md`, nunca por observación del artefacto**. Ver un `v1/*.json` que no valida y "arreglar" el schema para que valide es la forma exacta en que esta apertura se rompería, y es lo primero que busca el Reviewer en un PR que toque `schemas/**`. Un PR que toque `schemas/**` y `v1/**` a la vez es un defecto por construcción: son dos regímenes y dos actores.
 - **El sitio nunca** tiene tokens, llama a la API de GitHub, ni computa métricas. Solo lee y renderiza.
 - **Nunca** se guardan prompts, transcripciones de agentes, código privado ni conteos de tokens.
 - **Nunca** se añade una **métrica de evidencia** sin `claim_ids`. `Claim` es la raíz del grafo: un contador que dice algo sobre el sujeto y no tiene afirmación que sostener no tiene dónde existir en el modelo. La metadata operativa y de presentación (`meta.counts`, `unassigned_events`) está exenta, y **reetiquetar una métrica como metadata para publicarla sin claim es la única vía por la que esta regla se rompe**: es lo primero que busca el Reviewer. Las tres clases están definidas en `docs/02-domain-and-evidence-model.md` §7.

@@ -165,7 +165,7 @@ Reglas:
 | 7 | Cross-join analítica × evidencia | Separación arquitectónica: sistemas y repos distintos |
 | 8 | Integridad del feed | Historia de git pública; firma de commits de publicación (Sprint 7); digest en `meta.json` |
 | 9 | Cadena de suministro del motor | Dependencias pinneadas; sin red en el paso de publish más allá de GitHub |
-| 10 | Agente edita artefactos a mano | `public/proof/**` es zona prohibida para Builder y Reviewer (ver `AGENTS.md`) |
+| 10 | Agente edita artefactos a mano | `public/proof/v1/**` es zona prohibida para Builder y Reviewer (ver `AGENTS.md`). El acotamiento a `v1/` **no debilita este riesgo**: los artefactos viven ahí. `schemas/**` no son artefactos, y su régimen está en `decisions/0009` |
 
 ---
 

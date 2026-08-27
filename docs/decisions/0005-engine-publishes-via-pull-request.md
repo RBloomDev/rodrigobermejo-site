@@ -18,7 +18,7 @@ Cinco, y ninguno es opcional:
 1. Solo PRs. Sin excepción en código: el paso de publish no tiene ruta de push directo.
 2. Protección de `main`: **restricción de push, de modo que solo Rodrigo puede mergear**, más status checks en verde. Ver la enmienda al final: la versión original de este control decía "revisión requerida" y era incorrecta.
 3. PAT fine-grained separado del de lectura, scopeado a **un** repositorio y **dos** permisos (`contents:write`, `pull_requests:write`), con expiración de 90 días o menos.
-4. `public/proof/**` es zona de escritura exclusiva del bot. Ningún agente edita esos archivos a mano, ni para corregir un dato: se corrige la causa en el motor o en el Registry.
+4. `public/proof/v1/**` es zona de escritura exclusiva del bot. Ningún agente edita esos archivos a mano, ni para corregir un dato: se corrige la causa en el motor o en el Registry. **Acotado a `v1/` por `decisions/0009`**: `schemas/**` lo escribe el Builder, derivándolo de `docs/05` y nunca del artefacto.
 5. CI valida el feed contra `public/proof/schemas/*.json` en cada PR. Feed inválido bloquea el merge.
 
 ## Razón
