@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/projects.schema.json",
+  "title": "projects.json — v1",
+  "description": "Contrato ejecutable de projects.json. DERIVADO de docs/05-feed-contract.md. Divergencia = FAIL, no deuda.",
+  "type": "object",
+  "required": ["schema_version", "projects"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "projects": { "type": "array", "items": { "$ref": "#/$defs/project" } }
+  },
+  "$defs": {
+    "project": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "thesis",
+        "kind",
+        "lifecycle",
+        "visibility",
+        "context",
+        "role",
+        "timeframe",
+        "public_sources",
+        "has_private_sources"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "title": { "type": "string", "minLength": 1 },
+        "thesis": { "type": "string", "minLength": 1 },
+        "kind": {
+          "enum": ["product", "tool", "education", "lab", "experiment"],
+          "description": "Cinco valores. 'client_project' NO existe: describia para quien, que es context: client."
+        },
+        "lifecycle": {
+          "enum": [
+            "discovery",
+            "prototype",
+            "alpha",
+            "beta",
+            "production",
+            "maintenance",
+            "archived"
+          ]
+        },
+        "visibility": {
+          "enum": ["public", "private"],
+          "description": "'confidential' NUNCA aparece aqui. No es un registro redactado: es un registro que NO EXISTE. La combinacion title + thesis + context + timeframe + has_private_sources + conteos reidentifica al cliente aunque cada campo por separado parezca inocuo, y el umbral k no lo evita porque cuenta eventos, no sujetos."
+        },
+        "context": { "enum": ["personal", "rbloomdev", "inadaptados", "client"] },
+        "role": {
+          "enum": ["author", "maintainer", "contributor", "reviewer", "operator"]
+        },
+        "timeframe": { "$ref": "#/$defs/timeframe" },
+        "public_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "url"],
+            "properties": {
+              "type": { "type": "string" },
+              "url": { "type": "string", "format": "uri", "pattern": "^https?://" }
+            }
+          },
+          "description": "SOLO fuentes publicas. Un repo privado no aparece aqui en ninguna forma."
+        },
+        "has_private_sources": {
+          "type": "boolean",
+          "description": "Se publica el HECHO, nunca la identidad. Es la forma correcta de decir 'hay mas trabajo del que se puede mostrar' para un proyecto que si se publica."
+        }
+      },
+      "allOf": [
+        {
+          "not": { "required": ["claim_ids"] },
+          "$comment": "REGLA G6: la relacion inversa Project -> Claims no se persiste EN NINGUN ARTEFACTO, ni en el Registry ni en el feed. La arista la posee claims[].project_ids y el indice se computa al renderizar. Persistirlo crearia una segunda fuente de verdad para la misma arista, que podria discrepar sin que nada fallara."
+        },
+        {
+          "not": { "required": ["evidence_summary"] },
+          "$comment": "ELIMINADO por la razon gemela: todo lo computable desde evidence.json es redundante, y lo que NO fuera computable desde ahi seria un conteo atribuible sobre evidencia privada."
+        },
+        {
+          "not": { "required": ["nda"] },
+          "$comment": "nda NO se publica. Es un hecho legal interno; lo que el feed expone es su consecuencia: el proyecto no aparece."
+        }
+      ]
+    },
+    "timeframe": {
+      "type": "object",
+      "required": ["start"],
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }
+      }
+    },
+    "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+  }
+}

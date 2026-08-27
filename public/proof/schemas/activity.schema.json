@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/activity.schema.json",
+  "title": "activity.json — v1.1",
+  "description": "Agregados temporales. Es el UNICO archivo del feed que porta METRICAS DE EVIDENCIA en el sentido de docs/02 §7 —numeros que dicen algo cuantificado sobre el sujeto— y por eso es el unico cuyos registros exigen claim_ids. No hay agregado global: un contador que no sostiene ninguna afirmacion es precisamente el dashboard vanity que el sistema existe para no construir.",
+  "type": "object",
+  "required": ["schema_version", "buckets"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "buckets": { "type": "array", "items": { "$ref": "#/$defs/bucket" } }
+  },
+  "$defs": {
+    "bucket": {
+      "type": "object",
+      "required": ["period", "claim_ids", "counts", "visibility_scope"],
+      "properties": {
+        "period": {
+          "type": "string",
+          "pattern": "^\\d{4}-(?:0[1-9]|1[0-2]|Q[1-4])$",
+          "description": "Mes o trimestre. NUNCA dia: coarsening temporal de la regla 4 de docs/03 §3. Un grano diario sobre fuente privada es reidentificante."
+        },
+        "claim_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "REQUERIDO Y NO VACIO. Un bucket de actividad ES una metrica de evidencia, y la regla formal del dominio dice que una metrica de evidencia sin claim no se publica. No es una guia de estilo: es la consecuencia de la direccion de la cadena Claim -> Project -> Evidence -> Source. Sin este campo el registro no existe, asi que no hay donde alojar un numero huerfano."
+        },
+        "project_id": {
+          "type": "string",
+          "description": "Opcional. Ausente = agregado sobre todos los proyectos del claim."
+        },
+        "counts": {
+          "type": "object",
+          "description": "Enteros EXACTOS. No hay representacion de rango en V1, y es deliberado: por eso un bucket que caeria en la banda 5-10 de procedencia privada se OMITE en vez de publicarse redondeado. Admitir rangos anadiria una representacion nueva a la superficie publica, y eso es un cambio de contrato que decide Rodrigo.",
+          "required": ["commits", "pull_requests", "reviews", "releases", "deployments"],
+          "properties": {
+            "commits": { "type": "integer", "minimum": 0 },
+            "pull_requests": { "type": "integer", "minimum": 0 },
+            "reviews": { "type": "integer", "minimum": 0 },
+            "releases": { "type": "integer", "minimum": 0 },
+            "deployments": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "visibility_scope": {
+          "enum": ["public", "mixed"],
+          "description": "'mixed' solo es legal si se cumplen TODAS las reglas de docs/03 §3. El umbral k por si solo NO anonimiza --cuenta eventos, no sujetos-- y este contrato no debe presentarlo como si lo hiciera. Las reglas que un schema no puede expresar (>=2 sujetos independientes, nada confidencial, sin cruces reidentificantes) las impone el motor antes de generar el bucket."
+        }
+      },
+      "allOf": [
+        {
+          "not": { "required": ["score"] },
+          "$comment": "Ninguna metrica se agrega en un numero global. No existe un numero que resuma a una persona."
+        },
+        { "not": { "required": ["rank"] } },
+        { "not": { "required": ["streak"] } },
+        { "not": { "required": ["lines_of_code"] } },
+        { "not": { "required": ["tokens_used"] } },
+        { "not": { "required": ["agent_sessions"] } },
+        { "not": { "required": ["tool_calls"] } },
+        { "not": { "required": ["hours"] } }
+      ]
+    }
+  }
+}
