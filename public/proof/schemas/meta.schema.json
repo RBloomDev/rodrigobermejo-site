@@ -14,38 +14,74 @@
     "digest"
   ],
   "properties": {
-    "schema_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
     "generated_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Se muestra SIEMPRE en la UI: un artefacto en repo puede quedar viejo sin que nada falle, y ocultar la fecha convertiria eso en engano."
+      "description": "Se muestra SIEMPRE en la UI: un artefacto en repo puede quedar viejo sin que nada falle, y ocultar la fecha convertiria eso en engano.",
+      "pattern": "^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z$"
     },
-    "engine_version": { "type": "string", "minLength": 1 },
+    "engine_version": {
+      "type": "string",
+      "minLength": 1
+    },
     "source_coverage": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["source", "repos_public", "repos_private", "last_success_at"],
+        "required": [
+          "source",
+          "repos_public",
+          "repos_private",
+          "last_success_at"
+        ],
         "properties": {
-          "source": { "enum": ["github"] },
-          "repos_public": { "type": "integer", "minimum": 0 },
+          "source": {
+            "enum": [
+              "github"
+            ]
+          },
+          "repos_public": {
+            "type": "integer",
+            "minimum": 0
+          },
           "repos_private": {
             "type": "integer",
             "minimum": 0,
             "description": "El CONTEO de repos privados, nunca sus nombres. Metadata operativa."
           },
-          "last_success_at": { "type": "string", "format": "date-time" }
+          "last_success_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^\\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\\d|3[01])T(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?Z$"
+          }
         }
       }
     },
     "counts": {
       "type": "object",
       "description": "Metadata de PRESENTACION: cardinalidad del propio artefacto. Dice cuantos registros hay en el archivo, no cuanto trabaja nadie. No puede renderizarse como logro.",
-      "required": ["projects", "claims", "evidence"],
+      "required": [
+        "projects",
+        "claims",
+        "evidence"
+      ],
       "properties": {
-        "projects": { "type": "integer", "minimum": 0 },
-        "claims": { "type": "integer", "minimum": 0 },
-        "evidence": { "type": "integer", "minimum": 0 }
+        "projects": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "claims": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "integer",
+          "minimum": 0
+        }
       }
     },
     "unassigned_events": {
@@ -53,25 +89,110 @@
       "minimum": 0,
       "description": "Metadata OPERATIVA, publicada a proposito precisamente porque es una mala noticia sobre el sistema: no hay incentivo para inflarlo. Un unassigned creciendo es la senal de que al Registry le falta una entrada."
     },
-    "digest": { "type": "string", "minLength": 1 }
+    "digest": {
+      "type": "string",
+      "minLength": 1
+    }
   },
   "allOf": [
     {
       "$comment": "Los campos prohibidos permanentemente por docs/05. Se enumeran uno a uno en vez de cerrar el objeto porque la regla 3 del contrato exige que un consumidor ignore los campos que no conoce.",
-      "not": { "required": ["score"] }
+      "not": {
+        "required": [
+          "score"
+        ]
+      }
     },
-    { "not": { "required": ["rank"] } },
-    { "not": { "required": ["streak"] } },
-    { "not": { "required": ["stars"] } },
-    { "not": { "required": ["forks"] } },
-    { "not": { "required": ["followers"] } },
-    { "not": { "required": ["tokens_used"] } },
-    { "not": { "required": ["prompts"] } },
-    { "not": { "required": ["agent_sessions"] } },
-    { "not": { "required": ["tool_calls"] } },
-    { "not": { "required": ["hours"] } },
-    { "not": { "required": ["lines_of_code"] } },
-    { "not": { "required": ["language_percentages"] } },
-    { "not": { "required": ["experience_level"] } }
+    {
+      "not": {
+        "required": [
+          "rank"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "streak"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "stars"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "forks"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "followers"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "tokens_used"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "prompts"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "agent_sessions"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "tool_calls"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "hours"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "lines_of_code"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "language_percentages"
+        ]
+      }
+    },
+    {
+      "not": {
+        "required": [
+          "experience_level"
+        ]
+      }
+    }
   ]
 }
