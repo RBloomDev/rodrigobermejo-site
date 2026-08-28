@@ -51,7 +51,10 @@ El Reviewer parte de la hipótesis de que el cambio está mal. Un APPROVE sin ha
 
 ## Reglas duras
 
-- **Zona prohibida:** `public/proof/v1/**` lo escribe **solo** el motor vía PR automatizado. Ningún agente edita esos archivos a mano, ni para corregir un dato. Si un dato está mal, se corrige la causa en el motor o en el Registry.
+- **Zona prohibida:** `public/proof/v1/**` lo escribe **solo** el motor. Ningún agente edita esos archivos a mano, ni para corregir un dato. Si un dato está mal, se corrige la causa en el motor o en el Registry.
+  - **Quién mueve los bytes hoy** (decidido el 2026-08-28, `decisions/0011`): el PR automatizado de `decisions/0005` necesita el PAT de escritura, que todavía no existe. Hasta que exista, **el primer publish lo dispara Rodrigo**: corre `npm run feed:build` en el motor, lee `npm run feed:diff`, y commitea él. Se eligió esta vía sobre abrir una excepción a la regla, precisamente porque las reglas duras mueren la primera vez que estorban.
+  - El agente **sí** genera el artefacto (`feed:build` escribe en `out/` del motor, que está en `.gitignore`) y **sí** produce el diff. Lo único que no hace es escribirlo aquí.
+  - Y para probar el consumo del feed sin tocar esta zona: el lector resuelve su raíz desde **`PROOF_FEED_DIR`**. Los tests construyen sus feeds en `tmpdir`. Sin eso, el gate «feed borrado → verde, feed corrupto → rojo» solo sería ejecutable violando esta misma regla.
 - **`public/proof/schemas/**` no es zona prohibida**, y es la única excepción (`decisions/0009`). Lo escribe el Builder por PR normal, con una restricción que es la que importa: **se deriva de `docs/05-feed-contract.md`, nunca por observación del artefacto**. Ver un `v1/*.json` que no valida y "arreglar" el schema para que valide es la forma exacta en que esta apertura se rompería, y es lo primero que busca el Reviewer en un PR que toque `schemas/**`. Un PR que toque `schemas/**` y `v1/**` a la vez es un defecto por construcción: son dos regímenes y dos actores.
 - **El sitio nunca** tiene tokens, llama a la API de GitHub, ni computa métricas. Solo lee y renderiza.
 - **Nunca** se guardan prompts, transcripciones de agentes, código privado ni conteos de tokens.
