@@ -16,17 +16,25 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {["Problemas", "Solución", "Ofertas", "Sobre mí", "Blog"].map(
+          {["Problemas", "Solución", "Ofertas", "Sobre mí", "Proyectos", "Blog"].map(
             (item) => (
               <Link
                 key={item}
                 href={
+                  /* La frontera del funnel es de DATOS, no de navegación: el
+                     invariante 4 de docs/04 prohíbe que estos componentes
+                     IMPORTEN del feed, y `guard:funnel` lo comprueba sobre el
+                     cierre transitivo de imports. Un enlace estático no importa
+                     nada. Sin él, la prueba de trabajo sería invisible justo
+                     para quien evalúa contratar. */
                   item === "Blog"
                     ? "/blog"
-                    : `/#${item
-                        .toLowerCase()
-                        .replace(" ", "-")
-                        .replace("ó", "o")}`
+                    : item === "Proyectos"
+                      ? "/proyectos"
+                      : `/#${item
+                          .toLowerCase()
+                          .replace(" ", "-")
+                          .replace("ó", "o")}`
                 }
                 className="px-4 py-2 font-heading font-medium text-ink-muted hover:text-brand-primary hover:bg-bg-section rounded-md transition-all text-sm"
               >

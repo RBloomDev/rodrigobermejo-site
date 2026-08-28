@@ -31,6 +31,17 @@ import { fileURLToPath } from "node:url";
 
 /** Componentes del funnel comercial. docs/04-architecture.md §4, invariante 4. */
 const FUNNEL_ENTRYPOINTS = [
+  // La pagina y el layout entran como entradas desde `D-09`: son lo que un
+  // visitante carga de verdad, y hasta ahora el guard solo miraba los ocho
+  // componentes. Un import del feed anadido en `app/page.tsx` --- que es donde
+  // resulta mas tentador ponerlo, para "ensenar unos proyectos en la home" ---
+  // no lo veia nadie.
+  //
+  // Ojo con lo que esto NO cambia: `app/proyectos` y `app/evidencia` siguen
+  // siendo DESTINOS PROHIBIDOS, no entradas. Anadirlos como entradas seria
+  // conceptualmente al reves --- son las rutas que SI pueden leer el feed.
+  "app/page.tsx",
+  "app/layout.tsx",
   "components/Hero.tsx",
   "components/Offers.tsx",
   "components/FinalCTA.tsx",

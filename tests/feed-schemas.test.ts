@@ -46,7 +46,7 @@ function compilar(nombre: string): ValidateFunction {
 const claims = compilar("claims");
 const projects = compilar("projects");
 const evidence = compilar("evidence");
-const meta = compilar("meta");
+const meta_ = compilar("meta");
 const activity = compilar("activity");
 
 /**
@@ -92,7 +92,7 @@ const proyectoValido = {
   visibility: "public",
   context: "personal",
   role: "author",
-  timeframe: { start: "2026-08-19T00:00:00Z" },
+  timeframe: { start: "2026-08-19" },
   public_sources: [{ type: "github_repo", url: "https://github.com/ejemplo/uno" }],
   has_private_sources: false,
 };
@@ -114,7 +114,7 @@ test("los cuatro archivos de V1 validan en su forma correcta", () => {
   assert.ok(projects({ schema_version: "1.0.0", projects: [proyectoValido] }), JSON.stringify(projects.errors));
   assert.ok(evidence({ schema_version: "1.0.0", evidence: [evidenciaValida] }), JSON.stringify(evidence.errors));
   assert.ok(
-    meta({
+    meta_({
       schema_version: "1.0.0",
       generated_at: "2026-08-27T00:00:00Z",
       engine_version: "0.1.0",
@@ -125,7 +125,7 @@ test("los cuatro archivos de V1 validan en su forma correcta", () => {
       unassigned_events: 0,
       digest: "sha256:deadbeef",
     }),
-    JSON.stringify(meta.errors),
+    JSON.stringify(meta_.errors),
   );
 });
 
@@ -339,7 +339,7 @@ test("los campos de vanity estan prohibidos en meta y en activity", () => {
     digest: "d",
   };
   for (const campo of ["score", "rank", "streak", "stars", "followers", "tokens_used", "hours"]) {
-    rechaza(meta, { ...base, [campo]: 1 }, `meta.${campo}`);
+    rechaza(meta_, { ...base, [campo]: 1 }, `meta.${campo}`);
   }
   for (const campo of ["score", "rank", "streak", "lines_of_code", "agent_sessions"]) {
     rechaza(
@@ -351,13 +351,160 @@ test("los campos de vanity estan prohibidos en meta y en activity", () => {
 });
 
 // ---------------------------------------------------------------------------
-// El feed todavia NO existe, y eso es correcto
+// El artefacto REAL publicado, validado contra los schemas REALES
 // ---------------------------------------------------------------------------
 
-test("public/proof/v1/ sigue sin existir: el primer artefacto es Sprint 4", () => {
-  // Esta card entrega el CONTRATO, no los datos. Y `v1/**` sigue siendo zona de
-  // escritura exclusiva del motor (decisions/0009): que schemas/ se haya abierto
-  // al Builder no abre v1/.
+/**
+ * Este test sustituye a uno que afirmaba «`public/proof/v1/` sigue sin existir: el
+ * primer artefacto es Sprint 4». Su premisa caduco con `decisions/0011`, que
+ * adelanto la publicacion al corte vertical.
+ *
+ * Lo que ocupa su lugar es mas fuerte, no menos: si el feed esta publicado, tiene
+ * que validar contra los JSON Schema publicados. `lib/proof/feed.ts` ya lo valida
+ * con zod en build; esto lo comprueba contra la OTRA derivada del contrato, que es
+ * la unica forma de cazar que las dos se hayan separado sin que nadie lo note.
+ *
+ * Si el feed no esta, el test pasa --- la ausencia es un estado legitimo (`docs/05`
+ * regla 5). No es vacuo: `tests/proof-feed.test.ts` cubre los diez casos en que la
+ * ausencia parcial o la corrupcion tienen que poner el build en rojo.
+ */
+test("si el feed esta publicado, valida contra los schemas publicados", () => {
   const v1 = path.join(process.cwd(), "public", "proof", "v1");
-  assert.throws(() => readFileSync(path.join(v1, "meta.json"), "utf8"));
+  let meta: unknown;
+  try {
+    meta = JSON.parse(readFileSync(path.join(v1, "meta.json"), "utf8"));
+  } catch (e) {
+    // Solo ENOENT es "no publicado". Cualquier otro fallo es corrupcion.
+    assert.equal((e as { code?: string }).code, "ENOENT", `v1/ existe pero no se pudo leer: ${String(e)}`);
+    return;
+  }
+
+  const leer = (n: string): unknown => JSON.parse(readFileSync(path.join(v1, `${n}.json`), "utf8"));
+  const docs = { meta, projects: leer("projects"), claims: leer("claims"), evidence: leer("evidence") };
+
+  assert.ok(meta_(docs.meta), JSON.stringify(meta_.errors));
+  assert.ok(projects(docs.projects), JSON.stringify(projects.errors));
+  assert.ok(claims(docs.claims), JSON.stringify(claims.errors));
+  assert.ok(evidence(docs.evidence), JSON.stringify(evidence.errors));
+
+  // Cross-checks que NINGUN schema puede expresar, porque son relaciones ENTRE
+  // archivos. Un meta.counts que miente es sintacticamente perfecto.
+  const m = docs.meta as { counts: Record<string, number> };
+  const reales: Record<string, number> = {
+    projects: (docs.projects as { projects: unknown[] }).projects.length,
+    claims: (docs.claims as { claims: unknown[] }).claims.length,
+    evidence: (docs.evidence as { evidence: unknown[] }).evidence.length,
+  };
+  for (const k of ["projects", "claims", "evidence"]) {
+    assert.equal(m.counts[k], reales[k], `meta.counts.${k} no cuadra con ${k}.json`);
+  }
+
+  // G2 sobre el artefacto: toda referencia de un claim existe.
+  const ids = new Set((docs.projects as { projects: { id: string }[] }).projects.map((p) => p.id));
+  for (const c of (docs.claims as { claims: { id: string; project_ids: string[] }[] }).claims) {
+    for (const pid of c.project_ids) {
+      assert.ok(ids.has(pid), `el claim ${c.id} referencia un proyecto ausente: ${pid}`);
+    }
+  }
+});
+
+// ---------------------------------------------------------------------------
+// D-00 · Las fechas se comprueban de verdad, no se anotan
+//
+// `format` en JSON Schema es una ANOTACION, no una asercion, y este repo compila
+// con `strict: false` a proposito: validarlo exigiria `ajv-formats`, que es una
+// dependencia nueva y por tanto una decision de Rodrigo (`AGENTS.md`).
+//
+// La consecuencia, hasta este cambio: `format: "date-time"` no rechazaba NADA.
+// Un `start: "ayer"` validaba. Y como publicar CONGELA el contrato v1
+// (`docs/05` regla 2), se habria congelado un contrato que no comprueba lo unico
+// que dice comprobar sobre sus fechas.
+//
+// El arreglo no anade dependencias: `pattern` SI es una asercion en todas las
+// implementaciones, y hace el trabajo que `format` solo documentaba. `format`
+// se mantiene al lado porque sigue siendo la anotacion correcta para quien lea
+// el contrato; lo que cambia es que ahora hay algo detras.
+//
+// Y una correccion de tipo, derivada de la PROSA y no del artefacto: `docs/05`
+// escribe `timeframe: { start: ISO, end?: ISO }`. El periodo de un proyecto es
+// un rango de DIAS, no de instantes: nadie empieza un proyecto a las 14:32:07.
+// El Registry ya lo escribe asi (`start: 2026-03-01`). El tipo correcto es
+// `date`, y declararlo `date-time` obligaba a inventar una hora falsa.
+// ---------------------------------------------------------------------------
+
+test("timeframe acepta una fecha simple, que es lo que el Registry escribe", () => {
+  assert.ok(
+    projects({
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01" } }],
+    }),
+    JSON.stringify(projects.errors),
+  );
+  assert.ok(
+    projects({
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01", end: "2026-08-19" } }],
+    }),
+    JSON.stringify(projects.errors),
+  );
+});
+
+test("timeframe RECHAZA lo que no es una fecha", () => {
+  for (const basura of ["ayer", "2026", "01/03/2026", "2026-3-1", ""]) {
+    rechaza(
+      projects,
+      { schema_version: "1.0.0", projects: [{ ...proyectoValido, timeframe: { start: basura } }] },
+      `timeframe.start = ${JSON.stringify(basura)}`,
+    );
+  }
+});
+
+test("timeframe RECHAZA un instante: el periodo de un proyecto son dias, no relojes", () => {
+  // Deliberado y en las dos direcciones: un contrato que acepta las dos formas
+  // no es un contrato, y el consumidor acabaria parseando ambas.
+  rechaza(
+    projects,
+    {
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01T00:00:00Z" } }],
+    },
+    "timeframe.start con hora",
+  );
+});
+
+test("occurred_at RECHAZA lo que no es un instante UTC", () => {
+  // Aqui SI es un instante: una Evidence observa algo que paso en un momento
+  // concreto, y `02` §4 distingue `occurred_at` de `observed_at` precisamente
+  // para que una corrida recuperada tres dias despues no finja tiempo real.
+  for (const basura of ["ayer", "2026-08-19", "2026-08-19 10:00", ""]) {
+    rechaza(
+      evidence,
+      { schema_version: "1.0.0", evidence: [{ ...evidenciaValida, occurred_at: basura }] },
+      `evidence.occurred_at = ${JSON.stringify(basura)}`,
+    );
+  }
+});
+
+test("generated_at y last_success_at RECHAZAN lo que no es un instante UTC", () => {
+  const metaBase = {
+    schema_version: "1.0.0",
+    generated_at: "2026-08-27T00:00:00Z",
+    engine_version: "0.1.0",
+    source_coverage: [],
+    counts: { projects: 0, claims: 0, evidence: 0 },
+    unassigned_events: 0,
+    digest: "sha256:deadbeef",
+  };
+  rechaza(meta_, { ...metaBase, generated_at: "ayer" }, "meta.generated_at");
+  rechaza(meta_, { ...metaBase, generated_at: "2026-08-27" }, "meta.generated_at sin hora");
+  rechaza(
+    meta_,
+    {
+      ...metaBase,
+      source_coverage: [
+        { source: "github", repos_public: 1, repos_private: 0, last_success_at: "nunca" },
+      ],
+    },
+    "source_coverage[].last_success_at",
+  );
 });
