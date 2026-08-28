@@ -92,7 +92,7 @@ const proyectoValido = {
   visibility: "public",
   context: "personal",
   role: "author",
-  timeframe: { start: "2026-08-19T00:00:00Z" },
+  timeframe: { start: "2026-08-19" },
   public_sources: [{ type: "github_repo", url: "https://github.com/ejemplo/uno" }],
   has_private_sources: false,
 };
@@ -360,4 +360,105 @@ test("public/proof/v1/ sigue sin existir: el primer artefacto es Sprint 4", () =
   // al Builder no abre v1/.
   const v1 = path.join(process.cwd(), "public", "proof", "v1");
   assert.throws(() => readFileSync(path.join(v1, "meta.json"), "utf8"));
+});
+
+// ---------------------------------------------------------------------------
+// D-00 · Las fechas se comprueban de verdad, no se anotan
+//
+// `format` en JSON Schema es una ANOTACION, no una asercion, y este repo compila
+// con `strict: false` a proposito: validarlo exigiria `ajv-formats`, que es una
+// dependencia nueva y por tanto una decision de Rodrigo (`AGENTS.md`).
+//
+// La consecuencia, hasta este cambio: `format: "date-time"` no rechazaba NADA.
+// Un `start: "ayer"` validaba. Y como publicar CONGELA el contrato v1
+// (`docs/05` regla 2), se habria congelado un contrato que no comprueba lo unico
+// que dice comprobar sobre sus fechas.
+//
+// El arreglo no anade dependencias: `pattern` SI es una asercion en todas las
+// implementaciones, y hace el trabajo que `format` solo documentaba. `format`
+// se mantiene al lado porque sigue siendo la anotacion correcta para quien lea
+// el contrato; lo que cambia es que ahora hay algo detras.
+//
+// Y una correccion de tipo, derivada de la PROSA y no del artefacto: `docs/05`
+// escribe `timeframe: { start: ISO, end?: ISO }`. El periodo de un proyecto es
+// un rango de DIAS, no de instantes: nadie empieza un proyecto a las 14:32:07.
+// El Registry ya lo escribe asi (`start: 2026-03-01`). El tipo correcto es
+// `date`, y declararlo `date-time` obligaba a inventar una hora falsa.
+// ---------------------------------------------------------------------------
+
+test("timeframe acepta una fecha simple, que es lo que el Registry escribe", () => {
+  assert.ok(
+    projects({
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01" } }],
+    }),
+    JSON.stringify(projects.errors),
+  );
+  assert.ok(
+    projects({
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01", end: "2026-08-19" } }],
+    }),
+    JSON.stringify(projects.errors),
+  );
+});
+
+test("timeframe RECHAZA lo que no es una fecha", () => {
+  for (const basura of ["ayer", "2026", "01/03/2026", "2026-3-1", ""]) {
+    rechaza(
+      projects,
+      { schema_version: "1.0.0", projects: [{ ...proyectoValido, timeframe: { start: basura } }] },
+      `timeframe.start = ${JSON.stringify(basura)}`,
+    );
+  }
+});
+
+test("timeframe RECHAZA un instante: el periodo de un proyecto son dias, no relojes", () => {
+  // Deliberado y en las dos direcciones: un contrato que acepta las dos formas
+  // no es un contrato, y el consumidor acabaria parseando ambas.
+  rechaza(
+    projects,
+    {
+      schema_version: "1.0.0",
+      projects: [{ ...proyectoValido, timeframe: { start: "2026-03-01T00:00:00Z" } }],
+    },
+    "timeframe.start con hora",
+  );
+});
+
+test("occurred_at RECHAZA lo que no es un instante UTC", () => {
+  // Aqui SI es un instante: una Evidence observa algo que paso en un momento
+  // concreto, y `02` §4 distingue `occurred_at` de `observed_at` precisamente
+  // para que una corrida recuperada tres dias despues no finja tiempo real.
+  for (const basura of ["ayer", "2026-08-19", "2026-08-19 10:00", ""]) {
+    rechaza(
+      evidence,
+      { schema_version: "1.0.0", evidence: [{ ...evidenciaValida, occurred_at: basura }] },
+      `evidence.occurred_at = ${JSON.stringify(basura)}`,
+    );
+  }
+});
+
+test("generated_at y last_success_at RECHAZAN lo que no es un instante UTC", () => {
+  const metaBase = {
+    schema_version: "1.0.0",
+    generated_at: "2026-08-27T00:00:00Z",
+    engine_version: "0.1.0",
+    source_coverage: [],
+    counts: { projects: 0, claims: 0, evidence: 0 },
+    unassigned_events: 0,
+    digest: "sha256:deadbeef",
+  };
+  rechaza(meta, { ...metaBase, generated_at: "ayer" }, "meta.generated_at");
+  rechaza(meta, { ...metaBase, generated_at: "2026-08-27" }, "meta.generated_at sin hora");
+  rechaza(
+    meta,
+    {
+      ...metaBase,
+      source_coverage: [
+        { source: "github", repos_public: 1, repos_private: 0, last_success_at: "nunca" },
+      ],
+    },
+    "source_coverage[].last_success_at",
+  );
 });

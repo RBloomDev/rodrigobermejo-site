@@ -74,7 +74,7 @@ V1 está terminado cuando **todas** se cumplen:
 1. Un humano puede añadir un claim y un proyecto al Registry y verlos publicados sin escribir código.
 2. La ingestión corre dos veces seguidas y el ledger no cambia (idempotencia probada por test).
 3. El artefacto público pasa el test de denylist y el `publish-diff` es legible por una persona.
-4. Con el feed borrado, `npm run build` es verde y el sitio muestra la vista solo-declarada.
+4. Con el feed borrado, `npm run build` es verde y el sitio muestra una superficie editorial **sin afirmaciones**. Con el feed presente y `evidence: []`, muestra los claims declarados y por que no se pueden comprobar todavia. Son dos estados distintos y el criterio los distingue (`decisions/0011`).
 5. Con el feed corrupto, `npm run build` es **rojo**.
 6. Ninguna afirmación en el sitio se muestra sin sus dos etiquetas (procedencia y verificabilidad).
 7. Ninguna **métrica de evidencia** publicada carece de `claim_ids`. Un test lo verifica sobre el artefacto. La metadata operativa y de presentación de `meta.json` está exenta por definición, y el test debe distinguirlas explícitamente (`02-domain-and-evidence-model.md` §7).
