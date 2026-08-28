@@ -259,7 +259,71 @@ sitio:  typecheck  lint  test (73)   build  guard:funnel -> EXIT=0
 - **Nada se ha publicado.** `public/proof/v1/**` sigue vacío en este repositorio. El
   artefacto vive en `out/` del motor, que está en `.gitignore`. Publicar es el merge a
   `main`, y lo hace Rodrigo (`decisions/0010` y `0011`).
-- **Los previews de Vercel siguen siendo públicos.** Verificado: HTTP 200 sin autenticar.
-  Hasta que se active Deployment Protection, un PR que añada `public/proof/v1/**` expone
-  esos archivos **antes** del merge, y el PR no es el control que `docs/03` §1.5 dice que
-  es. Es el bloqueante `G1`, y es de Rodrigo.
+## Correccion — el hallazgo de los previews era FALSO (2026-08-28, mismo dia)
+
+Este audit afirmaba, en esta misma seccion, que **«los previews de Vercel siguen siendo
+publicos. Verificado: HTTP 200 sin autenticar»**. Es falso, y el error era mio.
+
+El comando era:
+
+```
+curl -s -o /dev/null -w "%{http_code}" -L <preview-url>/proof/schemas/meta.schema.json
+```
+
+`-L` sigue los redirects y reporta el estado de la respuesta **final**. Con la proteccion
+activa el preview responde **302** hacia `vercel.com/sso-api`, y `-L` iba al login de
+Vercel y devolvia **el 200 de la pagina de login**. El cuerpo era HTML de Vercel, no el
+archivo. Nunca lo mire.
+
+Comprobado de nuevo, sin seguir redirects y mirando el cuerpo:
+
+```
+$ curl -s -o /dev/null -w "%{http_code}" <preview>/proof/schemas/meta.schema.json
+  302   (tres previews distintos, los tres 302)
+$ curl -s <preview>                          -> "Redirecting..." hacia vercel.com/sso-api
+$ curl -s https://www.rodrigobermejo.com/proof/schemas/meta.schema.json
+  200   { "$schema": "https://json-schema.org/draft/2020-12/schema", ...
+```
+
+Y la configuracion del proyecto, leida por API:
+
+```
+ssoProtection: { "deploymentType": "all_except_custom_domains" }
+```
+
+Que es **exactamente lo correcto**: protege todo menos el dominio propio, y el dominio
+propio debe ser publico porque es la superficie que este sistema existe para publicar.
+Ya estaba puesta.
+
+### El defecto de verdad no fue la conclusion, fue el metodo
+
+Un test que no distingue «servido» de «redirigido a un login» no comprueba nada. Y este
+fallaba en la direccion cara: reportaba un agujero de privacidad **inexistente**, y por
+ese camino se toman decisiones de arquitectura equivocadas. En el gate llegue a calificar
+opciones enteras sobre esa premisa falsa.
+
+Asi que la comprobacion deja de ser un comando a mano:
+`scripts/check-preview-protection.mjs` usa `redirect: "manual"`, mira el cuerpo, y corre
+solo en cada deployment de preview via `.github/workflows/preview-protection.yml`.
+Falsado en las dos direcciones:
+
+```
+$ node scripts/check-preview-protection.mjs <preview-real>
+  /proof/v1/meta.json            -> HTTP 302 (protegido)
+  /proof/v1/projects.json        -> HTTP 302 (protegido)
+  /proof/schemas/meta.schema.json -> HTTP 302 (protegido)
+  EXIT=0
+
+$ node scripts/check-preview-protection.mjs https://www.rodrigobermejo.com
+  ::error::/proof/schemas/meta.schema.json responde 200 SIN autenticacion
+  ::error::  Los primeros bytes son: { "$schema": "https://json-schema.org/draft/...
+  EXIT=1
+
+$ node scripts/check-preview-protection.mjs        # sin URL
+  ::error::Sin URL de preview no hay nada que comprobar, y pasar en ese caso
+  ::error::seria un verde que no significa nada.
+  EXIT=1
+```
+
+El tercer caso importa tanto como los otros dos: un guard que se salta cuando no
+encuentra su objetivo es peor que no tenerlo, porque su verde se lee igual.
