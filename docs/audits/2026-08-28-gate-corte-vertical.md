@@ -247,10 +247,15 @@ sitio:  typecheck  lint  test (73)   build  guard:funnel -> EXIT=0
 - **No hay evidencia.** `evidence.json` va vacío y los tres claims derivan a
   `declared`/`unverifiable`. Las reglas G3, G4 y G5 son **vacuamente ciertas** sobre este
   artefacto. Tienen tests con fixtures propias; sobre el feed real no se ejercen.
-- **Los tres `statement` siguen en borrador.** `docs/02` §1: un claim lo escribe un humano.
-  Mientras lleven esa marca, el sistema no tiene claims declarados del todo, y **este gate
-  se cierra con esa deuda anotada, no disimulada**. El material para cerrarla está en
-  `docs/statements-borrador.md`.
+- ~~Los tres `statement` siguen en borrador.~~ **Cerrado el 2026-08-28**, en entrevista:
+  Rodrigo eligió el énfasis de cada afirmación y aprobó las frases. Las tres cabeceras de
+  BORRADOR desaparecieron del Registry y `docs/02` §1 —un claim lo escribe un humano— queda
+  satisfecho. En la misma entrevista firmó un `release` **con alias** para la docencia
+  universitaria: aparece en el feed sin nombrar a la institución, con `public_sources: []`
+  y sin ninguna identidad de estudiante. El coste de esa elección está escrito en el
+  Registry y hay que repetirlo aquí: **sin nombrar a la institución no hay nada que un
+  tercero pueda comprobar**, así que el claim de `teach` sigue dependiendo de su palabra.
+  El feed pasa de 11 a 12 proyectos publicables.
 - **Nada se ha publicado.** `public/proof/v1/**` sigue vacío en este repositorio. El
   artefacto vive en `out/` del motor, que está en `.gitignore`. Publicar es el merge a
   `main`, y lo hace Rodrigo (`decisions/0010` y `0011`).
