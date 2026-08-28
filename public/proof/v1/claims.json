@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0.0",
+  "claims": [
+    {
+      "id": "construyo-sistemas",
+      "statement": "No solo escribo software: lo opero. Los sistemas que construyo están en producción, y cuando algo falla el que responde soy yo.",
+      "dimension": "build",
+      "project_ids": [
+        "contenido-ia",
+        "habit-tracker",
+        "infra-interna",
+        "mathgym",
+        "plataforma-inadaptados",
+        "proof-of-work",
+        "punto-de-venta",
+        "ssp"
+      ],
+      "evidence_ids": [],
+      "provenance": "declared",
+      "verifiability": "unverifiable"
+    },
+    {
+      "id": "decido-arquitectura",
+      "statement": "Diseño la arquitectura de los sistemas que construyo.",
+      "dimension": "lead",
+      "project_ids": [
+        "infra-interna",
+        "plataforma-inadaptados",
+        "proof-of-work",
+        "ssp"
+      ],
+      "evidence_ids": [],
+      "provenance": "declared",
+      "verifiability": "unverifiable"
+    },
+    {
+      "id": "ensino-y-mentoreo",
+      "statement": "Diseño la currícula con la que se forman desarrolladores, y doy clase.",
+      "dimension": "teach",
+      "project_ids": [
+        "curricula-inadaptados",
+        "docencia-universitaria"
+      ],
+      "evidence_ids": [],
+      "provenance": "declared",
+      "verifiability": "unverifiable"
+    }
+  ]
+}
