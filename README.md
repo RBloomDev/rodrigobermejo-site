@@ -9,7 +9,8 @@ Este repositorio aloja tres cosas:
 |---|---|
 | El sitio público | `app/`, `components/`, `content/` |
 | La especificación del sistema de Proof of Work | `docs/` |
-| Los artefactos de evidencia publicados | `public/proof/` (desde Sprint 4) |
+| Los schemas del feed publico | `public/proof/schemas/` |
+| Los artefactos de evidencia publicados | `public/proof/v1/` (aun vacio: lo escribe el motor) |
 
 El motor que produce esa evidencia **no vive aquí**: es `rodrigoBermejo/proof-engine` (privado).
 Este repo solo lee los artefactos y los renderiza. Ver `docs/04-architecture.md`.
@@ -92,7 +93,10 @@ Reviewer, reglas duras, y qué decisiones requieren un humano.
 
 Tres reglas que rompen cosas si se ignoran:
 
-1. `public/proof/**` lo escribe solo el motor. No lo edites a mano.
+1. `public/proof/v1/**` lo escribe solo el motor. No lo edites a mano --- ni para corregir un dato.
+   `public/proof/schemas/**` SI lo escribe el Builder, derivandolo de `docs/05` y nunca del
+   artefacto (`decisions/0009`). Para desarrollar contra un feed, apunta `PROOF_FEED_DIR` a
+   otro directorio en vez de escribir en `v1/`.
 2. Los tokens de color viven en `@theme`. Las variables de `:root` no generan clases:
    `text-brand-primary` existe, `text-primary-blue` no.
 3. `app/api/subscribe/route.ts` maneja PII. No loguees payloads ahí. CI lo verifica.
