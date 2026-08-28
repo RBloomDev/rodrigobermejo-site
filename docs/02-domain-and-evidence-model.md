@@ -40,13 +40,20 @@ Dos bloques, y la separación es normativa: lo declarado se escribe a mano en el
 
 ```
 Claim — DECLARADO por un humano en el Registry
-  id          slug estable, inmutable una vez publicado
-  statement   la afirmación, en primera persona, escrita por un humano
-  dimension   build | lead | teach
-  project_ids [] uno o varios. Claim y Project son muchos-a-muchos
-  evidence_ids[] evidencia que lo sostiene
+  id             slug estable, inmutable una vez publicado
+  statement      la afirmación, en primera persona, escrita por un humano
+  dimension      build | lead | teach
+  project_ids    [] uno o varios. Claim y Project son muchos-a-muchos
+  evidence_scope? { project_ids: [], kinds?: [], since?: ISO }
+                 └─ QUÉ evidencia adhiere el claim, no CUÁL. Ver la enmienda
+                    de abajo: los ids concretos no son declarables.
+                 └─ OPCIONAL. Ausente = el claim no adhiere evidencia, y
+                    deriva a declared/unverifiable (§1.1). Es el caso normal
+                    de lead y teach en V1. La ausencia se declara callando,
+                    no con un scope vacío.
 
-Claim — DERIVADO por el motor desde evidence_ids (§1.1)
+Claim — DERIVADO por el motor (§1.1)
+  evidence_ids[] resuelto desde evidence_scope sobre el ledger, sujeto a G3–G5
   provenance     declared | collected | derived | correlated | attested
                  └─ en V1 la derivación nunca produce `attested`: ninguna
                     fuente lo genera (§6). El enum publicado lo omite.
@@ -60,8 +67,19 @@ id: builds-production-ai-systems
 statement: Construyo sistemas de software e IA utilizados en contextos reales.
 dimension: build
 project_ids: [proyecto-a, proyecto-b]
-evidence_ids: [...]
+evidence_scope:
+  project_ids: [proyecto-a, proyecto-b]
+  kinds: [commit, pull_request, release]   # opcional: por defecto, todos
+  since: 2026-01-01                        # opcional
 ```
+
+### Enmienda del 2026-08-27 — por qué `evidence_ids` dejó de ser declarado
+
+La versión anterior situaba `evidence_ids` en el bloque declarado, y era una **obligación que ningún mecanismo podía cumplir** (finding ESC-06). Los ids de `Evidence` son hashes content-addressed que produce la ingestión (§4), un sprint *después* de que se escriban los claims. Un humano tendría que copiarlos a mano —contra el criterio 1 del Definition of Done, «sin escribir código»— y, peor, la lista quedaría **congelada** en lo que copió la última vez mientras el ledger sigue creciendo: un claim con evidencia `third_party_public` nueva seguiría publicándose como `declared` / `unverifiable`.
+
+El scope es **opcional y no tiene default implícito**: si un claim no lo declara, no adhiere evidencia. Adherirla automáticamente —«toda la de sus proyectos»— habría sido cómodo y equivocado: un claim absorbería en silencio evidencia que quien lo escribió nunca consideró, y la verificabilidad publicada dejaría de ser algo que alguien afirmó.
+
+Lo declarable no es *cuál* evidencia sostiene un claim, sino **qué clase de evidencia**. `evidence_scope` declara el criterio; el motor lo resuelve sobre el ledger en cada corrida y la adhesión se mantiene viva sola. La separación normativa se conserva intacta: un `evidence_ids` **escrito a mano sigue haciendo fallar al validador**, porque ahora es un campo derivado.
 
 `kind` **no existe**. Estaba definido como requerido (`existence | authorship | continuity | collaboration | operation | education`) y se elimina de V1 por dos razones: sus valores mezclaban ejes distintos (`existence` describe la forma de la afirmación, `education` su dominio, `operation` una propiedad del proyecto que la sostiene), y su único consumidor mecánico era la regla de admisibilidad de `operation`, que se reformula abajo sin necesitar la taxonomía. Ampliar o reintroducir la taxonomía requiere una decisión humana y un ADR.
 
@@ -94,7 +112,7 @@ Reglas completas de las aristas. Las impone el validador; no son convenciones:
 |---|---|
 | G1 | `claim.project_ids` no puede estar vacío. |
 | G2 | Todo id de `claim.project_ids` existe como `Project`. |
-| G3 | Todo id de `claim.evidence_ids` existe como `Evidence`. |
+| G3 | Todo id de `claim.evidence_ids` existe como `Evidence`. **Se evalúa sobre la lista resuelta**, no sobre una lista escrita a mano: desde la enmienda de §1, `evidence_ids` es derivado. Con el ledger vacío la regla es vacuamente cierta, y eso es correcto. |
 | G4 | Si `e ∈ claim.evidence_ids` y `e.project_id != null`, entonces **`e.project_id ∈ claim.project_ids`**. Una evidencia no sostiene un claim que no reclama su proyecto. |
 | G5 | Una evidencia con `project_id == null` (`unassigned`, §3) **no puede** aparecer en ningún `claim.evidence_ids`. Un evento sin proyecto no sostiene ninguna afirmación. |
 | G6 | La relación inversa `Project → Claims` **no se persiste en ningún artefacto**, ni en el Registry ni en el feed. Se computa en el consumidor filtrando `claims` por `project_ids`. |
@@ -149,9 +167,16 @@ Project
   visibility qué puede publicarse
   context    bajo qué contexto se realizó
   nda        bool. Si true, implica visibility: confidential
+  publish    none | record | aggregate      qué sale al feed (`03` §2)
+  release?   { approved_by, date, scope }   ÚNICA vía para confidential
+                                            o para context: client
   role       author | maintainer | contributor | reviewer | operator
   timeframe  { start, end? }
   sources[]  { type, ref, role: primary|component|infra|docs, period? }
+
+`publish` y `release` **se declaran aquí desde el 2026-08-27** (finding ESC-02). Eran normativos en `03-privacy-and-publication-policy.md` §2 y no existían en este documento, que es la **autoridad única del modelo** — y como el validador se construye contra esta sección (`01-scope-v1.md`), bajo la disciplina de allowlist de `03` §1.3 un campo no declarado es un campo que no se acepta. La garantía «sin `release` el motor no tiene rama de código que pueda publicarlo» descansaba sobre un campo que la autoridad del modelo no definía.
+
+**La semántica normativa de ambos vive en `03` §2.** Aquí se declara su existencia en el modelo, no sus reglas.
 ```
 
 `claims[]` **ya no vive aquí**: la relación la posee `Claim` mediante `project_ids[]` (§1). Un `claim_ids[]` en el proyecto sería una segunda fuente de verdad para la misma arista — y eso vale también para el feed publicado: la regla G6 (§1.2) prohíbe persistir el índice inverso **en cualquier artefacto**, no solo en el Registry. Se computa al renderizar.
@@ -249,6 +274,17 @@ Orden estricto de precedencia. El primero que aplica gana:
 2. **Glob de paths** declarado en el Registry (para monorepos: `apps/web/**` a proyecto A).
 3. **Repo por defecto** (`sources[].role == "primary"` y el evento cae dentro de `period`).
 4. **`unassigned`**.
+
+### Conflictos: cuándo la corrida se detiene
+
+Añadido el 2026-08-27 (finding ESC-05). La precedencia de arriba resolvía el caso normal y **no decía nada de los dos casos en que la entrada es contradictoria**, lo que dejaba a quien implementara eligiendo por su cuenta.
+
+| Caso | Qué pasa |
+|---|---|
+| El trailer declara un `Project-Id:` que **no existe** en el Registry | **Falla la corrida**, nombrando el evento y el slug inexistente |
+| Un evento cae en globs de **dos proyectos distintos** | **Falla la corrida**, nombrando el evento y los dos proyectos |
+
+Los dos abortan, y la razón es la misma en los dos: **`unassigned` significa «no se declaró nada», no «se declaró mal»**. Un trailer es una declaración humana explícita; si apunta a la nada, hay un error humano que corregir, y silenciarlo haría desaparecer evidencia sin que nadie se entere. Y repartir un evento entre dos proyectos, o elegir uno, sería adivinar con otro nombre — exactamente lo que la sección prohíbe.
 
 ### `unassigned` es un estado de primera clase
 

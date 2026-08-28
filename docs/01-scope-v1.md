@@ -11,7 +11,7 @@
 - Un archivo YAML por proyecto en `proof-engine/registry/projects/` y uno por claim en `proof-engine/registry/claims/`, escritos a mano por un humano.
 - Validador de schema que **falla** ante un registry inválido.
 - Al menos 3 proyectos reales declarados con las cuatro dimensiones (`kind`, `lifecycle`, `visibility`, `context`), `sources` y `role`.
-- Al menos 3 claims declarados, cada uno con `dimension` (`build`/`lead`/`teach`), `project_ids` y `evidence_ids`. Procedencia y verificabilidad **no se declaran**: el motor las deriva de la evidencia (`02-domain-and-evidence-model.md` §1.1), y el validador falla si aparecen escritas en el Registry.
+- Al menos 3 claims declarados, cada uno con `dimension` (`build`/`lead`/`teach`), `project_ids` y `evidence_scope`. **`evidence_ids` no se declara**: se resuelve desde `evidence_scope` sobre el ledger (`02` §1, enmienda del 2026-08-27). Procedencia y verificabilidad tampoco: el motor las deriva de la evidencia (`02` §1.1), y el validador falla si cualquiera de los tres aparece escrito en el Registry.
 - El validador rechaza las combinaciones inválidas de `02-domain-and-evidence-model.md` §2.
 
 ### Ingestión (solo GitHub)
@@ -36,7 +36,7 @@ Read-only, sobre repos allowlisted explícitamente:
 
 ### Redacción y publicación
 - Redacción antes de escribir el artefacto.
-- Publicación de `public/proof/v1/{meta,projects,claims,evidence,activity}.json` **vía pull request** contra el repo del sitio.
+- Publicación de `public/proof/v1/{meta,projects,claims,evidence}.json` **vía pull request** contra el repo del sitio. `activity.json` es **V1.1** (`05-feed-contract.md`); listarlo aquí era una contradicción con ese documento, resuelta el 2026-08-27 (finding ESC-04).
 - `publish-diff` en el cuerpo del PR.
 - Test de denylist que bloquea el merge.
 
@@ -78,7 +78,9 @@ V1 está terminado cuando **todas** se cumplen:
 5. Con el feed corrupto, `npm run build` es **rojo**.
 6. Ninguna afirmación en el sitio se muestra sin sus dos etiquetas (procedencia y verificabilidad).
 7. Ninguna **métrica de evidencia** publicada carece de `claim_ids`. Un test lo verifica sobre el artefacto. La metadata operativa y de presentación de `meta.json` está exenta por definición, y el test debe distinguirlas explícitamente (`02-domain-and-evidence-model.md` §7).
-8. Un tercero puede tomar cualquier claim con tier `third_party_public` y comprobarlo abriendo una URL.
+
+   **Alcance real de este criterio en V1, y hay que nombrarlo.** El único archivo que porta métricas de evidencia es `activity.json`, que es V1.1. Así que en V1 el test **es vacuo por construcción**: pasa porque no hay nada que comprobar. Se implementa igualmente y corre contra un artefacto de prueba con buckets, para que exista y se sepa que falla; declararlo cumplido sobre el vacío sería exactamente el defecto que este documento persigue. Se vuelve no vacuo cuando `activity.json` entre en V1.1.
+8. Un tercero puede tomar cualquier claim con `verifiability: third_party_public` y comprobarlo abriendo una URL. *(Decía «tier», término que no está definido en ningún documento: residuo del modelo de cinco clases planas que `decisions/0004` sustituyó por dos ejes. Corregido el 2026-08-27, finding ESC-07.)*
 9. La página `/evidencia` declara qué no puede probar el sistema, y qué parte de LEAD y TEACH queda fuera de lo instrumentable.
 10. Cero tokens en el repo del sitio. **El sitio no necesita red para consumir el feed publicado.** No se afirma "cero red en el build": `next/font` descarga las tipografías de Google en build (`04-architecture.md` §3).
 11. El funnel comercial no importa nada del feed, verificado sobre el **cierre transitivo** de imports, no con un grep de cadenas (`04-architecture.md` §4.1).

@@ -34,7 +34,13 @@ Cada registro derivado de un repo privado lleva `visibility: private`, que es pe
 Un repo privado produce salida pública **solo si** su entrada en el Registry lo autoriza explícitamente:
 
 ```
-publish: none | aggregate           # default: none
+publish: none | record | aggregate  # default: record   si visibility: private
+                                    #          none     si visibility: confidential
+#   none      → el proyecto no aparece en el feed, en ninguna forma
+#   record    → aparece el registro declarado (id, title, thesis, timeframe,
+#               context, role, has_private_sources). Sin agregados.
+#   aggregate → record + buckets de activity.json, sujetos a §3
+
 nda: true | false                   # nda: true  ⇒  visibility: confidential
                                     #            ⇒  publish: none
 
@@ -104,7 +110,7 @@ Cada PR de publicación incluye, en su cuerpo, un diff legible de **qué cambia 
 - campos nuevos que aparecen por primera vez
 - valores nuevos en campos enumerados
 - proyectos que pasan de no publicados a publicados
-- cualquier cambio de `visibility` o de tier
+- cualquier cambio de `visibility`, `provenance` o `verifiability` *(decía «tier», que no existe en el contrato: corregido el 2026-08-27, finding ESC-07)*
 
 **Un cambio en la superficie pública requiere una decisión humana de merge**, no solo CI verde.
 

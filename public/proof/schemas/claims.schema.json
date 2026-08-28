@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/claims.schema.json",
+  "title": "claims.json — v1",
+  "description": "Contrato ejecutable de claims.json. DERIVADO de docs/05-feed-contract.md, que es la autoridad. Si la prosa y este schema discrepan, el schema esta mal y se regenera desde la prosa: divergencia = FAIL, no deuda. Nunca se ajusta este archivo para que un artefacto valide (decisions/0009).",
+  "type": "object",
+  "required": ["schema_version", "claims"],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/claim" }
+    }
+  },
+  "$defs": {
+    "claim": {
+      "type": "object",
+      "description": "El archivo central: aqui vive el invariante del sistema.",
+      "required": [
+        "id",
+        "statement",
+        "dimension",
+        "project_ids",
+        "evidence_ids",
+        "provenance",
+        "verifiability"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "description": "DECLARADO: lo escribe un humano, nunca se genera. El schema puede exigir que no este vacio; que lo escribiera una persona es disciplina, no mecanica."
+        },
+        "dimension": {
+          "enum": ["build", "lead", "teach"],
+          "description": "Requerida. Un claim sin dimension de marca no valida."
+        },
+        "project_ids": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/slug" },
+          "minItems": 1,
+          "uniqueItems": true,
+          "description": "REGLA G1, evaluada sobre el ARTEFACTO y no sobre el Registry. Un claim cuyos project_ids quedan vacios tras filtrar los proyectos confidenciales no se publica: no tiene forma publica honesta."
+        },
+        "evidence_ids": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Puede estar vacio, y es el caso normal en V1: sin evidencia el claim deriva a declared/unverifiable, que es el estado de casi todos los claims lead y teach."
+        },
+        "provenance": {
+          "enum": ["declared", "collected", "derived", "correlated"],
+          "description": "DERIVADO por el motor, requerido en el artefacto y PROHIBIDO en el Registry. El enum omite 'attested' a proposito: no esta prohibido, es que la derivacion no puede producirlo mientras github sea la unica fuente."
+        },
+        "verifiability": {
+          "enum": ["unverifiable", "self_link", "third_party_public", "cryptographic"],
+          "description": "DERIVADO como max{e.verifiability}. Evidence es la autoridad unica sobre ambos ejes; claims los deriva y no puede contradecirlos."
+        }
+      },
+      "allOf": [
+        {
+          "not": { "required": ["kind"] },
+          "$comment": "ELIMINADO en V1: era obligatorio, sus seis valores mezclaban ejes distintos y su unico consumidor mecanico se reformulo sin el. Se prohibe explicitamente en vez de con additionalProperties: false, porque la regla 3 del contrato exige que un consumidor ignore los campos que no conoce y cerrar el objeto romperia la compatibilidad aditiva de la regla 2."
+        },
+        {
+          "not": { "required": ["attestor"] },
+          "$comment": "ELIMINADO en V1: solo tenia sentido con provenance: attested, y ninguna fuente de V1 lo produce. Cuando exista esa fuente, el atestiguador vivira en Evidence, junto al hecho que describe."
+        }
+      ]
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "Slug estable, inmutable una vez publicado. Viaja a una URL publica."
+    }
+  }
+}

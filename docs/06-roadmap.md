@@ -8,7 +8,7 @@
 | Sprint | Entregable | Gate de salida |
 |---|---|---|
 | **0** | `docs/`, `CLAUDE.md`, `AGENTS.md`, CI en el sitio, remediación mínima | CI corre `typecheck`/`lint`/`test`/`build` en cada PR y **falla** ante un error de tipo introducido a propósito |
-| **1** | `rodrigoBermejo/proof-engine` (privado). Registry: schema, validador, **3 claims y 3 proyectos reales**. `public/proof/schemas/*.json` | `validate` falla ante un registry inválido y ante las combinaciones prohibidas de `02` §2. Tests sin red |
+| **1** ✅ | `rodrigoBermejo/proof-engine` (privado). Registry: schema, validador, **3 claims y 3 proyectos reales**. `public/proof/schemas/*.json` | `validate` falla ante un registry inválido y ante las combinaciones prohibidas de `02` §2. Tests sin red — **CERRADO 2026-08-27**, ver `audits/2026-08-27-gate-sprint-1.md` |
 | **2** | Ingestión GitHub con fixtures grabados | Snapshot tests offline. PAT fine-grained read-only verificado y documentado |
 | **3** | Correlación + ledger JSONL + reporte `unassigned` | Reingestar dos veces no cambia el ledger (idempotencia probada por test) |
 | **4** | Redacción + publicación vía PR + `publish-diff` | Test de denylist en verde. Branch protection activa. El bot **no puede** mergear |

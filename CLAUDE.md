@@ -42,5 +42,5 @@ npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de import
 - `docs/` es autoridad **sobre** `public/proof/schemas/` y sobre el código, no al revés. Si el schema y la spec divergen, el schema está mal. Divergencia = FAIL, no deuda.
 - El umbral k **no anonimiza**: cuenta eventos, no sujetos. Un proyecto `confidential` no aparece en el feed en ninguna forma sin un `release` humano. Ver `docs/03-privacy-and-publication-policy.md` §2–§3.
 - Los guards de CI son mitigaciones acotadas, no garantías. Antes de confiar en un verde, lee qué cubre cada uno en `docs/04-architecture.md` §4.1.
-- Ningún agente mergea a `main`, ni usa el botón de aprobación de GitHub. Esa decisión es de Rodrigo.
+- Ningún agente mergea a `main`, ni usa el botón de aprobación de GitHub. Esa decisión es de Rodrigo. **A `develop` sí se mergea**, con CI en verde: las ramas de trabajo salen de `develop` y de ahí sale un solo PR a `main` (`docs/decisions/0010`).
 - No le pidas a Rodrigo trabajo operativo. Si un agente puede hacerlo de forma segura, lo hace el agente. Ver el reparto de trabajo en `AGENTS.md`.
