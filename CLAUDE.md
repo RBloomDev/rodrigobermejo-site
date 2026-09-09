@@ -24,13 +24,18 @@ npm run lint         # eslint, cero warnings tolerados
 npm test             # node --test, sin dependencias: politica de /api/subscribe
 npm run build        # build de producción
 npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de imports)
+
+PROOF_FEED_DIR=<ruta> npm run build   # construir contra un feed que no sea public/proof/v1/
 ```
 
 ## Antes de tocar código
 
 1. ¿Existe la spec en `docs/` para lo que vas a hacer? Si no, escríbela y para.
 2. ¿Eres Builder o Reviewer en esta feature? Si es Reviewer, **no commitees**.
-3. ¿Toca `public/proof/v1/**`? **Zona prohibida.** Corrige la causa en el motor o en el Registry. (`public/proof/schemas/**` sí lo escribe el Builder, derivándolo de `docs/05` y nunca del artefacto — `decisions/0009`.)
+3. ¿Toca `public/proof/v1/**`? **Zona prohibida.** Corrige la causa en el motor o en el Registry.
+   - `public/proof/schemas/**` sí lo escribe el Builder, derivándolo de `docs/05` y nunca del artefacto (`decisions/0009`).
+   - ¿Necesitas un feed para desarrollar o para probar? **`PROOF_FEED_DIR`**. El lector resuelve su raíz desde esa variable, así que los tests construyen su feed en `tmpdir` y nadie escribe en `v1/`. Escribir ahí «solo para probar» es la forma en que esta regla se rompe.
+   - ¿Quién lo escribe entonces? Hoy, Rodrigo a mano: `npm run feed:build` en el motor genera en `out/`, `npm run feed:diff` dice qué cambiaría, y él commitea. El PR automatizado necesita el PAT de escritura, que no existe todavía (`decisions/0011`).
 4. ¿Cambia qué se vuelve público? Escala a un humano.
 5. Antes de decir "listo": corre el comando y lee la salida. No declares corregido lo que no verificaste, y si una corrección prevista no ocurrió, dilo. Detalle en el principio de verificación de `AGENTS.md`.
 

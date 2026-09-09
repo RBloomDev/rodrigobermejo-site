@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0.0",
+  "projects": [
+    {
+      "id": "contenido-ia",
+      "title": "Producción de contenido con IA",
+      "thesis": "Producir video y contenido con avatares e IA de forma repetible.",
+      "kind": "product",
+      "lifecycle": "alpha",
+      "visibility": "private",
+      "context": "rbloomdev",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-03-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "curricula-inadaptados",
+      "title": "Currícula y docencia Inadaptados",
+      "thesis": "Diseñar la currícula y los materiales con los que se forma a desarrolladores en Inadaptados.",
+      "kind": "education",
+      "lifecycle": "production",
+      "visibility": "private",
+      "context": "inadaptados",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-01-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "docencia-universitaria",
+      "title": "Docencia universitaria",
+      "thesis": "Impartir asignaturas de ingeniería de software y bases de datos a nivel universitario.",
+      "kind": "education",
+      "lifecycle": "production",
+      "visibility": "public",
+      "context": "client",
+      "role": "author",
+      "timeframe": {
+        "start": "2024-08-01"
+      },
+      "public_sources": [],
+      "has_private_sources": false
+    },
+    {
+      "id": "exploraciones",
+      "title": "Exploraciones y material de práctica",
+      "thesis": "Probar tecnologías y producir material de práctica, sin usuarios.",
+      "kind": "lab",
+      "lifecycle": "prototype",
+      "visibility": "private",
+      "context": "personal",
+      "role": "author",
+      "timeframe": {
+        "start": "2025-05-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "habit-tracker",
+      "title": "Habit Tracker",
+      "thesis": "Registrar y dar seguimiento a hábitos personales.",
+      "kind": "product",
+      "lifecycle": "beta",
+      "visibility": "public",
+      "context": "personal",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-06-01"
+      },
+      "public_sources": [
+        {
+          "type": "github_repo",
+          "url": "https://github.com/rodrigoBermejo/habit-tracker"
+        }
+      ],
+      "has_private_sources": false
+    },
+    {
+      "id": "infra-interna",
+      "title": "Infraestructura y automatización interna",
+      "thesis": "Operar VPS, contenedores y asistentes internos sin depender de terceros.",
+      "kind": "tool",
+      "lifecycle": "production",
+      "visibility": "private",
+      "context": "rbloomdev",
+      "role": "operator",
+      "timeframe": {
+        "start": "2026-03-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "mathgym",
+      "title": "MathGym",
+      "thesis": "Practicar matemáticas con ejercicios y seguimiento de progreso.",
+      "kind": "product",
+      "lifecycle": "alpha",
+      "visibility": "private",
+      "context": "rbloomdev",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-07-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "plataforma-inadaptados",
+      "title": "Plataforma Inadaptados",
+      "thesis": "Sostener la operación educativa de Inadaptados: LMS, web, certificados y contenido.",
+      "kind": "product",
+      "lifecycle": "production",
+      "visibility": "private",
+      "context": "inadaptados",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-02-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "proof-of-work",
+      "title": "Proof of Work",
+      "thesis": "Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.",
+      "kind": "tool",
+      "lifecycle": "alpha",
+      "visibility": "public",
+      "context": "rbloomdev",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-08-19"
+      },
+      "public_sources": [
+        {
+          "type": "github_repo",
+          "url": "https://github.com/RBloomDev/rodrigobermejo-site"
+        }
+      ],
+      "has_private_sources": true
+    },
+    {
+      "id": "punto-de-venta",
+      "title": "Punto de venta",
+      "thesis": "Construir un punto de venta reutilizable para comercios pequeños.",
+      "kind": "product",
+      "lifecycle": "prototype",
+      "visibility": "private",
+      "context": "rbloomdev",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-02-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "sitio-rbloom",
+      "title": "Sitio RBloomDev",
+      "thesis": "Presencia web de RBloomDev, separada del sitio personal.",
+      "kind": "product",
+      "lifecycle": "maintenance",
+      "visibility": "private",
+      "context": "rbloomdev",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-03-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    },
+    {
+      "id": "ssp",
+      "title": "SSP",
+      "thesis": "Automatizar la captación y el seguimiento comercial de Inadaptados.",
+      "kind": "product",
+      "lifecycle": "production",
+      "visibility": "private",
+      "context": "inadaptados",
+      "role": "author",
+      "timeframe": {
+        "start": "2026-08-01"
+      },
+      "public_sources": [],
+      "has_private_sources": true
+    }
+  ]
+}

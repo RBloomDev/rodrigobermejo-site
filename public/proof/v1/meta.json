@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-08-28T23:28:38Z",
+  "engine_version": "0.1.0",
+  "source_coverage": [],
+  "counts": {
+    "projects": 12,
+    "claims": 3,
+    "evidence": 0
+  },
+  "unassigned_events": 0,
+  "digest": "sha256:01f0f5efe87753ffd354d83de396beadd92d3a6976b83edc93fc9a4260230b92"
+}

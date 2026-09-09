@@ -260,11 +260,33 @@ El **Registry es el único dueño del mapeo**. Nada se adivina.
 
 ```
 project.sources[] = [
-  { type: "github_repo", ref: "owner/name", role: "primary" },
-  { type: "github_repo", ref: "owner/shared-lib", role: "component", period: {...} },
-  { type: "deployment_target", ref: "vercel:project-id", role: "infra" }
+  { type: "github_repo", ref: "owner/name",       role: "primary",   public: true  },
+  { type: "github_repo", ref: "owner/shared-lib", role: "component", public: false, period: {...} },
+  { type: "deployment_target", ref: "vercel:project-id", role: "infra", public: false }
 ]
 ```
+
+### `public` se declara por fuente, y no se hereda del proyecto
+
+Añadido el 2026-08-28 (`decisions/0011`). `public` es **requerido en cada fuente** y es
+verdad declarada, igual que las cuatro dimensiones: nada se infiere de la existencia de un
+repositorio.
+
+La razón de que sea por fuente y no del proyecto: **un proyecto público puede apoyarse en
+un repositorio privado.** `proof-of-work` es el caso real —`visibility: public`, con
+`RBloomDev/rodrigobermejo-site` público y `rodrigoBermejo/proof-engine` privado— y no es
+una excepción rara: es el patrón normal de un producto con motor separado
+(`decisions/0001`).
+
+Sin este campo, `public_sources` y `has_private_sources` de `05-feed-contract.md` **no son
+derivables sin llamar a la API de GitHub**, y la inferencia barata —usar
+`project.visibility`— publicaría la URL de un repo privado en `projects.json`, que
+`03-privacy-and-publication-policy.md` §2 prohíbe. El validador exige el campo
+precisamente para que esa inferencia no exista como opción.
+
+**No se comprueba contra GitHub, y es deliberado.** Declarar `public: true` sobre un repo
+privado es un error humano que el sistema no puede detectar sin red; lo que sí hace es
+obligar a que alguien lo escriba, en lugar de que un algoritmo lo adivine.
 
 ### Resolución de un evento a un proyecto
 

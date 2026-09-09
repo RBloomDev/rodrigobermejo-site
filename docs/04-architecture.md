@@ -78,7 +78,7 @@ Los cinco invariantes se citan como **`§4` invariante N** desde el resto del re
 
 1. El sitio **no** tiene tokens, **no** llama a la API de GitHub, **no** contiene lógica de correlación ni de scoring. Solo lee y renderiza.
 2. El sitio valida el feed con zod en build. **Feed inválido → build rojo.** Nunca se renderizan datos que no cumplen el contrato.
-3. **Feed ausente → build verde** con la vista solo-declarada, y el sitio lo dice. El sitio siempre muestra `meta.generated_at`, porque un artefacto en repo puede quedar viejo sin que nada falle.
+3. **Feed ausente → build verde** con una superficie editorial **sin afirmaciones**, y el sitio lo dice. No es «la vista solo-declarada»: las declaraciones viven en `claims.json`, asi que sin feed no hay claims que mostrar (`05-feed-contract.md` regla 5, corregida por `decisions/0011`). Ausente significa **solo `ENOENT` sobre `v1/meta.json`**; cualquier otro fallo de lectura es build rojo. El sitio siempre muestra `meta.generated_at`, porque un artefacto en repo puede quedar viejo sin que nada falle.
 4. Las rutas de evidencia están **aisladas del funnel comercial**. Ningún componente del funnel (`Hero`, `Offers`, `FinalCTA`, `Navbar`, `Footer`, `FAQ`, `Problems`, `HowItWorks`) importa nada del feed. La ruta de conversión no puede romperse por un problema de evidencia.
 5. Ninguna afirmación se renderiza sin su par de etiquetas (procedencia, verificabilidad). El schema garantiza que **estén en los datos**; que la **UI las muestre** no lo comprueba nada mecánico y es revisión visual del Reviewer (§4.1). La versión anterior de este invariante decía «el schema lo hace imposible», y era el error que el párrafo de arriba prohíbe: el schema restringe datos, no rendering.
 

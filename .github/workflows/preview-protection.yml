@@ -1,0 +1,32 @@
+# Comprueba, en cada deployment de preview, que el feed NO se sirve sin autenticacion.
+#
+# Por que existe: el 2026-08-28 reporte "previews publicos, HTTP 200 verificado" y era
+# falso. El comando llevaba `curl -L`, que sigue redirects y devolvia el 200 del login de
+# Vercel en vez del 302 del sitio. La conclusion estaba mal, pero el defecto de verdad
+# era el metodo: una comprobacion a mano que no distinguia "servido" de "redirigido a un
+# login". Asi que deja de ser un comando a mano.
+#
+# Por que `deployment_status` y no `pull_request`: con `pull_request` el job corre antes
+# de que Vercel haya terminado, y no habria URL que consultar. Un guard que se salta
+# cuando no encuentra su objetivo es peor que no tenerlo, porque su verde se lee igual.
+# `deployment_status` dispara justo cuando el preview YA existe.
+name: preview protection
+
+on:
+  deployment_status:
+
+jobs:
+  feed-no-publico-en-preview:
+    # Solo previews terminados con exito. Produccion queda fuera a proposito: el dominio
+    # propio DEBE ser publico --- es la superficie que este sistema existe para publicar.
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Preview'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: El feed no se sirve sin autenticacion en el preview
+        run: node scripts/check-preview-protection.mjs "${{ github.event.deployment_status.environment_url }}"
