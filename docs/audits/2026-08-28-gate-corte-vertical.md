@@ -327,3 +327,16 @@ $ node scripts/check-preview-protection.mjs        # sin URL
 
 El tercer caso importa tanto como los otros dos: un guard que se salta cuando no
 encuentra su objetivo es peor que no tenerlo, porque su verde se lee igual.
+
+
+---
+
+## Nota posterior — 2026-09-10
+
+La frase **«Nada se ha publicado. public/proof/v1/** sigue vacío en este repositorio»** de este audit era cierta cuando se escribió y dejó de serlo con el
+commit `e0b9083` (PR #16, 2026-08-28): `public/proof/v1/` contiene desde entonces los cuatro
+artefactos, con 12 proyectos, 3 afirmaciones y 0 evidencias.
+
+El audit **no se reescribe** — es un registro fechado, y corregir hacia atrás lo que era
+verdad en su momento borraría justo la información que un audit existe para conservar. Se
+anota aquí para que nadie lo lea hoy como estado actual.

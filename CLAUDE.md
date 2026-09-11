@@ -21,12 +21,30 @@ El motor de evidencia **no vive aquí**. Este repo solo lee y renderiza.
 npm run dev          # desarrollo
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint, cero warnings tolerados
-npm test             # node --test, sin dependencias: politica de /api/subscribe
+npm test             # node --test, 73 tests, sin dependencias y sin red
 npm run build        # build de producción
 npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de imports)
 
 PROOF_FEED_DIR=<ruta> npm run build   # construir contra un feed que no sea public/proof/v1/
 ```
+
+### Correr un solo test
+
+No hay script de npm para esto, y `npm test -- <archivo>` **no funciona**: el glob ya esta
+dentro del script, asi que el argumento se suma en vez de sustituir. Invoca `node` directo:
+
+```
+node --test --conditions=react-server tests/proof-feed.test.ts
+node --test --conditions=react-server --test-name-pattern="CARDINALIDAD" tests/proof-feed.test.ts
+```
+
+`--conditions=react-server` no es decorativo. `lib/proof/feed.ts` importa `server-only`, cuyo
+export por defecto **lanza** fuera de ese condition: sin la bandera los tests del feed fallan
+con un error que no habla del feed, y se persigue el bug equivocado.
+
+Requiere **Node >= 22.18** --- el type stripping es nativo, no hay transpilacion ni runner.
+CI corre **Node 24**. Si `npm test` falla con un error de sintaxis en TypeScript, la version
+de Node es la causa antes que el codigo.
 
 ## Antes de tocar código
 

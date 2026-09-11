@@ -91,3 +91,16 @@ Corregido: el grafo no se evalúa hasta que todas las entradas sean válidas por
 - **No hay evidencia real.** El ledger está vacío hasta el Sprint 2, así que **G3, G4 y G5 son vacuamente ciertas** y los tres claims derivan a `declared` / `unverifiable`. Las reglas están implementadas y tienen sus tests con fixtures propias, pero sobre el Registry real todavía no se ejercen.
 - **Los tres `statement` están en borrador.** Redactados a partir de las palabras de Rodrigo en la entrevista del 2026-08-27, marcados como tales en cada archivo. `02-domain-and-evidence-model.md` §1: un claim lo escribe un humano. Mientras lleven esa marca, el claim no está declarado del todo, y el gate se cierra **con esa deuda anotada**, no con ella disimulada.
 - **Nada se ha publicado.** `public/proof/v1/**` sigue vacío: el primer artefacto es Sprint 4.
+
+
+---
+
+## Nota posterior — 2026-09-10
+
+La frase **«public/proof/v1/** sigue vacío: el primer artefacto es Sprint 4»** de este audit era cierta cuando se escribió y dejó de serlo con el
+commit `e0b9083` (PR #16, 2026-08-28): `public/proof/v1/` contiene desde entonces los cuatro
+artefactos, con 12 proyectos, 3 afirmaciones y 0 evidencias.
+
+El audit **no se reescribe** — es un registro fechado, y corregir hacia atrás lo que era
+verdad en su momento borraría justo la información que un audit existe para conservar. Se
+anota aquí para que nadie lo lea hoy como estado actual.

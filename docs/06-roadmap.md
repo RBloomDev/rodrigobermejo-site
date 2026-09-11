@@ -19,7 +19,7 @@
 |---|---|---|
 | **0** | `docs/`, `CLAUDE.md`, `AGENTS.md`, CI en el sitio, remediación mínima | CI corre `typecheck`/`lint`/`test`/`build` en cada PR y **falla** ante un error de tipo introducido a propósito |
 | **1** ✅ | `rodrigoBermejo/proof-engine` (privado). Registry: schema, validador, **3 claims y 3 proyectos reales**. `public/proof/schemas/*.json` | `validate` falla ante un registry inválido y ante las combinaciones prohibidas de `02` §2. Tests sin red — **CERRADO 2026-08-27**, ver `audits/2026-08-27-gate-sprint-1.md` |
-| **D** | **Corte vertical solo-declarado.** `public/proof/v1/*.json` con `evidence: []`, `/proyectos`, `/proyectos/[slug]`, `/evidencia` | Feed borrado → build verde. Feed corrupto → build rojo. Denylist en verde y falsada. Ningún `publish: none` en el artefacto |
+| **D** ✅ | **Corte vertical solo-declarado.** `public/proof/v1/*.json` con `evidence: []`, `/proyectos`, `/proyectos/[slug]`, `/evidencia` | Feed borrado → build verde. Feed corrupto → build rojo. Denylist en verde y falsada. Ningún `publish: none` en el artefacto — **CERRADO 2026-08-28**, ver `audits/2026-08-28-gate-corte-vertical.md` |
 | **2** | Ingestión GitHub con fixtures grabados. **Recalibrado por `decisions/0011`**: tres `kind`, sin repos de terceros, redacción de privados diferida | Snapshot tests offline. PAT fine-grained read-only verificado y documentado. **El PAT es prerrequisito de entrada, no bloqueo a media carrera** |
 | **3** | Correlación + ledger JSONL + reporte `unassigned` | Reingestar dos veces no cambia el ledger (idempotencia probada por test) |
 | **4** | Redacción + publicación vía PR + `publish-diff` | Test de denylist en verde. Branch protection activa. El bot **no puede** mergear |
