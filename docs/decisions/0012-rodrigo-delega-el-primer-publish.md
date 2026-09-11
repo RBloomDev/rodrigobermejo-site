@@ -69,3 +69,39 @@ a `main`, o hay una instrucción nueva de Rodrigo, o no se hace.
   trámite.
 - **Reescribir `AGENTS.md` para permitirlo en general.** Sería cambiar la regla en lugar de
   registrar una excepción, y la regla sigue siendo correcta para el caso normal.
+
+## Nota de corrección — 2026-09-10: el digest del alcance no es el publicado
+
+La sección **Alcance** acota esta autorización a «el primer feed solo-declarado del
+2026-08-28, con el digest `sha256:d5128a8a…`». Ese digest **no es** el del artefacto que se
+publicó. El `meta.digest` de `public/proof/v1/meta.json`, en el único commit que ha tocado
+ese archivo (`e0b9083`), es:
+
+```
+sha256:01f0f5efe87753ffd354d83de396beadd92d3a6976b83edc93fc9a4260230b92
+```
+
+Recomputado con el algoritmo real del motor — `sha256` sobre
+`JSON.stringify([docProjects, docClaims, docEvidence])` en forma compacta, sin `meta` — y
+**coincide** con el publicado. El artefacto es internamente consistente; lo que está mal es
+la cita de esta ADR.
+
+**Causa probable, dicha como inferencia y no como hecho:** el mensaje de `e0b9083` cita el
+mismo `d5128a8a…` y menciona que de la lectura previa salió el fix de tildes de
+`proof-engine#14`. Ese fix cambió texto que se publica, y por tanto el digest. Lo más
+probable es que `d5128a8a…` sea el artefacto **anterior** al fix, y que la cita se arrastrara
+a la ADR y al commit mientras se commiteaba el posterior. No lo he comprobado: exigiría la
+historia del motor, y el artefacto intermedio no está versionado (`out/` está en `.gitignore`).
+
+**Qué cambia del alcance: nada.** La autorización cubre **una** publicación, y esa
+publicación está identificada sin ambigüedad por el commit `e0b9083` y el PR #16. El digest
+era un identificador de más, y resultó ser el equivocado. Esta nota **no la amplía ni la
+renueva**: sigue en pie que la próxima vez que un agente vaya a escribir en
+`public/proof/v1/**` o a mergear a `main`, o hay instrucción nueva de Rodrigo o no se hace.
+
+**Por qué esto importa más de lo que parece.** El digest era lo único que ataba la excepción
+a un objeto concreto. Con el digest equivocado, quien audite esto encuentra una autorización
+que apunta a algo que nunca existió en el repositorio, y el alcance deja de ser comprobable
+leyendo solo estos archivos. La lección operativa: **un digest citado a mano se copia del
+último comando corrido, no del artefacto que se está commiteando.** Cuando exista `feed:pr`,
+el cuerpo del PR debe leer `meta.digest` del archivo, no del stdout de una corrida anterior.

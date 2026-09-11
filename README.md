@@ -10,7 +10,7 @@ Este repositorio aloja tres cosas:
 | El sitio público | `app/`, `components/`, `content/` |
 | La especificación del sistema de Proof of Work | `docs/` |
 | Los schemas del feed publico | `public/proof/schemas/` |
-| Los artefactos de evidencia publicados | `public/proof/v1/` (aun vacio: lo escribe el motor) |
+| Los artefactos de evidencia publicados | `public/proof/v1/` (publicado el 2026-08-28: 12 proyectos, 3 afirmaciones, 0 evidencias. Lo escribe el motor) |
 
 El motor que produce esa evidencia **no vive aquí**: es `rodrigoBermejo/proof-engine` (privado).
 Este repo solo lee los artefactos y los renderiza. Ver `docs/04-architecture.md`.
@@ -30,7 +30,7 @@ npm run dev                    # http://localhost:3000
 | `npm run dev` | Servidor de desarrollo |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint, cero warnings tolerados |
-| `npm test` | `node --test` sobre la política de `/api/subscribe`. Sin runner externo ni dependencias: Node ≥ 22.18 ejecuta TypeScript directamente |
+| `npm test` | `node --test`, 73 tests: el lector del feed y su máquina de estados, los cinco JSON Schema publicados, la paridad zod↔JSON Schema, y la política de `/api/subscribe`. Sin runner externo ni dependencias: Node ≥ 22.18 ejecuta TypeScript directamente |
 | `npm run build` | Build de producción |
 | `npm run guard:funnel` | Comprueba que el funnel comercial no alcanza el sistema de evidencia por el cierre transitivo de imports |
 
