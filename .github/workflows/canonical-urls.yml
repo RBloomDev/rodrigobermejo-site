@@ -1,0 +1,41 @@
+# Comprueba, en cada deployment de PRODUCCION, que el sitio publica sus URLs canonicas
+# en el host donde de verdad responde.
+#
+# Por que existe: `NEXT_PUBLIC_SITE_URL` no esta definida en el proyecto de Vercel, asi
+# que `app/sitemap.ts`, `app/robots.ts` y `app/layout.tsx` caen los tres al fallback del
+# apex. Produccion responde en `www`, el apex hace 307 hacia ahi, y el 2026-09-10 las 19
+# URLs del sitemap apuntaban a una redireccion --- mas las canonicas y las de OpenGraph,
+# que salen de `metadataBase`.
+#
+# No estaba roto: los buscadores siguen el redirect. Era perdida de senal, y crecio de 5
+# a 19 URLs al publicar la superficie de evidencia. Eso lo arregla una variable de
+# entorno; esto es lo que impide que vuelva a pasar sin que nadie se entere.
+#
+# Por que `deployment_status` y no `pull_request`: es la misma razon que en
+# `preview-protection.yml`. La variable entra en BUILD TIME, asi que solo se puede
+# comprobar sobre un despliegue ya terminado. Un guard que corre antes de que exista su
+# objetivo se salta en silencio, y su verde se lee igual que uno de verdad.
+#
+# Por que solo Produccion: el host canonico de un preview es la URL efimera que Vercel
+# asigna, no `www`. Comprobarlo ahi fallaria siempre y por la razon equivocada.
+name: canonical urls
+
+on:
+  deployment_status:
+
+jobs:
+  urls-canonicas-en-el-host-correcto:
+    if: >-
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: sitemap, robots y metadata en el host canonico, sirviendo directo
+        # El host canonico se pasa explicito y NO se deriva de la URL del deployment:
+        # derivarla haria que el guard comprobara que el sitio es consistente consigo
+        # mismo, que es cierto siempre y no dice nada.
+        run: node scripts/check-canonical-urls.mjs https://www.rodrigobermejo.com
