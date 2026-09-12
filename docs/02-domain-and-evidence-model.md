@@ -351,10 +351,54 @@ Un commit que toca `apps/web/page.tsx` y `README.md` casa con el proyecto de
 casaran dejaría sin asignar casi cualquier commit real, porque los commits tocan
 archivos de raíz.
 
-**El nivel 2 solo aplica si el evento trae rutas.** Un `release`, un `tag`, un
-`deployment` o un `check_run` no las tienen: para ellos el nivel 2 **no casa**, y no
-es un conflicto — se cae al nivel 3. La ausencia de datos de ruta nunca detiene la
-corrida.
+#### Tres estados de las rutas, no dos
+
+La primera versión de esta sección decía: «el nivel 2 solo aplica si el evento trae
+rutas; si no las trae, se cae al nivel 3, y la ausencia nunca detiene la corrida».
+**Era un defecto**, y del tipo que esta sección entera existe para evitar: confundía
+*no tener rutas* con *no haber podido leerlas*.
+
+Un `release` no tiene archivos, y caer al nivel 3 es correcto. Pero una consulta que
+devolvió `403`, que agotó el rate limit, que se quedó a medias en la paginación o
+que vino **truncada** —la API de GitHub recorta la lista de archivos de un commit
+grande— también «no trae rutas», y ahí caer al nivel 3 es **atribuir en silencio
+evidencia que quizá pertenecía a otro proyecto**. El evento se asignaría al dueño
+del repo por defecto sin que nada indicara que la regla que debía decidirlo nunca
+se pudo evaluar.
+
+Así que el evento no lleva una lista opcional: lleva un **estado explícito**, con la
+misma forma que `lib/proof/feed.ts` usa para el feed.
+
+```
+rutas:
+  | { estado: "sin-rutas" }                      // el kind no tiene archivos
+  | { estado: "conocidas", rutas: string[] }     // lista COMPLETA
+  | { estado: "desconocidas", motivo: string }   // no se pudo determinar
+```
+
+| Estado | Nivel 2 | Efecto |
+|---|---|---|
+| `sin-rutas` | no casa | cae al nivel 3. Legítimo |
+| `conocidas` | casa o no casa | resuelve, o cae al nivel 3 |
+| `desconocidas` | **no se puede evaluar** | ver abajo |
+
+**`desconocidas` detiene la corrida — pero solo cuando importa.** Abortar siempre
+rompería toda ingestión de repos sin globs por un fallo que no cambia nada ahí. La
+regla es:
+
+> Si alguna fuente **de ese repositorio** declara `paths`, un evento con rutas
+> `desconocidas` **aborta la corrida**, nombrando el evento y el motivo. Si ninguna
+> los declara, el nivel 2 no podía aplicar de todos modos y el evento sigue al nivel
+> 3 con normalidad.
+
+Y `motivo` es obligatorio y se propaga al mensaje: «no se pudo determinar» sin decir
+si fue un 403, un límite de tasa o un truncamiento manda a diagnosticar a ciegas.
+
+**Corolario para la ingestión:** `conocidas` significa **completa**. Un ingestor que
+recibe una respuesta truncada o una paginación a medias tiene que emitir
+`desconocidas`, no una lista parcial. Una lista parcial es peor que ninguna: casa con
+los globs que alcance y falla silenciosamente con los que no, y el resultado se ve
+igual que una atribución correcta.
 
 #### Relación con `period`
 
@@ -439,7 +483,16 @@ derivables del artefacto; esta línea existe para que nadie lo añada a mano.
 2. Un evento con rutas que casan con los globs de **dos** proyectos distintos
    **detiene la corrida**, nombrando el evento y los dos proyectos.
 3. Un evento cuyas rutas no casan con ningún glob cae al nivel 3.
-4. Un evento **sin** datos de ruta cae al nivel 3, sin conflicto.
+4. Un evento con rutas `sin-rutas` —un `release`, un `tag`— cae al nivel 3, sin
+   conflicto.
+4b. Un evento con rutas **`desconocidas`** y alguna fuente de ese repo con `paths`
+   **detiene la corrida**, y el mensaje nombra el motivo (403, rate limit,
+   paginación incompleta, truncamiento). **No** cae al nivel 3.
+4c. Un evento con rutas `desconocidas` y **ninguna** fuente de ese repo con `paths`
+   sigue al nivel 3 con normalidad: el nivel 2 no podía aplicar.
+4d. Una respuesta truncada o paginada a medias produce `desconocidas`, **nunca** una
+   lista parcial marcada como `conocidas`. Test: un fixture con la lista de archivos
+   recortada debe abortar, no casar con los globs que alcance.
 5. Un `Project-Id:` explícito gana sobre cualquier glob, sin reportar conflicto.
 6. Un glob cuya fuente tiene `period` que no cubre el evento **no casa**.
 7. `*` no cruza `/`: `apps/*` no casa con `apps/web/page.tsx`.
