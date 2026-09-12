@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rediseño de marca — dos propuestas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #14537e; --teal: #11abb0; --ink: #212121; --muted: #6e757c;
+    --rule: #e8e8e8; --rule-strong: #ccc; --bg: #fff; --inset: #ebeeee;
+    --fh: "Josefin Sans", ui-sans-serif, system-ui, sans-serif;
+    --fb: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+    --fl: "Libre Baskerville", Georgia, serif;
+    --fs: "Yellowtail", cursive;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: var(--fb); font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+  .wrap { max-width: 1220px; margin-inline: auto; padding-inline: 24px; }
+  h1, h2, h3 { margin: 0; font-family: var(--fh); font-weight: 700; letter-spacing: -.02em; }
+
+  header.top { border-bottom: 1px solid var(--rule); padding-block: 40px 32px; }
+  .firma { font-family: var(--fs); font-size: 2.4rem; color: var(--blue); line-height: 1; }
+  .kicker {
+    font-family: var(--fh); font-size: .8rem; font-weight: 600; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--muted); margin: 18px 0 10px;
+  }
+  h1 { font-size: clamp(2rem, 1.4rem + 2.6vw, 3.2rem); line-height: 1.05; color: var(--blue); }
+  .lede { font-family: var(--fl); font-size: clamp(1.05rem, 1rem + .3vw, 1.25rem); line-height: 1.55; color: #313131; max-width: 62ch; margin-top: 18px; }
+
+  .aviso {
+    margin-top: 26px; border: 1px solid var(--rule-strong); border-left: 3px solid var(--teal);
+    padding: 16px 20px; font-size: .92rem; color: #313131; max-width: 76ch;
+  }
+  .aviso b { font-weight: 600; }
+
+  section { padding-block: 48px; border-bottom: 1px solid var(--rule); }
+  h2 { font-size: clamp(1.4rem, 1.2rem + .7vw, 1.9rem); color: var(--blue); }
+  .sub { color: var(--muted); margin-top: 8px; max-width: 70ch; }
+
+  .dirs { display: grid; gap: 28px; margin-top: 32px; }
+  @media (min-width: 940px) { .dirs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; } }
+
+  .dir { border: 1px solid var(--rule-strong); }
+  .dir-head { padding: 22px 24px; border-bottom: 1px solid var(--rule); }
+  .dir-a .dir-head { background: #fff; }
+  .dir-b .dir-head { background: var(--blue); }
+  .dir-b .dir-head h3, .dir-b .dir-head p { color: #fff; }
+  .dir-b .dir-head .tag { color: #cfe0ea; }
+  .tag {
+    font-family: var(--fh); font-size: .75rem; font-weight: 700; letter-spacing: .2em;
+    text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 6px;
+  }
+  .dir-head h3 { font-size: 1.5rem; color: var(--blue); }
+  .dir-head p { margin: 8px 0 0; font-size: .95rem; color: var(--muted); }
+
+  .rec {
+    display: inline-block; margin-top: 12px; font-family: var(--fh); font-size: .72rem;
+    font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    background: var(--teal); color: #fff; padding: 5px 10px;
+  }
+
+  .piezas { padding: 6px 0; }
+  .pieza {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 16px 24px; border-top: 1px solid var(--rule); text-decoration: none; color: inherit;
+  }
+  .piezas .pieza:first-child { border-top: 0; }
+  .pieza:hover { background: var(--inset); }
+  .pieza-n {
+    font-family: var(--fh); font-weight: 700; font-size: .85rem; color: var(--teal);
+    font-variant-numeric: tabular-nums; flex: none; width: 2.2rem;
+  }
+  .pieza-t { flex: 1; }
+  .pieza-t strong { display: block; font-family: var(--fh); font-weight: 600; font-size: 1.05rem; }
+  .pieza-t span { font-size: .88rem; color: var(--muted); }
+  .pieza-go { font-family: var(--fh); font-weight: 600; font-size: .85rem; color: var(--blue); flex: none; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 24px; font-size: .93rem; }
+  th, td { text-align: left; padding: 12px 14px; border-top: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: var(--fh); font-weight: 600; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  td:first-child { font-family: var(--fh); font-weight: 600; white-space: nowrap; }
+  .tabla-wrap { overflow-x: auto; }
+
+  ol.razones { margin: 20px 0 0; padding-left: 1.3rem; max-width: 74ch; }
+  ol.razones li { margin-top: 12px; }
+  ol.razones li::marker { font-family: var(--fh); font-weight: 700; color: var(--teal); }
+
+  footer { padding-block: 40px 60px; color: var(--muted); font-size: .9rem; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: var(--inset); padding: 1px 5px; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <span class="firma" aria-hidden="true">rb</span>
+    <p class="kicker">Fase 1 · Propuesta para revisión</p>
+    <h1>Rediseño de marca: dos direcciones</h1>
+    <p class="lede">
+      Las dos usan la misma paleta y las mismas familias tipográficas. Lo que cambia es
+      qué trabajo hace cada color y cómo se compone la página. Cada dirección se muestra
+      en cuatro piezas, no solo en la portada: si el sistema solo funciona en el hero,
+      no es un sistema.
+    </p>
+    <div class="aviso">
+      <b>Esto es una propuesta, no el sitio.</b> Nada de esto está publicado ni
+      implementado. Son prototipos estáticos con el copy real extraído del feed y de los
+      componentes actuales. Abre cada pieza en su propia pestaña; se ven mejor a ancho
+      completo, y también funcionan a 400&nbsp;px.
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Las dos direcciones</h2>
+    <p class="sub">
+      Ábrelas en paralelo y compara la misma pieza en cada una. El orden sugerido es
+      portada → trabajo → Proof of Work → social.
+    </p>
+
+    <div class="dirs">
+
+      <article class="dir dir-a">
+        <div class="dir-head">
+          <span class="tag">Dirección A</span>
+          <h3>Expediente</h3>
+          <p>
+            Documental y monocroma. El azul es <strong>tinta</strong>: titula, numera y
+            traza la regla; nunca hace de fondo. El teal ocupa un solo rol —enlace y
+            foco— y casi no se ve. Libre Baskerville sale de las citas y entra en las
+            entradillas. Composición por columnas desiguales.
+          </p>
+          <span class="rec">Recomendada</span>
+        </div>
+        <div class="piezas">
+          <a class="pieza" href="a-expediente/portada.html">
+            <span class="pieza-n">01</span>
+            <span class="pieza-t"><strong>Primer bloque de portada</strong><span>Apertura, retrato y las tres dimensiones</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="a-expediente/trabajo.html">
+            <span class="pieza-n">02</span>
+            <span class="pieza-t"><strong>Sección de trabajo real</strong><span>Doce proyectos con su propósito declarado</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="a-expediente/proof.html">
+            <span class="pieza-n">03</span>
+            <span class="pieza-t"><strong>Componente de Proof of Work</strong><span>Afirmación, par de etiquetas y los dos estados vacíos</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="a-expediente/social.html">
+            <span class="pieza-n">04</span>
+            <span class="pieza-t"><strong>Portada social</strong><span>Banner de LinkedIn y pieza vertical</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="dir dir-b">
+        <div class="dir-head">
+          <span class="tag">Dirección B</span>
+          <h3>Señal</h3>
+          <p>
+            Contemporánea y de alto contraste. El azul <strong>es superficie</strong>:
+            bloques a sangre que alternan con blanco pleno. El teal sube de rango y pasa
+            a marcar estructura. Elimina Libre Baskerville: solo Josefin Sans y Open
+            Sans. Rejilla desplazada de revista y retrato a gran escala.
+          </p>
+        </div>
+        <div class="piezas">
+          <a class="pieza" href="b-senal/portada.html">
+            <span class="pieza-n">01</span>
+            <span class="pieza-t"><strong>Primer bloque de portada</strong><span>Apertura, retrato y las tres dimensiones</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="b-senal/trabajo.html">
+            <span class="pieza-n">02</span>
+            <span class="pieza-t"><strong>Sección de trabajo real</strong><span>Doce proyectos con su propósito declarado</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="b-senal/proof.html">
+            <span class="pieza-n">03</span>
+            <span class="pieza-t"><strong>Componente de Proof of Work</strong><span>Afirmación, par de etiquetas y los dos estados vacíos</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="b-senal/social.html">
+            <span class="pieza-n">04</span>
+            <span class="pieza-t"><strong>Portada social</strong><span>Banner de LinkedIn y pieza vertical</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Qué cambia entre una y otra</h2>
+    <p class="sub">Ninguna introduce un valor de color nuevo. Las dos usan la paleta que ya está en <code>app/globals.css</code>.</p>
+    <div class="tabla-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>A — Expediente</th><th>B — Señal</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Azul #14537e</td><td>Tinta: titula y numera</td><td>Superficie: bloques a sangre</td></tr>
+          <tr><td>Teal #11abb0</td><td>Un rol: enlace y foco</td><td>Marcador estructural: barras, numeración, CTA</td></tr>
+          <tr><td>Libre Baskerville</td><td>Entradillas y citas</td><td>No se usa</td></tr>
+          <tr><td>Titulares</td><td>Josefin Sans en azul</td><td>Josefin Sans en negro</td></tr>
+          <tr><td>Yellowtail</td><td colspan="2">Solo la firma y el monograma. Igual en las dos.</td></tr>
+          <tr><td>Composición</td><td>Columnas desiguales de texto</td><td>Rejilla desplazada de revista</td></tr>
+          <tr><td>Retrato</td><td>Integrado en el bloque de texto</td><td>A gran escala, sangrado por un borde</td></tr>
+          <tr><td>Escala display</td><td>Hasta 4 rem</td><td>Hasta 5.6 rem</td></tr>
+          <tr><td>Sombras</td><td colspan="2">Ninguna. La jerarquía se construye con aire, regla fina y peso.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Por qué recomiendo A</h2>
+    <ol class="razones">
+      <li>
+        La dirección que pediste dice <strong>«blancos amplios»</strong> y
+        <strong>«acento teal moderado»</strong>. B contradice las dos: llena de azul y
+        sube el teal de rango.
+      </li>
+      <li>
+        El único retrato disponible es vertical y en blanco y negro. A lo trata como
+        material documental, que es donde una foto así funciona. B pide fotografía de
+        alto impacto que hoy no existe.
+      </li>
+      <li>
+        <strong>Y esta es la que decide.</strong> El contrato de presentación de
+        <code>docs/05-feed-contract.md</code> prohíbe el color de estado, las rampas
+        cromáticas y los iconos, y exige que los cuatro valores de cada eje se vean
+        idénticos. A ya habla ese idioma. B tendría que <em>desactivarse</em> en
+        <code>/evidencia</code> y <code>/proyectos</code>, creando un segundo dialecto
+        visual dentro del mismo sitio — que es exactamente la deuda&nbsp;#7 que el repo
+        ya arrastra entre la landing y el blog. Elegir B es reabrirla a propósito.
+      </li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>
+      Rama <code>docs/rediseno-de-marca</code> · Fase 1 · La especificación completa está
+      en <code>docs/brand/</code> y el ADR que la gobierna en
+      <code>docs/decisions/0014</code>.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B — Proof of Work · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  /* CONTRATO DE PRESENTACION — docs/05-feed-contract.md
+     El lenguaje visual de B cambia; la semantica de esta pantalla no.
+     Lo que este archivo NO hace, y no es casualidad:
+       · ningun icono, ningun check, ninguna insignia, ninguna barra de progreso
+       · ningun color de estado: los 8 valores de los dos ejes se ven IDENTICOS
+         -mismo peso, mismo tamano, mismo color-. El teal es el marcador
+         estructural de B, y AUN ASI no toca ni un valor de eje: distinguir uno
+         de otro con color seria inventar una rampa que el contrato prohibe
+       · el par va como UNA oracion al pie del statement, no como dos etiquetas
+         junto al titulo (esa es la gramatica de un badge de "verified")
+       · las tres filas de alcance van sin caja, sin fondo ambar y sin triangulo:
+         tienen el mismo estatus que el resto, no son una advertencia
+       · la dimension es etiqueta, nunca filtro: no hay controles de filtrado
+       · fecha absoluta, nunca relativa
+       · los conteos van dentro de una oracion, nunca como fila de cifras
+       · no hay estado de carga: el sitio es estatico */
+
+  .bloque { padding-block: var(--space-5); }
+  .bloque-azul { background: var(--bg-deep); }
+
+  .cabecera .display { margin-top: var(--space-2); }
+  .cabecera .lede { margin-top: var(--space-3); }
+  .cabecera .body { margin-top: var(--space-3); }
+
+  /* ---- Afirmaciones: rejilla desplazada, no una pila de filas ---- */
+  .claims { margin-top: var(--space-4); }
+  .claim { border-top: 3px solid var(--mark); padding-top: var(--space-3); margin-top: var(--space-5); }
+  .claim:first-child { margin-top: 0; }
+  @media (min-width: 920px) {
+    .claim { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+    .claim-col-b { margin-top: var(--space-4); }
+  }
+  .claim-dim {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 700;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .claim-statement {
+    font-family: var(--font-heading); font-weight: 700;
+    font-size: var(--step-2); line-height: 1.06; letter-spacing: -.022em;
+    color: var(--ink-title); margin-top: .6rem; max-width: 30ch; text-wrap: balance;
+  }
+
+  /* El par de etiquetas. Una sola oracion, un solo color, un solo peso, al pie
+     del statement. Los <abbr> llevan el termino tecnico en title=. */
+  .par {
+    margin-top: 1.2rem; padding-top: .9rem;
+    border-top: 1px solid var(--rule);
+    font-size: var(--step--1); color: var(--ink-muted); max-width: var(--measure);
+  }
+  .par abbr { font-weight: 600; text-decoration: none; border-bottom: 1px dotted var(--gray-border); cursor: help; }
+
+  /* Las tres filas. Misma tinta que el resto. Sin caja, sin fondo, sin triangulo. */
+  .alcance > div + div { margin-top: 1.1rem; }
+  .alcance dt {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 700;
+    text-transform: uppercase; letter-spacing: .14em; color: var(--ink-muted);
+    margin-bottom: .25rem;
+  }
+  .alcance dd { color: var(--ink-default); font-size: var(--step-0); max-width: 52ch; }
+
+  .apoya { margin-top: 1.6rem; font-size: var(--step--1); color: var(--ink-muted); max-width: var(--measure); }
+  .apoya a { color: var(--link); text-decoration: none; border-bottom: 2px solid var(--mark); }
+  .apoya a:hover { border-bottom-color: currentColor; }
+
+  /* ---- Divulgacion progresiva: abierta por defecto ---- */
+  details.disclosure { margin-top: var(--space-5); border-top: 3px solid var(--mark); padding-top: var(--space-2); }
+  details.disclosure > summary {
+    cursor: pointer; list-style: none;
+    font-family: var(--font-heading); font-weight: 700; font-size: var(--step-2);
+    letter-spacing: -.018em; color: var(--ink-title);
+    display: flex; align-items: center; gap: 1rem;
+  }
+  details.disclosure > summary::-webkit-details-marker { display: none; }
+  details.disclosure > summary::before {
+    content: "−"; font-family: var(--font-body); color: var(--mark);
+    font-size: var(--step-1); line-height: 1; flex: none;
+  }
+  details.disclosure:not([open]) > summary::before { content: "+"; }
+
+  .ejes { margin-top: var(--space-3); display: grid; gap: var(--space-4); }
+  @media (min-width: 800px) { .ejes { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); } }
+  .eje-tit { font-family: var(--font-heading); font-weight: 600; font-size: var(--step-0); color: var(--ink-default); margin-bottom: .6rem; }
+  /* Los cuatro valores de cada eje, y los ocho entre si: mismo peso, mismo
+     tamano y mismo color. Sin rampa, sin orden implicito, sin teal. */
+  .eje-fila { display: grid; grid-template-columns: 15ch minmax(0, 1fr); gap: .35rem 1rem; padding-block: .5rem; border-top: 1px solid var(--rule); font-size: var(--step--1); }
+  .eje-fila code { font-family: var(--font-body); font-weight: 600; color: var(--ink-default); }
+  .eje-fila span { color: var(--ink-muted); }
+
+  .nota-pie {
+    margin-top: var(--space-5); padding-top: var(--space-3); border-top: 1px solid var(--rule);
+    font-size: var(--step--1); color: var(--ink-muted);
+  }
+
+  /* ---- Estados. Disenados, no heredados. Los dos con EXACTAMENTE el mismo
+     tratamiento: "Sin evidencia" es el estado real de hoy y no esta degradado,
+     asi que no puede verse ni mas apagado ni mas alarmado que el otro. ---- */
+  .demo-tag {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 700;
+    letter-spacing: .2em; text-transform: uppercase; color: var(--on-deep-soft);
+    display: flex; align-items: center; gap: .8rem;
+  }
+  .demo-tag::before { content: ""; width: 34px; height: 3px; background: var(--mark); flex: none; }
+  .estados { margin-top: var(--space-4); display: grid; gap: var(--space-3); }
+  @media (min-width: 860px) { .estados { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); align-items: start; } }
+  .estado { border: 1px solid var(--rule-deep); border-top: 3px solid var(--mark); border-radius: var(--radius); padding: var(--space-3); }
+  .estado .h3 { margin-top: .2rem; margin-bottom: .5rem; }
+</style>
+</head>
+<body>
+
+<main>
+
+  <section class="bloque bloque-azul on-deep">
+    <header class="wrap cabecera">
+      <p class="rotulo"><span class="num">04</span> Método</p>
+      <h1 class="display">Cómo respaldo lo que afirmo</h1>
+      <p class="lede">
+        Este sistema funciona si puedes comprobar una afirmación <em>o entender
+        exactamente por qué no puedes comprobarla</em>. Las dos mitades cuentan
+        igual, y ahora mismo casi todo está en la segunda.
+      </p>
+      <p class="body">
+        Hay trabajo bajo acuerdo de confidencialidad que no aparece aquí en ninguna
+        forma, ni siquiera contado. No hay un número de proyectos ocultos porque ese
+        número también diría algo sobre quién los encargó.
+      </p>
+    </header>
+  </section>
+
+  <section class="bloque">
+    <div class="wrap">
+      <p class="rotulo"><span class="num">05</span> Las afirmaciones</p>
+
+      <div class="claims">
+
+        <article class="claim">
+          <div class="claim-col-a">
+            <p class="claim-dim">Construir</p>
+            <h2 class="claim-statement">No solo escribo software: lo opero. Los sistemas que construyo están en producción, y cuando algo falla el que responde soy yo.</h2>
+
+            <p class="par">
+              Procedencia: <abbr title="declared">lo afirmo yo</abbr>
+              <span aria-hidden="true"> · </span>
+              Verificabilidad: <abbr title="unverifiable">no puedes comprobarlo sin confiar en mí</abbr>
+            </p>
+          </div>
+
+          <div class="claim-col-b">
+            <dl class="alcance">
+              <div>
+                <dt>Quién lo afirma</dt>
+                <dd>Rodrigo Bermejo, en primera persona.</dd>
+              </div>
+              <div>
+                <dt>Qué lo respaldaría</dt>
+                <dd>Commits, pull requests y releases públicos en 2 de los 8 proyectos que la sostienen.</dd>
+              </div>
+              <div>
+                <dt>Por qué hoy no puedes comprobarlo</dt>
+                <dd>La mayor parte de estos sistemas vive en repositorios privados. De un repositorio privado no se ingiere nada que se pueda publicar, así que el trabajo existe y la prueba no.</dd>
+              </div>
+            </dl>
+
+            <p class="apoya">
+              Se apoya en
+              <a href="#">Producción de contenido con IA</a>, <a href="#">Habit Tracker</a>,
+              <a href="#">Infraestructura y automatización interna</a>, <a href="#">MathGym</a>,
+              <a href="#">Plataforma Inadaptados</a>, <a href="#">Proof of Work</a>,
+              <a href="#">Punto de venta</a> y <a href="#">SSP</a>.
+            </p>
+          </div>
+        </article>
+
+        <article class="claim">
+          <div class="claim-col-a">
+            <p class="claim-dim">Enseñar</p>
+            <h2 class="claim-statement">Diseño la currícula con la que se forman desarrolladores, y doy clase.</h2>
+
+            <p class="par">
+              Procedencia: <abbr title="declared">lo afirmo yo</abbr>
+              <span aria-hidden="true"> · </span>
+              Verificabilidad: <abbr title="unverifiable">no puedes comprobarlo sin confiar en mí</abbr>
+            </p>
+          </div>
+
+          <div class="claim-col-b">
+            <dl class="alcance">
+              <div>
+                <dt>Quién lo afirma</dt>
+                <dd>Rodrigo Bermejo, en primera persona.</dd>
+              </div>
+              <div>
+                <dt>Qué lo respaldaría</dt>
+                <dd>Ninguno de los 2 proyectos que la sostienen tiene fuentes públicas de las que recolectar evidencia.</dd>
+              </div>
+              <div>
+                <dt>Por qué hoy no puedes comprobarlo</dt>
+                <dd>Enseñar no deja artefacto público. Ninguna de las fuentes que este sistema lee produce evidencia de que alguien aprendió algo.</dd>
+              </div>
+            </dl>
+
+            <p class="apoya">
+              Se apoya en <a href="#">Currícula y docencia Inadaptados</a> y <a href="#">Docencia universitaria</a>.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+      <details class="disclosure" open>
+        <summary>Los dos ejes</summary>
+        <p class="body" style="margin-top:var(--space-2)">
+          Cada afirmación lleva dos etiquetas. Ni una ni otra es una nota: dicen de dónde
+          sale el dato y qué puede comprobar un tercero. Los cuatro valores de cada eje
+          valen lo mismo.
+        </p>
+        <div class="ejes">
+          <div>
+            <p class="eje-tit">Procedencia — de dónde sale</p>
+            <div class="eje-fila"><code>declared</code><span>lo afirmo yo</span></div>
+            <div class="eje-fila"><code>collected</code><span>leído de la fuente</span></div>
+            <div class="eje-fila"><code>derived</code><span>calculado a partir de lo leído</span></div>
+            <div class="eje-fila"><code>correlated</code><span>unido entre fuentes</span></div>
+          </div>
+          <div>
+            <p class="eje-tit">Verificabilidad — qué puede comprobar un tercero</p>
+            <div class="eje-fila"><code>unverifiable</code><span>no puedes comprobarlo sin confiar en mí</span></div>
+            <div class="eje-fila"><code>self_link</code><span>enlaza a algo que alojo yo</span></div>
+            <div class="eje-fila"><code>third_party_public</code><span>cualquiera puede abrirlo y comprobarlo</span></div>
+            <div class="eje-fila"><code>cryptographic</code><span>comprobable sin confiar en nadie</span></div>
+          </div>
+        </div>
+      </details>
+
+      <details class="disclosure" open>
+        <summary>Lo que esto no prueba</summary>
+        <p class="body" style="margin-top:var(--space-2)">
+          <strong style="font-weight:600">Seniority.</strong> No hay puntaje, ni nivel, ni
+          ranking. No existe un número que resuma a una persona, y no es una función
+          pendiente: está fuera del producto.
+        </p>
+        <p class="body" style="margin-top:var(--space-2)">
+          <strong style="font-weight:600">Competencia y calidad.</strong> Un commit prueba
+          que se escribió código, no que se escribió bien. Este sistema nunca afirma lo segundo.
+        </p>
+      </details>
+
+      <p class="nota-pie">
+        Publicado el 2026-08-28. Este archivo contiene 12 proyectos y 3 afirmaciones.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= ESTADOS ================= -->
+  <section class="bloque bloque-azul on-deep">
+    <div class="wrap">
+      <p class="demo-tag">Los dos estados vacíos, diseñados</p>
+      <p class="body" style="margin-top:var(--space-2)">
+        No se heredan del estado normal: son dos situaciones distintas y el sistema las
+        distingue. Ninguna usa las palabras «todavía», «aún», «pronto» ni «en construcción»:
+        describen una condición del mundo, no un retraso del proyecto.
+      </p>
+
+      <div class="estados">
+        <div class="estado">
+          <p class="rotulo" style="margin-bottom:.75rem"><span class="num">A</span> Sin evidencia — el estado real de hoy</p>
+          <h3 class="h3">Experiencia normal, no degradada.</h3>
+          <p class="body">
+            El feed está presente y válido, y <code>evidence</code> viene vacío. Se muestran
+            las afirmaciones declaradas con su par de etiquetas y con las tres filas de
+            alcance. Es lo que ves arriba: no hay nada que arreglar en esta pantalla.
+          </p>
+        </div>
+
+        <div class="estado">
+          <p class="rotulo" style="margin-bottom:.75rem"><span class="num">B</span> Sin feed — superficie editorial sin afirmaciones</p>
+          <h3 class="h3">La publicación estructurada no está disponible</h3>
+          <p class="body">
+            Las afirmaciones y los proyectos se publican como archivos versionados, y ahora
+            mismo no hay ninguno en este sitio. Cuando lo haya, aparecerán aquí con su
+            procedencia y su verificabilidad.
+          </p>
+          <p class="body muted small" style="margin-top:.75rem">
+            Los dos párrafos editoriales de la cabecera se siguen mostrando. Lo que desaparece
+            son las afirmaciones, no la página.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<span class="proto-tag">Propuesta B · Señal</span>
+</body>
+</html>

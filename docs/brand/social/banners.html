@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit social — Banners · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototipos/base.css">
+<link rel="stylesheet" href="../prototipos/a-expediente/tokens.css">
+<style>
+  body { padding-block: var(--space-4); }
+  .nota { max-width: 70ch; }
+
+  /* ---------- Andamiaje de lienzo ----------
+     El lienzo se declara en px reales y se escala al ancho disponible con
+     transform. Lo que ves es el mismo pixel que se exporta, solo reducido. */
+  .lienzo-wrap { margin-bottom: var(--space-5); }
+  .lienzo-marco { overflow: hidden; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+  .lienzo { transform-origin: top left; }
+
+  .meta-pieza {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem;
+  }
+  .meta-pieza .px { color: var(--link-mark); font-variant-numeric: tabular-nums; }
+  .pie-pieza {
+    font-size: var(--step--1); color: var(--ink-muted); max-width: 68ch;
+    margin-top: .75rem;
+  }
+
+  /* Interruptor de exportacion: oculta todas las guias para capturar limpio. */
+  .barra {
+    position: sticky; top: 0; z-index: 50; background: var(--bg-page);
+    border-bottom: 1px solid var(--rule); padding-block: .75rem;
+    margin-bottom: var(--space-4);
+    display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; align-items: center;
+  }
+  .barra label {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-default);
+    display: inline-flex; align-items: center; gap: .6rem; cursor: pointer;
+    min-height: 44px;
+  }
+  .barra .hint { font-size: var(--step--1); color: var(--ink-muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+  /* ---------- Guias (zonas seguras). No forman parte de la pieza. ---------- */
+  .guia {
+    position: absolute; border: 2px dashed var(--gray-border);
+    background: rgba(204, 204, 204, .1); pointer-events: none;
+  }
+  .guia::after {
+    content: attr(data-nota); position: absolute; left: 14px; bottom: 10px;
+    font-family: var(--font-heading); font-size: 13px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--gray-medium);
+    max-width: 90%;
+  }
+  body.exportar .guia { display: none; }
+
+  /* ---------- Piezas comunes ---------- */
+  .firma-bloque { display: flex; align-items: baseline; gap: 12px; flex: none; }
+  .firma-bloque .firma { color: var(--teal); }
+  .firma-bloque .dom {
+    font-family: var(--font-heading); font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .rot {
+    font-family: var(--font-heading); font-weight: 600;
+    letter-spacing: .26em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .rot::after { content: ""; width: 90px; height: 1px; background: var(--rule-strong); }
+  .tit {
+    font-family: var(--font-heading); font-weight: 700; letter-spacing: -.025em;
+    color: var(--blue); text-wrap: balance;
+  }
+  .sub { font-family: var(--font-lede); color: var(--dark-alt); }
+
+  /* ---------- 1. LinkedIn 1584 x 396 ---------- */
+  .ln { width: 1584px; height: 396px; background: var(--white);
+        position: relative; padding: 46px 72px; display: flex; flex-direction: column; }
+  .ln-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .ln .rot { font-size: 15px; }
+  .ln .firma-bloque .firma { font-size: 38px; }
+  .ln .firma-bloque .dom { font-size: 13px; }
+  /* El enunciado arranca pasados los 568 px que cubre la foto de perfil:
+     72 de margen + 528 = 600. La esquina inferior izquierda queda vacía a
+     propósito, y por eso tampoco hay retrato: LinkedIn ya pone uno encima. */
+  .ln-enunciado { margin-left: 528px; margin-top: 26px; }
+  .ln .tit { font-size: 54px; line-height: 1.05; }
+  .ln .sub { font-size: 18px; line-height: 1.5; margin-top: 14px; max-width: 56ch; }
+  .ln-zona-avatar { left: 0; bottom: 0; width: 568px; height: 264px; }
+
+  /* ---------- 2. X 1500 x 500 ---------- */
+  .xh { width: 1500px; height: 500px; background: var(--white);
+        position: relative; padding: 54px 72px; display: flex; flex-direction: column; }
+  .xh-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 32px; }
+  .xh .rot { font-size: 15px; }
+  .xh .firma-bloque .firma { font-size: 40px; }
+  .xh .firma-bloque .dom { font-size: 13px; }
+  .xh .tit { font-size: 62px; line-height: 1.04; margin-top: 26px; max-width: 20ch; }
+  .xh .sub { font-size: 19px; line-height: 1.5; margin-top: 18px; max-width: 54ch; }
+  .xh-zona-baja { left: 0; bottom: 0; width: 1500px; height: 140px; }
+
+  /* ---------- 3. YouTube 2560 x 1440 ---------- */
+  .yt { width: 2560px; height: 1440px; background: var(--white); position: relative;
+        display: flex; align-items: center; justify-content: center; }
+  /* Todo lo legible vive dentro del area segura 1546 x 423 centrada. */
+  .yt-seguro { width: 1546px; height: 423px; display: flex; flex-direction: column;
+               justify-content: center; }
+  .yt-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: 40px; }
+  .yt .rot { font-size: 22px; }
+  .yt .firma-bloque .firma { font-size: 58px; }
+  .yt .firma-bloque .dom { font-size: 19px; }
+  .yt-nombre {
+    font-family: var(--font-heading); font-weight: 700; font-size: 96px;
+    line-height: 1; letter-spacing: -.03em; color: var(--blue); margin-top: 24px;
+  }
+  .yt .sub { font-size: 30px; line-height: 1.45; margin-top: 22px; }
+  .yt-regla { height: 1px; background: var(--rule-strong); margin-top: 28px; }
+  .yt-handle {
+    font-family: var(--font-heading); font-size: 26px; font-weight: 600;
+    letter-spacing: .12em; color: var(--ink-muted); margin-top: 22px;
+  }
+  .yt-handle b { color: var(--ink-default); font-weight: 600; letter-spacing: .04em; }
+  .yt-zona-segura { left: 507px; top: 508.5px; width: 1546px; height: 423px; }
+  /* La etiqueta sale por encima del rectángulo: dentro chocaría con el handle. */
+  .yt-zona-segura::after { bottom: auto; top: -36px; left: 0; }
+
+  /* ---------- 4. Facebook 851 x 315 ---------- */
+  .fb { width: 851px; height: 315px; background: var(--white); position: relative;
+        display: flex; align-items: center; justify-content: center; }
+  .fb-seguro { width: 640px; height: 312px; display: flex; flex-direction: column;
+               justify-content: center; align-items: center; text-align: center; }
+  .fb .rot { font-size: 12px; }
+  .fb .rot::after { display: none; }
+  .fb .tit { font-size: 40px; line-height: 1.06; margin-top: 14px; }
+  .fb .sub { font-size: 15px; line-height: 1.5; margin-top: 12px; }
+  .fb-pie { display: flex; align-items: baseline; gap: 12px; margin-top: 20px; }
+  .fb-pie .firma { font-size: 34px; color: var(--teal); }
+  .fb-pie .dom {
+    font-family: var(--font-heading); font-size: 12px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .fb-zona-segura { left: 105.5px; top: 1.5px; width: 640px; height: 312px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="rotulo" style="margin-bottom:var(--space-2)"><span class="num">01</span> Kit social · Banners</p>
+  <h1 class="display" style="font-size:var(--step-3)">Las cuatro cabeceras</h1>
+  <p class="nota lede" style="margin-top:var(--space-3)">
+    Mismo sistema que el sitio: el azul es tinta y titula, el teal ocupa un solo rol,
+    Yellowtail vive únicamente en la firma. Las dimensiones y las zonas seguras están
+    verificadas el 2026-09-12 y documentadas en <code>docs/brand/04-kit-social.md</code> §5.
+  </p>
+  <p class="nota body" style="margin-top:var(--space-3); color:var(--ink-muted)">
+    Las zonas marcadas con línea discontinua <strong>no forman parte de la pieza</strong>:
+    señalan lo que la plataforma tapa o recorta. Actívese «Modo exportación» para ocultarlas.
+  </p>
+
+  <div class="barra">
+    <label><input type="checkbox" id="modo-exportar"> Modo exportación</label>
+    <span class="hint">Oculta las guías de zona segura para capturar la pieza limpia.</span>
+  </div>
+
+  <!-- ============ 1. LinkedIn ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Banner de perfil · LinkedIn</span>
+      <span class="px">1584 × 396 px</span>
+      <span>zona del avatar marcada</span>
+    </p>
+    <div class="lienzo-marco" data-w="1584" data-h="396">
+      <div class="lienzo ln">
+        <div class="ln-cabecera">
+          <p class="rot">CTO · Constructor · Docente</p>
+          <span class="firma-bloque">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </span>
+        </div>
+        <div class="ln-enunciado">
+          <p class="tit">Dirijo tecnología.<br>Construyo sistemas. Formo talento.</p>
+          <p class="sub">CTO en Inadaptados. Opero lo que construyo.</p>
+        </div>
+        <div class="guia ln-zona-avatar" data-nota="cubierto por la foto de perfil · 568 × 264" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      LinkedIn superpone la foto de perfil sobre los <strong>568 × 264 px de la esquina
+      inferior izquierda</strong>. El enunciado arranca en x = 600 px y esa esquina queda
+      <strong>completamente vacía</strong>, comprobado en el navegador: no basta con
+      «alinear arriba», porque un titular de dos líneas baja por debajo de y = 132 y entra
+      en la zona. Las fuentes discrepan entre «~200 × 200» y «568 × 264»; se adopta la
+      conservadora, porque un banner que funciona con la zona grande funciona con la pequeña
+      y no al revés.
+      <strong>Esta pieza no lleva retrato a propósito:</strong> LinkedIn ya coloca la foto
+      de perfil encima, y una segunda fotografía de la misma persona al lado es redundante.
+    </p>
+  </div>
+
+  <!-- ============ 2. X ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Cabecera de perfil · X</span>
+      <span class="px">1500 × 500 px</span>
+      <span>relación 3:1</span>
+    </p>
+    <div class="lienzo-marco" data-w="1500" data-h="500">
+      <div class="lienzo xh">
+        <div class="xh-cabecera">
+          <p class="rot">Rodrigo Bermejo</p>
+          <span class="firma-bloque">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </span>
+        </div>
+        <p class="tit">Construyo sistemas y los opero.</p>
+        <p class="sub">CTO en Inadaptados. Software, IA y automatización en producción.</p>
+        <div class="guia xh-zona-baja" data-nota="borde inferior: avatar, nombre y recorte en móvil · 1500 × 140" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      El área fiable es de aproximadamente <strong>1500 × 360 px</strong> contados desde
+      arriba: el avatar y el bloque de nombre cubren el borde inferior, y el recorte móvil
+      se come otro tanto. Por eso el contenido está alineado a la mitad superior.
+    </p>
+  </div>
+
+  <!-- ============ 3. YouTube ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Banner de canal · YouTube</span>
+      <span class="px">2560 × 1440 px</span>
+      <span>área segura 1546 × 423 marcada</span>
+    </p>
+    <div class="lienzo-marco" data-w="2560" data-h="1440">
+      <div class="lienzo yt">
+        <div class="yt-seguro">
+          <div class="yt-cabecera">
+            <p class="rot">Automatización e IA en operación real</p>
+            <span class="firma-bloque">
+              <span class="firma" aria-hidden="true">rb</span>
+              <span class="dom">rodrigobermejo.com</span>
+            </span>
+          </div>
+          <p class="yt-nombre">Rodrigo Bermejo</p>
+          <p class="sub">CTO en Inadaptados · Construyo y opero sistemas · Doy clase</p>
+          <hr class="yt-regla">
+          <p class="yt-handle">Este canal es <b>@rodrigolbermejo</b></p>
+        </div>
+        <div class="guia yt-zona-segura" data-nota="área segura · 1546 × 423 · todo lo legible vive aquí" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      Se sube a 2560 × 1440 y el único rectángulo visible a la vez en televisión, móvil y
+      escritorio es el de <strong>1546 × 423 centrados</strong> (equivale a 1235 × 338 si
+      se sube al mínimo de 2048 × 1152). Todo lo legible vive dentro.
+      <strong>La línea del handle no es decoración:</strong> existe un canal ajeno llamado
+      «Rodrigo Bermejo Trainer» en <code>@rodrigobermejo</code>, sin la «l». Ver
+      <code>04-kit-social.md</code> §0.3.
+    </p>
+  </div>
+
+  <!-- ============ 4. Facebook ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Portada de página · Facebook</span>
+      <span class="px">851 × 315 px</span>
+      <span>centro seguro 640 × 312</span>
+    </p>
+    <div class="lienzo-marco" data-w="851" data-h="315">
+      <div class="lienzo fb">
+        <div class="fb-seguro">
+          <p class="rot">CTO · Constructor · Docente</p>
+          <p class="tit">Rodrigo Bermejo</p>
+          <p class="sub">Construyo y opero sistemas de software, IA y automatización.</p>
+          <span class="fb-pie">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </span>
+        </div>
+        <div class="guia fb-zona-segura" data-nota="centro seguro · 640 × 312" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      El Centro de ayuda de Facebook recomienda subir <strong>851 × 315</strong> (mínimo
+      400 × 150) y recorta distinto en escritorio (16:9) y en móvil (2.4:1). Las fuentes
+      secundarias dan cifras que no concuerdan —820 × 312, 851 × 315, 1200 × 628,
+      640 × 360— porque mezclan subida con visualización. Por eso todo lo legible se
+      compone <strong>centrado</strong> dentro de 640 × 312.
+      <strong>Esta pieza no se publica</strong> hasta confirmar que
+      <code>facebook.com/RodrigoBermejoIA</code> es de Rodrigo: la cuenta dio lecturas
+      inconsistentes y no pudo verificarse (§8.1).
+    </p>
+  </div>
+
+</div>
+
+<span class="proto-tag">Kit social · Borrador</span>
+
+<script>
+  // Escala cada lienzo al ancho disponible sin deformarlo.
+  function escalar() {
+    document.querySelectorAll('.lienzo-marco').forEach(function (marco) {
+      var w = +marco.dataset.w, h = +marco.dataset.h;
+      var s = Math.min(1, marco.clientWidth / w);
+      var lienzo = marco.querySelector('.lienzo');
+      lienzo.style.transform = 'scale(' + s + ')';
+      marco.style.height = Math.round(h * s) + 'px';
+    });
+  }
+  escalar();
+  addEventListener('resize', escalar);
+  document.fonts && document.fonts.ready.then(escalar);
+
+  var sw = document.getElementById('modo-exportar');
+  sw && sw.addEventListener('change', function () {
+    document.body.classList.toggle('exportar', sw.checked);
+  });
+</script>
+</body>
+</html>

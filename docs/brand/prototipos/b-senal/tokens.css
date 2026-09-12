@@ -1,0 +1,187 @@
+/* DIRECCION B — "Senal"
+ *
+ * Tesis: contemporanea y de alto contraste. El azul de marca SI es superficie:
+ * bloques a sangre que alternan con blanco pleno. El teal sube de rango y pasa
+ * a ser MARCADOR DE ESTRUCTURA -numeracion, reglas activas, separadores-, no
+ * decoracion.
+ *
+ * Diferencia tipografica deliberada frente a A: se ELIMINA Libre Baskerville
+ * del cuerpo editorial. Todo se sostiene con Josefin Sans + Open Sans, lo que
+ * la hace mas actual y menos documental. Yellowtail sigue siendo solo la firma.
+ *
+ * Paleta: la oficial de :root en app/globals.css. Ni un hex nuevo.
+ */
+
+:root {
+  /* --- Paleta oficial, verbatim de app/globals.css :root --- */
+  --blue:        #14537e;
+  --teal:        #11abb0;
+  --white:       #fff;
+  --dark-title:  #212121;
+  --dark-alt:    #313131;
+  --gray-medium: #6e757c;
+  --gray-text:   #647373;
+  --gray-border: #ccc;
+  --gray-border-subtle: #e8e8e8;
+  --gray-bg:     #ebeeee;
+
+  /* --- Roles --- */
+  --bg-page:     var(--white);
+  --bg-deep:     var(--blue);        /* superficie dominante alterna */
+  --bg-inset:    var(--gray-bg);
+  --ink-default: var(--dark-title);
+  --ink-title:   var(--dark-title);  /* titula el negro; el azul es fondo */
+  --ink-muted:   var(--gray-medium);
+  --ink-faint:   var(--gray-text);
+  --on-deep:     var(--white);
+  --on-deep-soft: #cfe0ea;           /* texto secundario sobre azul, AA */
+  --rule:        var(--gray-border-subtle);
+  --rule-deep:   #2f6a93;            /* regla sobre azul */
+  --mark:        var(--teal);        /* marcador estructural */
+  --link:        var(--blue);
+  --focus-ring:  var(--teal);
+
+  /* --- Tipografia. Dos familias en juego, no tres. --- */
+  --font-heading:   "Josefin Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body:      "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-signature: "Yellowtail", cursive;
+
+  /* --- Escala mas agresiva que A: razon 1.333 en los pasos altos. --- */
+  --step--1: clamp(.82rem, .80rem + .10vw, .88rem);
+  --step-0:  clamp(1rem, .97rem + .14vw, 1.08rem);
+  --step-1:  clamp(1.3rem, 1.2rem + .42vw, 1.55rem);
+  --step-2:  clamp(1.72rem, 1.5rem + .95vw, 2.4rem);
+  --step-3:  clamp(2.3rem, 1.85rem + 2vw, 3.6rem);
+  --step-4:  clamp(3rem, 2.1rem + 4.2vw, 5.6rem);
+
+  --space-1: .5rem;
+  --space-2: 1rem;
+  --space-3: 1.75rem;
+  --space-4: 3rem;
+  --space-5: 5rem;
+  --space-6: 7.5rem;
+
+  --measure: 60ch;
+  --radius:  3px;
+}
+
+/* ---------- Tipografia aplicada ---------- */
+
+.display {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-4);
+  line-height: .98;
+  letter-spacing: -.03em;
+  color: var(--ink-title);
+  text-wrap: balance;
+}
+.on-deep .display { color: var(--on-deep); }
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-2);
+  line-height: 1.1;
+  letter-spacing: -.018em;
+  color: var(--ink-title);
+  text-wrap: balance;
+}
+.on-deep .h2 { color: var(--on-deep); }
+
+.h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--step-1);
+  line-height: 1.24;
+  letter-spacing: -.01em;
+  color: var(--ink-title);
+}
+.on-deep .h3 { color: var(--on-deep); }
+
+/* Sin serif: la entradilla es Open Sans grande y aireada. */
+.lede {
+  font-family: var(--font-body);
+  font-size: var(--step-1);
+  line-height: 1.5;
+  color: var(--dark-alt);
+  max-width: 52ch;
+}
+.on-deep .lede { color: var(--on-deep-soft); }
+
+.body { font-size: var(--step-0); color: var(--ink-default); max-width: var(--measure); }
+.on-deep .body { color: var(--on-deep-soft); }
+.muted { color: var(--ink-muted); }
+.on-deep .muted { color: var(--on-deep-soft); }
+.small { font-size: var(--step--1); }
+
+/* Rotulo: el teal marca estructura, con una barra, no con una linea de fuga. */
+.rotulo {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+.rotulo::before {
+  content: "";
+  width: 34px;
+  height: 3px;
+  background: var(--mark);
+  flex: none;
+}
+.on-deep .rotulo { color: var(--on-deep-soft); }
+.rotulo .num { color: var(--mark); font-variant-numeric: tabular-nums; }
+
+/* ---------- Enlaces ---------- */
+
+.link {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 2px solid var(--mark);
+  padding-bottom: 1px;
+}
+.on-deep .link { color: var(--on-deep); }
+.link:hover { border-bottom-color: currentColor; }
+
+.link-cta {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-0);
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--white);
+  background: var(--teal);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .95rem 1.7rem;
+  border-radius: var(--radius);
+  transition: background-color .18s ease;
+}
+.link-cta:hover { background: #0e8f93; }
+
+.link-quiet {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-0);
+  letter-spacing: .02em;
+  color: var(--link);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 2px solid transparent;
+}
+.on-deep .link-quiet { color: var(--on-deep); }
+.link-quiet:hover { border-bottom-color: var(--mark); }
+
+/* ---------- Reglas ---------- */
+.rule { height: 1px; background: var(--rule); border: 0; }
+.on-deep .rule { background: var(--rule-deep); }
+.rule-mark { height: 3px; width: 46px; background: var(--mark); border: 0; }
