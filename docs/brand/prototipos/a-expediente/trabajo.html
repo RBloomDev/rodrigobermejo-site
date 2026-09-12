@@ -20,7 +20,8 @@
     letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
     display: flex; align-items: baseline; gap: .75rem;
   }
-  .grupo-tit .cuenta { color: var(--link-mark); font-variant-numeric: tabular-nums; }
+  /* La cuenta no lleva color de marca: es metrica sin claim_ids (docs/02 §7). */
+  .grupo-tit .cuenta { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
 
   /* Fichas tipograficas: filas de un expediente, no tarjetas con sombra. */
   .proyectos { margin-top: var(--space-3); }
@@ -121,6 +122,28 @@
         <p class="p-meta">Producto <span class="sep">·</span> desde 2026-03<br>parte del trabajo no es público</p>
       </article>
 
+    </div>
+  </section>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">En beta <span class="cuenta">01</span></h2>
+    <div class="proyectos">
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Habit Tracker</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Registrar y dar seguimiento a hábitos personales.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-06</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">Prototipos <span class="cuenta">01</span></h2>
+    <div class="proyectos">
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Punto de venta</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Construir un punto de venta reutilizable para comercios pequeños.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-02<br>parte del trabajo no es público</p>
+      </article>
     </div>
   </section>
 

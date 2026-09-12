@@ -24,7 +24,7 @@
     letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
     display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem;
   }
-  .meta-pieza .px { color: var(--link-mark); font-variant-numeric: tabular-nums; }
+  .meta-pieza .px { color: var(--ink-title); font-variant-numeric: tabular-nums; }
 
   /* ---------- Banner LinkedIn 1584x396 ---------- */
   /* Tres bandas: reserva del avatar | texto | retrato.
@@ -98,7 +98,8 @@
     font-family: var(--font-heading); font-size: 22px; font-weight: 600;
     letter-spacing: .24em; text-transform: uppercase; color: var(--ink-muted);
   }
-  .vert-num { color: var(--teal); }
+  /* Azul, no teal: #11abb0 sobre blanco da 2.81:1 y falla AA. */
+  .vert-num { color: var(--blue); }
   .vert-titulo {
     font-family: var(--font-heading); font-weight: 700; font-size: 92px; line-height: 1.02;
     letter-spacing: -.03em; color: var(--blue); margin-top: 34px;

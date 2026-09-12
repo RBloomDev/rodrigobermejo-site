@@ -1,7 +1,11 @@
 # 04 — Kit de redes sociales
 
-> **Estado: BORRADOR.** Todo lo que hay aquí está pendiente de la interpretación de
-> Rodrigo. Nada se publica sin que él lo lea. El estado pieza por pieza está en §9.
+> **Estado: BORRADOR — Fase 1, en revisión.** Este documento no es autoridad sobre nada
+> mientras `docs/decisions/0014-el-sitio-tiene-spec-de-marca-propia.md` siga en PROPUESTA.
+> Nada de lo que aquí se describe está implementado ni publicado.
+
+> Todo lo que hay aquí está pendiente de la interpretación de Rodrigo. Nada se publica sin
+> que él lo lea. El estado pieza por pieza está en §9.
 >
 > **Autoridad.** El texto sale de `docs/brand/03-copy-deck.md`; aquí no se inventa copy
 > nuevo, se recorta al límite de cada plataforma. Las reglas visuales salen de
@@ -206,34 +210,32 @@ frases está optimizando, y es la razón de no abrir con «Doy clase».
 
 Texto completo en §3.
 
-### 2.3 X — bio · 143/160
+### 2.3 X — bio · 119/160
 
 ```
-CTO en Inadaptados. Construyo y opero sistemas de software, IA y automatización. Doy clase. Escribo sobre lo que opero. Aguascalientes, México.
+CTO en Inadaptados. Construyo y opero sistemas de software, IA y automatización. Doy clase. Escribo sobre lo que opero.
 ```
 
 «Escribo sobre lo que opero» es el pie del retrato de la portada
 (`03-copy-deck.md` §2), reusado literal. El campo de sitio web de X es aparte: ahí va
 `rodrigobermejo.com`, no dentro de la bio.
 
-### 2.4 Instagram — bio · 111/150
+### 2.4 Instagram — bio · 88/150
 
 ```
 CTO en Inadaptados
 Construyo y opero sistemas de software, IA y automatización
 Doy clase
-Aguascalientes, México
 ```
 
 Cuatro líneas, sin emoji y sin iconos. El enlace va en el campo de enlace, no en el texto.
 
-### 2.5 Threads — bio · 108/150
+### 2.5 Threads — bio · 85/150
 
 ```
 CTO en Inadaptados
 Construyo y opero sistemas: software, IA, automatización
 Doy clase
-Aguascalientes, México
 ```
 
 Idéntica a la de Instagram salvo la segunda línea, acortada porque Threads dispone de
@@ -258,7 +260,6 @@ Inadaptados es un equipo. Lo que describo es mi parte.
 Publico mis afirmaciones con su procedencia y su verificabilidad en
 rodrigobermejo.com/evidencia.
 
-Aguascalientes, México.
 ```
 
 **El nombre del canal es decisión aparte y urgente.** Hoy es «Rodrigo Bermejo -
@@ -267,10 +268,10 @@ Implementador técnico», y es lo único que lo distingue de «Rodrigo Bermejo T
 canal debe pasar a algo igual de distintivo —**«Rodrigo Bermejo · CTO en Inadaptados»** es
 la propuesta— y **nunca** a «Rodrigo Bermejo» a secas.
 
-### 2.7 GitHub — bio del perfil · 115/160
+### 2.7 GitHub — bio del perfil · 91/160
 
 ```
-CTO en Inadaptados. Construyo y opero sistemas de software, IA y automatización. Doy clase. Aguascalientes, México.
+CTO en Inadaptados. Construyo y opero sistemas de software, IA y automatización. Doy clase.
 ```
 
 > ### ⚠️ Esto NO es el README. Es otro campo, y el que está mal hoy.
@@ -337,7 +338,6 @@ Publico mis afirmaciones con su procedencia y su verificabilidad, y digo explíc
 
 Trabajo con negocios que ya tienen operación y la están sosteniendo a mano. Diseño el sistema, lo construyo y lo opero.
 
-Aguascalientes, México.
 ```
 
 **Trazabilidad de las afirmaciones no obvias:**
@@ -368,8 +368,6 @@ lo que se cambia y por qué:
   acertada del README actual: un perfil de GitHub tiene lector internacional.
 - **La tabla «What I Do / Lo que hago».** Es concreta y verificable por el stack.
 - **La sección de contacto con una sola vía**, la del sitio.
-- **Las tarjetas de estadísticas de GitHub**, que son datos leídos de la fuente, no
-  narrativa.
 
 ### 4.2 Qué se cambia, y por qué cada cosa
 
@@ -381,6 +379,7 @@ lo que se cambia y por qué:
 | **Los seis «Featured Projects» se sustituyen** | Los seis dan **404** (§0.5) |
 | **El enlace de YouTube se corrige a `@rodrigolbermejo`** | Hoy manda al canal de otra persona (§0.3) |
 | **El enlace de Instagram se alinea con `Footer.tsx`** | Hoy divergen (§0.4) |
+| **Fuera las dos tarjetas de estadísticas de GitHub** | Publican conteo de commits, stars, PRs, followers y porcentajes de lenguaje. `docs/02-domain-and-evidence-model.md:467` §7 y `docs/05-feed-contract.md:304` los prohíben **de forma permanente**, y levantarlo exige cambiar antes `docs/00-product-brief.md`. No es una preferencia de diseño ni una duda de disponibilidad del servicio: el perfil consume el mismo feed que el sitio (`docs/00-product-brief.md:78`). Detalle completo tras §4.3 |
 | **Se añade la sección de evidencia** | Es lo que distingue este perfil de cualquier otro, y hoy no aparece |
 
 ### 4.3 Propuesta completa
@@ -404,7 +403,7 @@ Inadaptados es un equipo. Lo que aquí se describe es mi parte.
 - **CTO** en [**Inadaptados**](https://inadaptados.mx)
 - **Fundador** de **rbloom dev** — estudio de producto digital
 - **Docente** — ingeniería de software y bases de datos a nivel universitario, desde 2024
-- [**rodrigobermejo.com**](https://rodrigobermejo.com) · Aguascalientes, México
+- [**rodrigobermejo.com**](https://rodrigobermejo.com)
 
 </details>
 
@@ -423,7 +422,7 @@ Inadaptados is a team. What's described here is my part.
 - **CTO** at [**Inadaptados**](https://inadaptados.mx)
 - **Founder** of **rbloom dev** — digital product studio
 - **Lecturer** — software engineering and databases at university level, since 2024
-- [**rodrigobermejo.com**](https://rodrigobermejo.com) · Aguascalientes, Mexico
+- [**rodrigobermejo.com**](https://rodrigobermejo.com)
 
 </details>
 
@@ -474,17 +473,6 @@ La lista completa, con su estado real, está en
 
 ---
 
-## Estadísticas / Stats
-
-<div align="center">
-
-<img height="165" src="https://github-readme-stats.vercel.app/api?username=rodrigoBermejo&show_icons=true&hide_border=true&count_private=true&include_all_commits=true" alt="GitHub Stats" />
-<img height="165" src="https://github-readme-stats.vercel.app/api/top-langs/?username=rodrigoBermejo&layout=compact&hide_border=true&langs_count=6" alt="Top Languages" />
-
-</div>
-
----
-
 ## Conecta / Connect
 
 - Sitio — [rodrigobermejo.com](https://rodrigobermejo.com)
@@ -497,9 +485,32 @@ La lista completa, con su estado real, está en
 
 **Nota sobre las tablas de proyectos:** los cinco proyectos y sus tesis son **literales**
 de `public/proof/v1/projects.json`. Los tres marcados «privado» tienen
-`visibility: private`, que según `docs/03-privacy-and-publication-policy.md` §37 publica
-el *registro* —`id`, `title`, `thesis`— pero no la fuente. Por eso aparecen con su tesis y
-sin enlace. **Ningún proyecto `confidential` aparece aquí en ninguna forma, ni contado.**
+`visibility: private`, que según `docs/03-privacy-and-publication-policy.md` §2
+(«Publicación de lo privado») publica el *registro* —`id`, `title`, `thesis`,
+`timeframe`, `context`, `role`, `has_private_sources`— pero no la fuente. Por eso aparecen
+con su tesis y sin enlace. **Ningún proyecto `confidential` aparece aquí en ninguna forma,
+ni contado.**
+
+**Por qué este README no lleva sección de estadísticas.** Una versión anterior de esta
+propuesta incluía dos tarjetas de estadísticas de GitHub, generadas por un servicio de
+terceros: conteo de commits, stars, PRs, followers y porcentajes de lenguaje. **Están retiradas, y no como criterio estético.**
+`docs/02-domain-and-evidence-model.md:467` («Prohibido en el schema») enumera
+*«conteo de commits como habilidad · líneas de código · streaks · stars · forks ·
+followers · … · porcentajes de lenguaje · … · score · rank»*, y
+`docs/05-feed-contract.md:304` repite la lista bajo el encabezado **«Prohibido en el
+contrato, permanentemente»** — `commit_count`, `stars`, `forks`, `followers`,
+`language_percentages`, `score`, `rank`. Ambos documentos añaden que levantar la
+prohibición exige cambiar antes `docs/00-product-brief.md`.
+
+No es una regla que aplique solo al feed. `docs/00-product-brief.md:78` lista
+`rodrigoBermejo/rodrigobermejo` —el README de perfil— como uno de los tres repos del
+sistema, con la nota «consume el feed». Publicar en él un tablero de métricas de vanidad
+diría exactamente lo contrario que el producto: que el volumen de actividad es la prueba.
+El mismo argumento ya está publicado en la lámina 5 de `social/carrusel.html`: «No hay
+puntaje. Ni porcentaje de completitud, ni nivel, ni barra de progreso.»
+Lo que las tarjetas pretendían decir —en qué trabaja y con qué madurez— ya lo dice el
+README sin una sola cifra: la tabla de proyectos con su tesis y el enlace a
+`/proyectos`.
 
 **Lo que queda pendiente de Rodrigo en este README:**
 
@@ -508,8 +519,12 @@ sin enlace. **Ningún proyecto `confidential` aparece aquí en ninguna forma, ni
 2. ¿Se conserva «Fundador de rbloom dev»? Está en el README actual pero **no aparece en
    `claims.json` ni en `03-copy-deck.md`**. Es la única afirmación de la propuesta sin
    respaldo en el feed, y se conserva solo porque ya está publicada.
-3. ¿Se conservan las tarjetas de `github-readme-stats`? Dependen de un servicio de
-   terceros que, si cae, deja dos imágenes rotas en el perfil.
+3. **Aviso, no pregunta:** las dos tarjetas de estadísticas de GitHub que hoy están en el perfil
+   **se retiran**, porque publican conteo de commits, stars, followers y porcentajes de
+   lenguaje —prohibidos de forma permanente por `docs/02` §7 y `docs/05`—. No se pregunta
+   si conservarlas: conservarlas sería publicar lo prohibido con aprobación humana
+   registrada, que es peor que publicarlo por descuido. Si Rodrigo quiere revertirlo, el
+   camino es cambiar `docs/00-product-brief.md` primero, como exigen los dos documentos.
 
 ---
 
@@ -651,8 +666,9 @@ hay publicación.
 
 > En mi sitio, un proyecto confidencial no aparece. Ni contado.
 >
-> Lo obvio era publicar «3 proyectos bajo NDA». Suena honesto y da volumen. Lo descarté:
-> ese número también dice algo sobre quién los encargó. Un conteo es un dato.
+> Lo obvio era decir cuántos hay bajo acuerdo de confidencialidad. Suena honesto y da
+> volumen. Lo descarté: ese número también dice algo sobre quién los encargó. Un conteo
+> es un dato.
 >
 > Lo que cuesta: mi portafolio se ve más pequeño de lo que es, y no tengo forma de
 > demostrar que no. Ese es el precio, y lo pago.
@@ -667,7 +683,8 @@ ninguna forma, ni siquiera contado. No hay un número de proyectos ocultos porqu
 número también diría algo sobre quién los encargó» es copy **normativo e intocable** de
 `app/evidencia/page.tsx:51-54`, citado en `03-copy-deck.md` §6. La regla
 «`confidential` ⇒ `publish: none`» es
-`docs/03-privacy-and-publication-policy.md` §38 y §81.
+`docs/03-privacy-and-publication-policy.md` §2 («Default cerrado para lo confidencial») y
+§3 regla 1 («Confidencial no se agrega»).
 
 ---
 
@@ -881,7 +898,7 @@ falta para que la pieza deje de ser borrador.
 | 6 | Bio de Threads (§2.5) | **BORRADOR** | Igual que #5 |
 | 7 | Descripción del canal de YouTube (§2.6) | **BORRADOR** | #1 + **decidir el nuevo nombre del canal**, que es lo único que lo distingue del canal ajeno (§0.3) |
 | 8 | **Bio corta del perfil de GitHub (§2.7)** | **BORRADOR — listo para aplicar** | #1. Es el cambio de menor riesgo y mayor retorno: hoy dice «.NET and SharePoint» con dos erratas |
-| 9 | README del perfil de GitHub (§4.3) | **BORRADOR** | ¿Vuelven a ser públicos los seis repos (§0.5)? ¿Se conserva «Fundador de rbloom dev», que no está en el feed? ¿Se conservan las tarjetas de estadísticas? |
+| 9 | README del perfil de GitHub (§4.3) | **BORRADOR** | ¿Vuelven a ser públicos los seis repos (§0.5)? ¿Se conserva «Fundador de rbloom dev», que no está en el feed? **Las tarjetas de estadísticas de GitHub no se preguntan: se retiran por regla del producto (§4.2)** |
 | 10 | `banners.html` — LinkedIn, X, YouTube, Facebook | **BORRADOR** | #1. **La portada de Facebook además no se publica** hasta confirmar que la cuenta es de Rodrigo (§8.1) |
 | 11 | `carrusel.html` — 6 láminas | **BORRADOR** | #1. El contenido es literal del feed, así que el riesgo de contenido es bajo; lo que falta es la lectura de Rodrigo |
 | 12 | `plantillas.html` — tres géneros | **BORRADOR** | #1. **Los tres ejemplos contienen narrativa que no está en el feed** —la decisión del CRM, el ejemplo del índice compuesto— y solo Rodrigo puede confirmarla o sustituirla |

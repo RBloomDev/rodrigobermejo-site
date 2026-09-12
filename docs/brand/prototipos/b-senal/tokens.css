@@ -9,7 +9,24 @@
  * del cuerpo editorial. Todo se sostiene con Josefin Sans + Open Sans, lo que
  * la hace mas actual y menos documental. Yellowtail sigue siendo solo la firma.
  *
- * Paleta: la oficial de :root en app/globals.css. Ni un hex nuevo.
+ * Paleta: la oficial de :root en app/globals.css, MAS DOS VALORES DERIVADOS que
+ * no existen en el repo y que hay que declarar en vez de esconder:
+ *
+ *   --on-deep-soft  #cfe0ea   texto secundario sobre el azul de marca
+ *   --rule-deep     #2f6a93   regla sobre el azul de marca
+ *
+ * No son colores de marca nuevos: son los dos valores que hacen falta para que
+ * B pueda usar el azul COMO SUPERFICIE sin romper WCAG AA. Medido en navegador:
+ * #cfe0ea sobre #14537e da 5.95:1. La paleta oficial no trae ningun tono claro
+ * apto para texto secundario sobre azul, porque hasta hoy el azul no era fondo
+ * de texto largo.
+ *
+ * Esta nota existe porque la version anterior de este archivo afirmaba "ni un
+ * hex nuevo" 24 lineas antes de introducir dos. Una spec que gobierna el color
+ * no puede decir algo comprobablemente falso sobre si misma: bajo la regla del
+ * repo, divergencia = FAIL, no deuda.
+ *
+ * La direccion A no necesita ninguno de los dos, y por eso no los tiene.
  */
 
 :root {
@@ -135,7 +152,12 @@
   flex: none;
 }
 .on-deep .rotulo { color: var(--on-deep-soft); }
-.rotulo .num { color: var(--mark); font-variant-numeric: tabular-nums; }
+/* La numeracion NO va en teal. Medido en navegador: #11abb0 sobre blanco da
+   2.81:1 y sobre el azul #14537e da 2.87:1, contra un requisito WCAG AA de
+   4.5:1 para texto. El teal se queda en lo que no es texto -barras y reglas-,
+   que es donde marca estructura sin tener que ser legible. */
+.rotulo .num { color: var(--ink-title); font-variant-numeric: tabular-nums; }
+.on-deep .rotulo .num { color: var(--on-deep); }
 
 /* ---------- Enlaces ---------- */
 
@@ -154,7 +176,11 @@
   font-size: var(--step-0);
   letter-spacing: .02em;
   text-transform: uppercase;
-  color: var(--white);
+  /* Texto OSCURO sobre teal, no blanco. Medido: blanco sobre #11abb0 da
+     2.81:1 y falla AA; #212121 sobre #11abb0 da 5.73:1 y pasa. El teal
+     conserva su presencia -que es lo que distingue a B- sin volverse ilegible.
+     Cambiar el hex del teal no era opcion: es base de marca. */
+  color: var(--dark-title);
   background: var(--teal);
   text-decoration: none;
   display: inline-flex;

@@ -19,17 +19,24 @@
   .cabecera .display { margin-top: var(--space-2); }
   .cabecera .lede { margin-top: var(--space-3); }
 
-  /* Cabecera de grupo: la cuenta sube de rango y la marca el teal. */
-  .grupo-cab { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem 1.25rem; }
+  /* Cabecera de grupo.
+     La cuenta NO sube de rango, y la razon es normativa, no estetica.
+     "Cinco proyectos en produccion" dice algo sobre el sujeto del portafolio y
+     no tiene claim_ids: es metrica de evidencia segun docs/02 §7, que prohibe
+     presentarla como logro "ni destacada tipograficamente". Un numeral mas
+     grande que el titulo que lo nombra es destacarlo por definicion.
+     Va al tamano del texto que lo rodea y sin color de marca. */
+  .grupo-cab { display: flex; align-items: baseline; flex-wrap: wrap; gap: .5rem 1rem; }
   .grupo-tit {
     font-family: var(--font-heading); font-weight: 700; font-size: var(--step-2);
     letter-spacing: -.018em; color: var(--ink-title); line-height: 1.05;
   }
   .bloque-azul .grupo-tit { color: var(--on-deep); }
   .grupo-cuenta {
-    font-family: var(--font-heading); font-weight: 700; font-size: var(--step-3);
-    line-height: 1; color: var(--mark); font-variant-numeric: tabular-nums;
+    font-family: var(--font-body); font-weight: 400; font-size: var(--step-0);
+    line-height: 1.4; color: var(--ink-muted); font-variant-numeric: tabular-nums;
   }
+  .bloque-azul .grupo-cuenta { color: var(--on-deep-soft); }
 
   /* Rejilla desplazada de revista: dos columnas que no arrancan a la misma
      altura, y una ficha que rompe hacia arriba la linea de la rejilla. */
@@ -151,6 +158,42 @@
           <a class="p-nombre" href="#">Producción de contenido con IA</a>
           <p class="p-tesis"><strong>Propósito declarado:</strong> Producir video y contenido con avatares e IA de forma repetible.</p>
           <p class="p-meta">Producto <span class="sep">·</span> desde 2026-03<br>parte del trabajo no es público</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque">
+    <div class="wrap">
+      <div class="grupo-cab">
+        <h2 class="grupo-tit">En beta</h2>
+        <span class="grupo-cuenta">01</span>
+      </div>
+      <div class="proyectos">
+
+        <article class="proyecto">
+          <a class="p-nombre" href="#">Habit Tracker</a>
+          <p class="p-tesis"><strong>Propósito declarado:</strong> Registrar y dar seguimiento a hábitos personales.</p>
+          <p class="p-meta">Producto <span class="sep">·</span> desde 2026-06</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="bloque bloque-azul on-deep">
+    <div class="wrap">
+      <div class="grupo-cab">
+        <h2 class="grupo-tit">Prototipos</h2>
+        <span class="grupo-cuenta">01</span>
+      </div>
+      <div class="proyectos">
+
+        <article class="proyecto">
+          <a class="p-nombre" href="#">Punto de venta</a>
+          <p class="p-tesis"><strong>Propósito declarado:</strong> Construir un punto de venta reutilizable para comercios pequeños.</p>
+          <p class="p-meta">Producto <span class="sep">·</span> desde 2026-02<br>parte del trabajo no es público</p>
         </article>
 
       </div>

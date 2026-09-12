@@ -56,7 +56,7 @@
   .dir-b .dir-head .tag { color: #cfe0ea; }
   .tag {
     font-family: var(--fh); font-size: .75rem; font-weight: 700; letter-spacing: .2em;
-    text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 6px;
+    text-transform: uppercase; color: var(--blue); display: block; margin-bottom: 6px;
   }
   .dir-head h3 { font-size: 1.5rem; color: var(--blue); }
   .dir-head p { margin: 8px 0 0; font-size: .95rem; color: var(--muted); }
@@ -64,7 +64,7 @@
   .rec {
     display: inline-block; margin-top: 12px; font-family: var(--fh); font-size: .72rem;
     font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
-    background: var(--teal); color: #fff; padding: 5px 10px;
+    background: var(--teal); color: var(--ink); padding: 5px 10px;
   }
 
   .piezas { padding: 6px 0; }
@@ -75,7 +75,7 @@
   .piezas .pieza:first-child { border-top: 0; }
   .pieza:hover { background: var(--inset); }
   .pieza-n {
-    font-family: var(--fh); font-weight: 700; font-size: .85rem; color: var(--teal);
+    font-family: var(--fh); font-weight: 700; font-size: .85rem; color: var(--blue);
     font-variant-numeric: tabular-nums; flex: none; width: 2.2rem;
   }
   .pieza-t { flex: 1; }
@@ -91,10 +91,10 @@
 
   ol.razones { margin: 20px 0 0; padding-left: 1.3rem; max-width: 74ch; }
   ol.razones li { margin-top: 12px; }
-  ol.razones li::marker { font-family: var(--fh); font-weight: 700; color: var(--teal); }
+  ol.razones li::marker { font-family: var(--fh); font-weight: 700; color: var(--blue); }
 
   footer { padding-block: 40px 60px; color: var(--muted); font-size: .9rem; }
-  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: var(--inset); padding: 1px 5px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88em; background: var(--inset); color: var(--ink); padding: 1px 5px; }
 </style>
 </head>
 <body>
@@ -200,6 +200,47 @@
         </div>
       </article>
 
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>El kit social</h2>
+    <p class="sub">
+      Las piezas para redes, construidas con el sistema de la dirección A. Los lienzos
+      están a tamaño real y se escalan para verlos: lo que ves es el píxel que se exporta.
+      El texto y las dimensiones de cada una están en <code>docs/brand/04-kit-social.md</code>.
+    </p>
+    <div class="dirs">
+      <article class="dir dir-a">
+        <div class="piezas">
+          <a class="pieza" href="../social/banners.html">
+            <span class="pieza-n">05</span>
+            <span class="pieza-t"><strong>Banners y portadas</strong><span>LinkedIn, X, YouTube y Facebook, con sus zonas seguras marcadas</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="../social/carrusel.html">
+            <span class="pieza-n">06</span>
+            <span class="pieza-t"><strong>Carrusel de ejemplo</strong><span>Seis láminas sobre el sistema de evidencia</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+        </div>
+      </article>
+      <article class="dir dir-a">
+        <div class="piezas">
+          <a class="pieza" href="../social/plantillas.html">
+            <span class="pieza-n">07</span>
+            <span class="pieza-t"><strong>Plantillas editables</strong><span>Caso de trabajo, decisión técnica y contenido docente</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+          <a class="pieza" href="../social/video-y-vertical.html">
+            <span class="pieza-n">08</span>
+            <span class="pieza-t"><strong>Portada de vídeo y pieza vertical</strong><span>Miniatura de YouTube y formato vertical</span></span>
+            <span class="pieza-go">Abrir →</span>
+          </a>
+        </div>
+      </article>
     </div>
   </div>
 </section>

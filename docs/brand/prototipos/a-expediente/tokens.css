@@ -124,7 +124,14 @@
   height: 1px;
   background: var(--rule);
 }
-.rotulo .num { color: var(--link-mark); font-variant-numeric: tabular-nums; }
+/* La numeracion va en AZUL, no en teal.
+   Dos razones que resultaron ser la misma:
+   (1) la tabla de roles de docs/brand/01-design-system.md asigna la numeracion a
+       `ink-title`, y al teal "un solo rol: subrayado de enlace y anillo de foco";
+   (2) medido en navegador, #11abb0 sobre blanco da 2.81:1 contra un requisito
+       WCAG AA de 4.5:1 para texto. El azul #14537e da 8.59:1.
+   El fallo de contraste era el sintoma de haber roto la regla de roles. */
+.rotulo .num { color: var(--ink-title); font-variant-numeric: tabular-nums; }
 
 /* ---------- Enlaces ---------- */
 

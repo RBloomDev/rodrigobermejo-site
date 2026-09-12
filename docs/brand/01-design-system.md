@@ -25,9 +25,22 @@ Está confirmada y no se somete a revisión:
 | Wordmark | `rb` |
 | Prohibición | **Sin sombras duras** |
 
-**Este documento no añade un solo valor hexadecimal nuevo.** Lo que cambia no es la
-paleta: es **qué trabajo hace cada color**. Hoy el azul es fondo masivo y el teal
-decora; aquí el azul titula y el teal ocupa un rol único.
+**Lo que cambia no es la paleta: es qué trabajo hace cada color.** Hoy el azul es fondo
+masivo y el teal decora; aquí el azul titula y el teal ocupa un rol único.
+
+**Dos excepciones, declaradas.** La dirección B introduce dos valores derivados que no
+existen en el repo, y esconderlos sería peor que tenerlos:
+
+| Token | Valor | Para qué | Medido |
+|---|---|---|---|
+| `--on-deep-soft` | `#cfe0ea` | Texto secundario sobre el azul de marca | 5.95:1 sobre `#14537e` |
+| `--rule-deep` | `#2f6a93` | Regla sobre el azul de marca | elemento no textual |
+
+No son colores de marca nuevos: son lo que hace falta para que B pueda usar el azul
+**como superficie** sin romper WCAG AA. La paleta oficial no trae ningún tono claro apto
+para texto secundario sobre azul, porque hasta hoy el azul no era fondo de texto largo.
+**La dirección A no necesita ninguno de los dos**, y eso es un argumento más a su favor:
+se sostiene entera con la paleta que ya existe.
 
 ---
 
@@ -170,16 +183,46 @@ la dirección A; ver §7 para B), y **el teal tiene exactamente un rol**.
 ### 2.2 Contraste
 
 Objetivo **WCAG 2.2 AA**: 4.5:1 en texto normal, 3:1 en texto grande y en los bordes
-de los controles. Dos combinaciones que hay que medir, no suponer, porque están al
-límite:
+de los controles.
 
-- `ink-muted` `#6e757c` sobre blanco — se usa en rótulos y pies, y algunos son
-  pequeños.
-- Blanco sobre teal `#11abb0` — el CTA de la dirección B. El teal es claro; es el
-  candidato número uno a fallar.
+**Medido en navegador el 2026-09-12**, con `getComputedStyle` y la fórmula WCAG. No son
+estimaciones:
 
-Se miden con Lighthouse en el navegador, no a ojo. Si una falla, se corrige oscureciendo
-el rol, nunca agrandando la tipografía para entrar en la excepción de «texto grande».
+| Par | Ratio | ¿Pasa AA? |
+|---|---|---|
+| `#212121` sobre blanco | 16.1:1 | Sí |
+| Blanco sobre `#14537e` | 8.59:1 | Sí |
+| `#6e757c` sobre blanco | **4.67:1** | Sí |
+| `#cfe0ea` sobre `#14537e` | 5.95:1 | Sí |
+| `#212121` sobre `#11abb0` | 5.73:1 | Sí |
+| **`#11abb0` sobre blanco** | **2.81:1** | **No** |
+| **Blanco sobre `#11abb0`** | **2.81:1** | **No** |
+| **`#11abb0` sobre `#14537e`** | **2.87:1** | **No** |
+
+### La regla que sale de esa medición
+
+**El teal `#11abb0` no puede ser texto.** Ni sobre blanco, ni sobre el azul de marca, ni
+con texto blanco encima. Falla AA en las tres combinaciones por un margen grande, no por
+un pelo.
+
+Y aquí estaba la contradicción que este documento tenía que resolver: §0 declara el teal
+como base de marca que **no se toca**, mientras esta sección decía «si una falla, se
+corrige oscureciendo el rol». Las dos no podían ser ciertas a la vez. **Se resuelve a
+favor de §0**, porque el hex es identidad y el rol es diseño:
+
+- El teal se queda **exactamente como está**.
+- Deja de usarse para texto. Su sitio son los elementos **no textuales**: barras, reglas,
+  subrayado de enlace y anillo de foco. Que es, literalmente, el rol que la tabla de §2 ya
+  le asignaba.
+- Cuando el teal sea **fondo** de un control, el texto encima va en `#212121` (5.73:1), no
+  en blanco.
+
+**El fallo de accesibilidad era el síntoma de haber roto la regla de roles, no una
+limitación de la paleta.** Los prototipos lo violaban numerando secciones en teal;
+devolver la numeración al azul lo corrigió sin tocar un solo valor de marca.
+
+Nunca se corrige agrandando la tipografía para entrar en la excepción de «texto grande»:
+eso es cambiar la prueba, no el defecto.
 
 ---
 
@@ -281,12 +324,14 @@ fondos azules. Se fija uno propio:
 ## 7. Las dos direcciones comparten este sistema
 
 A y B no son dos sistemas: son **dos configuraciones de roles sobre los mismos
-tokens**. Ninguna introduce un hex nuevo.
+tokens**. A se sostiene entera con la paleta que ya existe en el repo; B necesita los
+dos valores derivados declarados en §0, y solo porque usa el azul como superficie.
 
 | | **A — Expediente** | **B — Señal** |
 |---|---|---|
 | Azul `#14537e` | Tinta: titula | Superficie: bloques a sangre |
-| Teal `#11abb0` | Un rol: enlace y foco | Marcador estructural: barras, numeración, CTA |
+| Teal `#11abb0` | Un rol: subrayado de enlace y anillo de foco | Marcador estructural: barras y reglas |
+| Teal como texto | **Nunca** (2.81:1, falla AA) | **Nunca**. Cuando es fondo de un control, el texto va en `#212121` |
 | Libre Baskerville | Entradillas y citas | **No se usa** |
 | Titula | Josefin Sans en azul | Josefin Sans en negro |
 | Composición | Columnas desiguales de texto | Rejilla desplazada de revista |

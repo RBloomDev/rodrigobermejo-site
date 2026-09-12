@@ -88,8 +88,18 @@ son otra cosa.
 
 **Pie del retrato:**
 
-> Aguascalientes, México.
 > Escribo sobre lo que opero.
+
+> ⚠️ **Retirado y escalado a Rodrigo: la localidad.** El borrador de este pie decía
+> «Aguascalientes, México». La revisión adversarial midió que **«Aguascalientes» no
+> aparece hoy en ninguna parte del repositorio**, así que publicarla es *«publicar un
+> campo o un valor nuevo en la superficie pública»* — uno de los casos en los que
+> `docs/03-privacy-and-publication-policy.md` §7 obliga a **detenerse y escalar**. El repo
+> es público: quedaría publicada en el merge, no en la implementación.
+>
+> Se retiró de los prototipos y del kit social. **No es un juicio sobre si Rodrigo quiere
+> publicarla** —es perfectamente razonable que sí—, sino sobre quién lo decide. Si la
+> autoriza, vuelve al pie del retrato y a las bios sociales en una línea.
 
 ### Las tres dimensiones
 
@@ -305,6 +315,32 @@ rediseño.
 
 ---
 
+## 9-bis. Un defecto de copy que ya está en producción
+
+`components/proof/AlcanceDeLaAfirmacion.tsx:18` cita la prohibición del contrato:
+
+> *«Y **sin las palabras «todavía», «aún», «pronto» ni «en construcción»**»*
+
+Y la línea **35 del mismo archivo** usa «todavía» en el texto que se renderiza hoy en
+`/evidencia`:
+
+> «Las decisiones de arquitectura de este proyecto están escritas y son públicas, pero el
+> motor **todavía** no las recolecta como evidencia: hoy son documentos, no registros.»
+
+El componente documenta la regla y la viola diecisiete líneas después. **Es un defecto del
+sitio publicado, no de este rediseño**, y lo encontró la revisión adversarial de la Fase 1.
+
+**Corrección, obligatoria en el hito 4:** eliminar la palabra. El texto no pierde nada.
+
+> Las decisiones de arquitectura de este proyecto están escritas y son públicas, pero el
+> motor no las recolecta como evidencia: hoy son documentos, no registros.
+
+Los prototipos ya usan la versión corregida. Que diverjan del componente real es
+deliberado y está anotado aquí para que nadie «restaure» la versión defectuosa creyendo
+que el prototipo se equivocó.
+
+---
+
 ## 10. Lo que este documento deja abierto para Rodrigo
 
 1. **El titular**: «Formo talento» o «Doy clase». Se decide viendo las dos maquetadas.
@@ -313,3 +349,12 @@ rediseño.
    «.NET and SharePoint», «Technical Consultant»— y hay que quedarse con una. La
    propuesta es **«CTO en Inadaptados · Construyo y opero sistemas»**, y vive en
    `docs/brand/04-kit-social.md`.
+3. **La localidad.** Ver §2: retirada por `docs/03` §7 hasta que la autorices. Es un
+   sí o un no, y con un sí vuelve en una línea.
+4. **El retrato.** `public/images/profile.jpg` lleva la marca de agua visible de Google AI
+   en su esquina inferior derecha, y el archivo no tiene EXIF, XMP ni C2PA que declaren
+   su origen. Rodrigo decidió el 2026-09-12 **usarlo tal cual, con la marca visible**. Se
+   registra aquí porque es una decisión de procedencia en un sitio cuyo producto es la
+   procedencia, y porque la alternativa —recortar la marca— se descartó explícitamente:
+   sería borrar una señal de origen. Queda reabierta si aparece fotografía sin
+   intervención generativa.
