@@ -111,8 +111,18 @@ ya es de hecho.
 Es el comportamiento que ya tiene la cascada: la evidencia de un proyecto no
 publicable se descarta, los `claim.evidence_ids` se recortan, y la derivación de
 `provenance`/`verifiability` corre **después** del recorte (`05`, orden de 7
-pasos). Un claim cuya evidencia no es publicable deriva a
-`declared`/`unverifiable`, que es la afirmación honesta.
+pasos).
+
+**El recorte es por proyecto, no por claim**, y la diferencia importa porque `Claim`
+es muchos-a-muchos con `Project` (§1). Un claim sostenido por dos proyectos, uno
+autorizado y otro no, **sigue publicando la evidencia del autorizado**: se le
+quitan las aristas hacia el que no lo está, y la derivación corre sobre lo que
+sobrevive. Solo cuando no sobrevive ninguna evidencia el claim deriva a
+`declared`/`unverifiable`, que es entonces la afirmación honesta.
+
+Decirlo al revés —«el claim deriva a `declared`/`unverifiable`»— sería declarar
+menos verificabilidad de la que la evidencia publicada sostiene. Es el error opuesto
+al que §1.1 prohíbe, y también hace mentir al artefacto.
 
 El aborto actual de `buildFeed` existe solo porque **nada** está autorizado. En
 cuanto exista el campo, se sustituye por la omisión.
@@ -149,8 +159,23 @@ Con el Registry de hoy eso deja **dos** proyectos candidatos, `habit-tracker` y
 
 ## Criterios de aceptación, si se aprueba
 
-1. `publish_evidence` ausente o `false` ⇒ ninguna evidencia de ese proyecto en el
-   artefacto, y su claim deriva a `declared`/`unverifiable`.
+1. `publish_evidence` ausente o `false` ⇒ ninguna evidencia **de ese proyecto** en
+   el artefacto. **El recorte es por proyecto, no por claim:** un claim que
+   atraviesa varios proyectos conserva la evidencia autorizada de los demás, y la
+   derivación de `provenance`/`verifiability` corre sobre **toda la que sobreviva**.
+   Solo si no sobrevive ninguna, el claim deriva a `declared`/`unverifiable`.
+
+   Es el error más fácil de cometer implementándolo, porque `Claim` es
+   muchos-a-muchos con `Project` (§1) y la intuición de «recortar el claim» llega
+   antes que la de «recortar sus aristas». Un claim sostenido por un proyecto
+   autorizado y otro que no **sí publica evidencia**, la del primero, y su
+   verificabilidad es el máximo sobre ese subconjunto — no `unverifiable`.
+
+1b. Con dos proyectos en un claim, uno con `publish_evidence: true` y otro sin él:
+   el artefacto contiene la evidencia del primero, `claim.evidence_ids` cita solo
+   esa, y la verificabilidad derivada es la que corresponde a ese subconjunto. Test
+   explícito, porque el caso correcto y el incorrecto se distinguen solo mirando
+   `verifiability`.
 2. `publish_evidence: true` en un proyecto `confidential` ⇒ el validador falla.
 3. `publish_evidence: true` con `publish: none` ⇒ el validador falla.
 4. `publish_evidence: true` en `context: client` sin `release` ⇒ el validador falla.
