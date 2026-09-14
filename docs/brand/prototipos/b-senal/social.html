@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B — Portada social · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  body { padding-block: var(--space-4); }
+  .nota { max-width: 70ch; margin-bottom: var(--space-4); }
+
+  /* El lienzo se declara en px reales y se escala al ancho disponible con
+     transform, para que lo que ves sea exactamente lo que se exporta. */
+  .lienzo-wrap { margin-bottom: var(--space-5); }
+  .lienzo-marco { overflow: hidden; border: 1px solid var(--rule); border-radius: var(--radius); }
+  .lienzo { transform-origin: top left; }
+
+  .meta-pieza {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem;
+    align-items: center;
+  }
+  .meta-pieza::before { content: ""; width: 26px; height: 3px; background: var(--mark); flex: none; }
+  .meta-pieza .px { color: var(--ink-title); font-variant-numeric: tabular-nums; }
+
+  /* ---------- Banner LinkedIn 1584x396 ----------
+     ZONA SEGURA — verificado 2026-09-12. LinkedIn superpone la foto de perfil
+     sobre los 568x264 px de abajo a la izquierda.
+     A lo resuelve en VERTICAL: alinea el texto arriba y reserva el colchon.
+     B lo resuelve en HORIZONTAL: los 568 px de la izquierda son una banda de
+     reserva sin contenido legible, y TODO el texto -titular, entradilla, firma
+     y dominio- vive a la derecha de esa banda, donde puede usar el alto entero. */
+  .ln {
+    width: 1584px; height: 396px; background: var(--bg-deep);
+    display: grid; grid-template-columns: 568px minmax(0, 1fr) 360px;
+    position: relative;
+  }
+
+  /* Banda de reserva. Va vacia a proposito: el avatar la cubre.
+     El unico elemento vive en la franja superior de 132 px, que nunca se tapa. */
+  .ln-reserva { position: relative; }
+  .ln-senal { position: absolute; left: 72px; top: 40px; display: grid; gap: 9px; }
+  .ln-senal i { display: block; height: 7px; background: var(--mark); }
+  .ln-senal i:nth-child(1) { width: 168px; }
+  .ln-senal i:nth-child(2) { width: 104px; }
+  .ln-senal i:nth-child(3) { width: 232px; }
+
+  .ln-texto {
+    border-left: 6px solid var(--mark);
+    padding: 46px 40px 44px 44px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .ln-rotulo {
+    font-family: var(--font-heading); font-size: 15px; font-weight: 700;
+    letter-spacing: .26em; text-transform: uppercase; color: var(--on-deep-soft);
+  }
+  .ln-titulo {
+    font-family: var(--font-heading); font-weight: 700; font-size: 52px; line-height: 1.02;
+    letter-spacing: -.03em; color: var(--on-deep); margin-top: 18px;
+  }
+  .ln-sub {
+    font-family: var(--font-body); font-size: 18px; line-height: 1.5;
+    color: var(--on-deep-soft); margin-top: 18px; max-width: 46ch;
+  }
+  .ln-firma { margin-top: 26px; display: flex; align-items: baseline; gap: 14px; }
+  .ln-firma .firma { font-size: 40px; color: var(--on-deep); }
+  .ln-firma .dom {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--on-deep-soft);
+  }
+
+  .ln-retrato { position: relative; overflow: hidden; }
+  .ln-retrato img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 14%; filter: grayscale(1) contrast(1.06); }
+  .ln-retrato::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, var(--blue) 0%, color-mix(in srgb, var(--blue) 0%, transparent) 42%);
+  }
+
+  /* Marca visual de la zona que cubre el avatar. Solo para revisar: no se exporta. */
+  .ln-zona-avatar {
+    position: absolute; left: 0; bottom: 0; width: 568px; height: 264px;
+    border: 2px dashed var(--gray-border);
+    background: color-mix(in srgb, var(--gray-border) 10%, transparent);
+    pointer-events: none;
+  }
+  .ln-zona-avatar::after {
+    content: "zona cubierta por la foto de perfil · 568 × 264";
+    position: absolute; left: 14px; bottom: 10px;
+    font-family: var(--font-heading); font-size: 12px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--on-deep-soft);
+  }
+  .lienzo-marco.exportar .ln-zona-avatar { display: none; }
+
+  /* ---------- Pieza vertical 1080x1350 ----------
+     La tesis de B, literal: el azul es superficie y alterna con blanco pleno.
+     No hay zona segura que respetar en este formato. */
+  .vert { width: 1080px; height: 1350px; background: var(--white); display: flex; flex-direction: column; }
+  .vert-banda { background: var(--bg-deep); padding: 80px 80px 72px; }
+  .vert-rotulo {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 700;
+    letter-spacing: .24em; text-transform: uppercase; color: var(--on-deep-soft);
+    display: flex; align-items: center; gap: 18px;
+  }
+  .vert-rotulo::before { content: ""; width: 56px; height: 5px; background: var(--mark); flex: none; }
+  .vert-num { color: var(--ink-title); }
+  .vert-titulo {
+    font-family: var(--font-heading); font-weight: 700; font-size: 96px; line-height: .98;
+    letter-spacing: -.035em; color: var(--on-deep); margin-top: 36px;
+  }
+  .vert-bajo { padding: 72px 80px 80px; display: flex; flex-direction: column; flex: 1; }
+  .vert-cuerpo {
+    font-family: var(--font-body); font-size: 32px; line-height: 1.5;
+    color: var(--dark-alt); max-width: 26ch;
+  }
+  .vert-regla { height: 5px; width: 120px; background: var(--mark); border: 0; margin-top: 56px; }
+  .vert-par {
+    font-family: var(--font-body); font-size: 23px; line-height: 1.5;
+    color: var(--gray-medium); margin-top: 28px;
+  }
+  .vert-par b { font-weight: 600; color: var(--ink-default); }
+  .vert-pie { margin-top: auto; display: flex; align-items: baseline; justify-content: space-between; }
+  .vert-pie .firma { font-size: 72px; color: var(--blue); }
+  .vert-pie .dom {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="rotulo" style="margin-bottom:var(--space-2)"><span class="num">06</span> Portada social</p>
+  <h1 class="display" style="font-size:var(--step-3)">El sistema fuera del sitio</h1>
+  <p class="nota lede" style="margin-top:var(--space-3)">
+    Las mismas reglas —azul como superficie, teal como marcador estructural,
+    Yellowtail solo en la firma— aplicadas a formato social. Si el sistema solo
+    funciona en el hero, no es un sistema.
+  </p>
+
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Banner LinkedIn</span>
+      <span class="px">1584 × 396 px</span>
+      <span>zona del avatar marcada</span>
+      <span>texto desplazado a la derecha de los 568 px</span>
+    </p>
+    <div class="lienzo-marco" data-w="1584" data-h="396">
+      <div class="lienzo ln">
+        <div class="ln-reserva">
+          <span class="ln-senal" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
+        <div class="ln-texto">
+          <p class="ln-rotulo">CTO · Constructor · Docente</p>
+          <p class="ln-titulo">Dirijo tecnología.<br>Construyo sistemas.<br>Formo talento.</p>
+          <p class="ln-sub">CTO en Inadaptados. Opero lo que construyo.</p>
+          <div class="ln-firma">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </div>
+        </div>
+        <div class="ln-retrato">
+          <img src="../../../../public/images/profile.jpg" alt="">
+        </div>
+        <div class="ln-zona-avatar" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Pieza vertical</span>
+      <span class="px">1080 × 1350 px</span>
+      <span>afirmación real del feed</span>
+    </p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo vert">
+        <div class="vert-banda on-deep">
+          <p class="vert-rotulo"><span class="vert-num">01</span> &nbsp;Una afirmación</p>
+          <p class="vert-titulo">No solo escribo software: lo opero.</p>
+        </div>
+        <div class="vert-bajo">
+          <p class="vert-cuerpo">
+            Los sistemas que construyo están en producción, y cuando algo falla el que
+            responde soy yo.
+          </p>
+          <hr class="vert-regla">
+          <p class="vert-par">
+            Procedencia: <b>lo afirmo yo</b> · Verificabilidad:
+            <b>no puedes comprobarlo sin confiar en mí</b>
+          </p>
+          <div class="vert-pie">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<span class="proto-tag">Propuesta B · Señal</span>
+
+<script>
+  // Escala cada lienzo al ancho disponible sin deformarlo. Lo que se ve en
+  // pantalla es el mismo pixel que se exporta, solo reducido.
+  function escalar() {
+    document.querySelectorAll('.lienzo-marco').forEach(function (marco) {
+      var w = +marco.dataset.w, h = +marco.dataset.h;
+      var s = Math.min(1, marco.clientWidth / w);
+      var lienzo = marco.querySelector('.lienzo');
+      lienzo.style.transform = 'scale(' + s + ')';
+      marco.style.height = Math.round(h * s) + 'px';
+    });
+  }
+  escalar();
+  addEventListener('resize', escalar);
+  document.fonts && document.fonts.ready.then(escalar);
+</script>
+</body>
+</html>

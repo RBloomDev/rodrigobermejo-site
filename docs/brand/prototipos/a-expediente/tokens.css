@@ -1,0 +1,179 @@
+/* DIRECCION A — "Expediente"
+ *
+ * Tesis: documental. El azul de marca es TINTA ESTRUCTURAL, no superficie.
+ * El blanco es el material principal. El teal ocupa exactamente un rol
+ * -enlace y foco- y por eso casi no se ve, que es lo que pide
+ * "acento teal moderado".
+ *
+ * Paleta: la oficial de :root en app/globals.css, sin anadir ni un hex nuevo.
+ * Jerarquia tipografica: Josefin Sans titula, Libre Baskerville entra en las
+ * entradillas (hoy solo vive en citas), Open Sans lee, Yellowtail firma.
+ */
+
+:root {
+  /* --- Paleta oficial, verbatim de app/globals.css :root --- */
+  --blue:        #14537e;
+  --teal:        #11abb0;
+  --white:       #fff;
+  --dark-title:  #212121;
+  --dark-alt:    #313131;
+  --gray-medium: #6e757c;
+  --gray-text:   #647373;
+  --gray-border: #ccc;
+  --gray-border-subtle: #e8e8e8;
+  --gray-bg:     #ebeeee;
+
+  /* --- Roles. Un color = un trabajo. --- */
+  --bg-page:     var(--white);
+  --bg-inset:    var(--gray-bg);
+  --ink-default: var(--dark-title);
+  --ink-title:   var(--blue);      /* el azul titula; no hace de fondo */
+  --ink-muted:   var(--gray-medium);
+  --ink-faint:   var(--gray-text);
+  --rule:        var(--gray-border-subtle);
+  --rule-strong: var(--gray-border);
+  --link:        var(--blue);
+  --link-mark:   var(--teal);      /* el unico uso decorativo del teal */
+  --focus-ring:  var(--teal);
+
+  /* --- Tipografia. Roles explicitos: ningun token se auto-referencia. --- */
+  --font-heading:   "Josefin Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body:      "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-lede:      "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --font-signature: "Yellowtail", cursive;
+
+  /* --- Escala tipografica. Razon 1.25, fluida con clamp. --- */
+  --step--1: clamp(.82rem, .80rem + .10vw, .88rem);
+  --step-0:  clamp(1rem, .97rem + .14vw, 1.08rem);
+  --step-1:  clamp(1.25rem, 1.18rem + .32vw, 1.45rem);
+  --step-2:  clamp(1.56rem, 1.42rem + .66vw, 2rem);
+  --step-3:  clamp(1.95rem, 1.68rem + 1.25vw, 2.85rem);
+  --step-4:  clamp(2.44rem, 1.92rem + 2.4vw, 4rem);
+
+  /* --- Ritmo vertical. Una sola serie, sin numeros sueltos. --- */
+  --space-1: .5rem;
+  --space-2: 1rem;
+  --space-3: 1.75rem;
+  --space-4: 3rem;
+  --space-5: 5rem;
+  --space-6: 7.5rem;
+
+  --measure: 63ch;   /* medida de lectura */
+  --radius:  2px;    /* casi recto: es un documento, no una tarjeta */
+}
+
+/* ---------- Tipografia aplicada ---------- */
+
+.display {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-4);
+  line-height: 1.04;
+  letter-spacing: -.022em;
+  color: var(--ink-title);
+  text-wrap: balance;
+}
+
+.h2 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--step-2);
+  line-height: 1.18;
+  letter-spacing: -.012em;
+  color: var(--ink-title);
+  text-wrap: balance;
+}
+
+.h3 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--step-1);
+  line-height: 1.3;
+  letter-spacing: -.008em;
+  color: var(--ink-default);
+}
+
+/* La entradilla es donde Libre Baskerville deja de ser solo una cita. */
+.lede {
+  font-family: var(--font-lede);
+  font-size: var(--step-1);
+  line-height: 1.55;
+  color: var(--dark-alt);
+  max-width: 54ch;
+}
+
+.body { font-size: var(--step-0); color: var(--ink-default); max-width: var(--measure); }
+.muted { color: var(--ink-muted); }
+.small { font-size: var(--step--1); }
+
+/* Rotulo de seccion: numerado, como un expediente. */
+.rotulo {
+  font-family: var(--font-heading);
+  font-size: var(--step--1);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+.rotulo::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+/* La numeracion va en AZUL, no en teal.
+   Dos razones que resultaron ser la misma:
+   (1) la tabla de roles de docs/brand/01-design-system.md asigna la numeracion a
+       `ink-title`, y al teal "un solo rol: subrayado de enlace y anillo de foco";
+   (2) medido en navegador, #11abb0 sobre blanco da 2.81:1 contra un requisito
+       WCAG AA de 4.5:1 para texto. El azul #14537e da 8.59:1.
+   El fallo de contraste era el sintoma de haber roto la regla de roles. */
+.rotulo .num { color: var(--ink-title); font-variant-numeric: tabular-nums; }
+
+/* ---------- Enlaces ---------- */
+
+.link {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid var(--link-mark);
+  padding-bottom: 1px;
+  transition: background-color .18s ease;
+}
+.link:hover { background: color-mix(in srgb, var(--teal) 12%, transparent); }
+
+.link-cta {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--step-0);
+  letter-spacing: .01em;
+  color: var(--white);
+  background: var(--blue);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .8rem 1.5rem;
+  border-radius: var(--radius);
+  transition: background-color .18s ease;
+}
+.link-cta:hover { background: #104366; }
+
+.link-quiet {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--step-0);
+  color: var(--link);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  border-bottom: 1px solid transparent;
+}
+.link-quiet:hover { border-bottom-color: var(--link-mark); }
+
+/* ---------- Reglas ---------- */
+.rule { height: 1px; background: var(--rule); border: 0; }
+.rule-strong { height: 1px; background: var(--rule-strong); border: 0; }

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A — Trabajo · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../base.css">
+<link rel="stylesheet" href="tokens.css">
+<style>
+  .cabecera { padding-block: var(--space-5) var(--space-4); }
+  .cabecera .display { font-size: var(--step-3); margin-top: var(--space-2); }
+  .cabecera .lede { margin-top: var(--space-3); }
+
+  .grupo { padding-block: var(--space-4); border-top: 1px solid var(--rule); }
+  .grupo-tit {
+    font-family: var(--font-heading); font-weight: 600; font-size: var(--step--1);
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; align-items: baseline; gap: .75rem;
+  }
+  /* La cuenta no lleva color de marca: es metrica sin claim_ids (docs/02 §7). */
+  .grupo-tit .cuenta { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+  /* Fichas tipograficas: filas de un expediente, no tarjetas con sombra. */
+  .proyectos { margin-top: var(--space-3); }
+  .proyecto {
+    display: grid; gap: .4rem var(--space-3);
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--rule);
+  }
+  .proyecto:first-child { border-top: 0; }
+  @media (min-width: 820px) {
+    .proyecto { grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) minmax(0, 12rem); align-items: baseline; }
+  }
+  .p-nombre {
+    font-family: var(--font-heading); font-weight: 700; font-size: var(--step-1);
+    color: var(--ink-title); line-height: 1.2; text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  a.p-nombre:hover { border-bottom-color: var(--link-mark); }
+  .p-tesis { color: var(--ink-default); font-size: var(--step-0); }
+  .p-meta { font-size: var(--step--1); color: var(--ink-muted); line-height: 1.5; }
+  .p-meta .sep { color: var(--rule-strong); }
+
+  .huerfanos { padding-block: var(--space-4) var(--space-5); border-top: 1px solid var(--rule-strong); }
+  .nota-pie {
+    margin-top: var(--space-5); padding-top: var(--space-3);
+    border-top: 1px solid var(--rule); font-size: var(--step--1); color: var(--ink-muted);
+  }
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <header class="cabecera">
+    <p class="rotulo"><span class="num">03</span> Trabajo</p>
+    <h1 class="display">Proyectos</h1>
+    <p class="lede">
+      Un proyecto es una unidad de trabajo con dueño e intención. Un repositorio es
+      un artefacto suyo, no el proyecto.
+    </p>
+  </header>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">En producción <span class="cuenta">05</span></h2>
+    <div class="proyectos">
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Plataforma Inadaptados</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Sostener la operación educativa de Inadaptados: LMS, web, certificados y contenido.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-02<br>parte del trabajo no es público</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Currícula y docencia Inadaptados</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Diseñar la currícula y los materiales con los que se forma a desarrolladores en Inadaptados.</p>
+        <p class="p-meta">Formación <span class="sep">·</span> desde 2026-01<br>parte del trabajo no es público</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Docencia universitaria</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Impartir asignaturas de ingeniería de software y bases de datos a nivel universitario.</p>
+        <p class="p-meta">Formación <span class="sep">·</span> desde 2024-08</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Infraestructura y automatización interna</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Operar VPS, contenedores y asistentes internos sin depender de terceros.</p>
+        <p class="p-meta">Herramienta <span class="sep">·</span> desde 2026-03<br>parte del trabajo no es público</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">SSP</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Automatizar la captación y el seguimiento comercial de Inadaptados.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-08<br>parte del trabajo no es público</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">En alfa <span class="cuenta">03</span></h2>
+    <div class="proyectos">
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Proof of Work</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.</p>
+        <p class="p-meta">Herramienta <span class="sep">·</span> desde 2026-08<br>parte del trabajo no es público</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">MathGym</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Practicar matemáticas con ejercicios y seguimiento de progreso.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-07<br>parte del trabajo no es público</p>
+      </article>
+
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Producción de contenido con IA</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Producir video y contenido con avatares e IA de forma repetible.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-03<br>parte del trabajo no es público</p>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">En beta <span class="cuenta">01</span></h2>
+    <div class="proyectos">
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Habit Tracker</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Registrar y dar seguimiento a hábitos personales.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-06</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="grupo">
+    <h2 class="grupo-tit">Prototipos <span class="cuenta">01</span></h2>
+    <div class="proyectos">
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Punto de venta</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Construir un punto de venta reutilizable para comercios pequeños.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-02<br>parte del trabajo no es público</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="huerfanos">
+    <h2 class="h3">Proyectos publicados que hoy no sostienen ninguna afirmación</h2>
+    <p class="body" style="margin-top:.6rem">
+      Están aquí porque existen, no porque prueben algo. Mostrarlos con esa etiqueta
+      es más honesto que esconderlos.
+    </p>
+    <div class="proyectos" style="margin-top:var(--space-3)">
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Exploraciones y material de práctica</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Probar tecnologías y producir material de práctica, sin usuarios.</p>
+        <p class="p-meta">Laboratorio <span class="sep">·</span> desde 2025-05<br>no sostiene ninguna afirmación publicada</p>
+      </article>
+      <article class="proyecto">
+        <a class="p-nombre" href="#">Sitio RBloomDev</a>
+        <p class="p-tesis"><strong style="font-weight:600">Propósito declarado:</strong> Presencia web de RBloomDev, separada del sitio personal.</p>
+        <p class="p-meta">Producto <span class="sep">·</span> desde 2026-03<br>no sostiene ninguna afirmación publicada</p>
+      </article>
+    </div>
+  </section>
+
+  <p class="nota-pie">
+    Publicado el 2026-08-28. Este archivo contiene 12 proyectos y 3 afirmaciones.
+  </p>
+</main>
+
+<span class="proto-tag">Propuesta A · Expediente</span>
+</body>
+</html>
