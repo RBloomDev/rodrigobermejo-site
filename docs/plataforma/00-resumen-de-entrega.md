@@ -28,6 +28,8 @@ Cosas con comando detrás, salida pegada y verificación en navegador.
 | **Los filtros filtran** | «Formo» → 2 de 12 proyectos; «Dirijo» → 4; por periodo → 2 y 4; limpiar → 12. Con `aria-pressed` y recuento actualizado. |
 | **Accesibilidad medida, no estimada** | 0 fallos de contraste en las cuatro pantallas, mínimo 4.67:1. Recorrido de teclado completo con foco visible en las 35 paradas. Sin scroll horizontal a 320, 400, 768 y 1280 px. |
 | **La sonda de contraste puede fallar** | Se le inyectó a propósito un par de 1.64:1 y se puso roja. |
+| **El canal no se deja usar como proxy** | Una revisión de seguridad encontró SSRF: las URLs vienen de feeds de terceros y se seguían redirecciones a ciegas. Guarda en `red-segura.mjs`, aplicada en la única puerta de red del canal. 22 pruebas, incluida la del 302 hacia la IP de metadatos. |
+| **Esas pruebas pueden fallar** | Comprobado rompiendo la guarda a propósito, dos veces: desactivar el veto de IPv4 pone 6 en rojo; cambiar `manual` por `follow` pone 1. La primera versión de esa prueba **seguía verde con la guarda rota** —el doble de `fetch` ignoraba la opción `redirect`— y se corrigió. |
 
 ### Las cuatro pantallas
 

@@ -9,6 +9,7 @@ import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { destinoPermitido } from './red-segura.mjs';
 
 export const DIR_EDITORIAL = dirname(fileURLToPath(import.meta.url));
 export const DIR_ESTADO = join(DIR_EDITORIAL, 'estado');
@@ -105,6 +106,12 @@ export function huellaDe(titulo, url) {
 
 // --- HTTP ------------------------------------------------------------------------
 
+// La guarda de destino vive en `red-segura.mjs` porque el redactor tambien
+// descarga por su cuenta y comparte el mismo riesgo. Aqui se aplica a TODO el
+// canal: esta es la unica puerta de red, asi que es el unico sitio donde hay
+// que acertar.
+const MAX_SALTOS_RED = 5;
+
 /**
  * Una sola puerta de red para todo el canal. Devuelve siempre un objeto; nunca lanza.
  * Quien llama decide, y el fallo SIEMPRE es un dato registrable, no una excepcion que
@@ -115,12 +122,53 @@ export async function obtener(url, { timeoutMs = 20000, metodo = 'GET' } = {}) {
   const reloj = setTimeout(() => control.abort(), timeoutMs);
   const t0 = Date.now();
   try {
-    const r = await fetch(url, {
-      method: metodo,
-      signal: control.signal,
-      redirect: 'follow',
-      headers: { 'user-agent': AGENTE_UA, accept: '*/*' },
-    });
+    // --- La guarda, antes de tocar la red ---------------------------------------
+    // Estas URLs no las elegimos: salen de feeds RSS de terceros y del texto de
+    // articulos ajenos que el redactor cita. Son entrada de un atacante, no
+    // configuracion. Sin esta comprobacion, `http://169.254.169.254/` --- el
+    // endpoint de metadatos de la nube --- pasa como cualquier otra.
+    //
+    // Y las redirecciones se siguen A MANO, revalidando cada salto: `redirect:
+    // 'follow'` obedece un 302 hacia `http://127.0.0.1:6379/` sin volver a
+    // preguntar, y entonces validar la primera URL no habria servido de nada.
+    let actual = url;
+    let r = null;
+    for (let salto = 0; salto <= MAX_SALTOS_RED; salto += 1) {
+      const permiso = await destinoPermitido(actual);
+      if (!permiso.permitido) {
+        return {
+          ok: false,
+          // Codigo propio, y deliberadamente NO 404: `verificar.mjs` clasifica
+          // 404/410 como `no_existe` --- fallo de la pieza --- y todo lo demas
+          // como `no_consultada`. Que nosotros nos neguemos a pedir una URL no
+          // prueba que el documento no exista; prueba que no lo consultamos.
+          codigo: 'DESTINO_VETADO',
+          texto: '',
+          ms: Date.now() - t0,
+          mensaje: `destino no permitido: ${permiso.motivo}`,
+        };
+      }
+      r = await fetch(actual, {
+        method: metodo,
+        signal: control.signal,
+        redirect: 'manual',
+        headers: { 'user-agent': AGENTE_UA, accept: '*/*' },
+      });
+      if (r.status < 300 || r.status >= 400) break;
+      const destino = r.headers.get('location');
+      if (!destino) break;            // redireccion sin Location: se entrega tal cual
+      actual = new URL(destino, actual).href;
+      r = null;
+    }
+    if (!r) {
+      return {
+        ok: false,
+        codigo: 'DEMASIADAS_REDIRECCIONES',
+        texto: '',
+        ms: Date.now() - t0,
+        mensaje: `mas de ${MAX_SALTOS_RED} redirecciones desde ${url}`,
+      };
+    }
     const texto = metodo === 'HEAD' ? '' : await r.text();
     return {
       ok: r.ok,

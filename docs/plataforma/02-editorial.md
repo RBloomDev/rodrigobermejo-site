@@ -189,6 +189,31 @@ publica** en esta entrega.
 
 Cinco etapas. La implementación vive en `scripts/editorial/`.
 
+### 5.0 Una sola puerta de red, y por qué está guardada
+
+Todo lo que el canal descarga pasa por `comun.obtener()`, y desde ahí por la guarda de
+`red-segura.mjs`. No es celo: **estas URLs no las elegimos nosotros.** Salen de feeds RSS
+de terceros y del texto de artículos ajenos que el redactor cita. Son entrada de un
+atacante, no configuración.
+
+La versión anterior validaba solo el esquema, y eso no protege de nada:
+`http://169.254.169.254/` —el endpoint de metadatos de casi cualquier nube, el que entrega
+credenciales de instancia— pasa la comprobación de esquema perfectamente. Se bloquean
+loopback, rangos privados, link-local, CGNAT, multicast, IPv4 embebida en IPv6, nombres
+reservados y cualquier puerto que no sea 80 o 443.
+
+**Las redirecciones se siguen a mano, revalidando cada salto**, hasta cinco. `redirect:
+'follow'` obedece un 302 hacia `http://127.0.0.1:6379/` sin volver a preguntar, y entonces
+haber validado la primera URL no habría servido de nada.
+
+Un destino rechazado **no es un fallo de la pieza**: devuelve el código `DESTINO_VETADO`,
+que §5.4 clasifica como `no_consultada`. Que nosotros nos neguemos a pedir una URL no
+prueba que el documento no exista; prueba que no lo consultamos.
+
+Queda abierto, escrito y aceptado el riesgo residual de **DNS rebinding**: cerrarlo del
+todo exige forzar la IP resuelta en la conexión, lo que rompe SNI y hosting virtual —que
+es cómo se sirve la mayoría de nuestras fuentes.
+
 ### 5.1 Detectar
 Lee los feeds autorizados de §6. Registra por cada ítem: título, URL canónica, medio,
 fecha de publicación y fecha de lectura. **Nada más.** No se copia el cuerpo de fuentes

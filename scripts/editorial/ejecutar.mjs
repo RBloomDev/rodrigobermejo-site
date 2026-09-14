@@ -200,7 +200,7 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
     let resultado;
     try {
       // De uno en uno: un borrador que no compone contra §3 no puede tumbar el lote.
-      resultado = etapas.redactar([expediente], {
+      resultado = await etapas.redactar([expediente], {
         ...(inyeccion.redacciones ? { redacciones: inyeccion.redacciones } : {}),
         // Con --con-redactor se pide el borrador al modelo en el momento.
         // Sin la bandera no hay inferencia y el comportamiento es el de

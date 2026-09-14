@@ -46,6 +46,7 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { traerSeguro } from "./red-segura.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
@@ -110,48 +111,23 @@ export function inferenciaDisponible() {
  * Si la fuente es `solo_detectar`, NO se descarga nada. El redactor trabaja con
  * titulo, medio y fecha, y si eso no alcanza lo dira en vez de rellenar.
  */
-function traerExtracto(url, maxChars = 12000) {
-  // La URL viene de un feed externo, asi que es entrada no confiable. Dos
-  // defensas: se valida el esquema antes de tocarla, y se pasa como ARGUMENTO
-  // de `execFileSync` --- nunca concatenada en una cadena de shell ---, de modo
-  // que ningun metacaracter se interpreta.
-  let u;
-  try {
-    u = new URL(url);
-  } catch {
-    return null;
-  }
-  if (u.protocol !== "https:" && u.protocol !== "http:") return null;
-
-  try {
-    const html = execFileSync("curl", [
-      "-sSL", "--max-time", "25",
-      "--proto", "=http,https",     // ni file:, ni gopher:, ni redirecciones a otro esquema
-      "-A", "Mozilla/5.0 (compatible; canal-editorial/1.0)",
-      u.href,
-    ], { encoding: "utf8", maxBuffer: 24 * 1024 * 1024 });
-    return html
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      // Los enlaces se conservan como «texto [url]» ANTES de quitar etiquetas.
-      // La version anterior borraba todo el marcado y con el las URLs, asi que
-      // el modelo no veia ni una fuente que citar y devolvia la lista vacia ---
-      // correctamente. El fallo no era suyo: era que le llegaba un texto sin
-      // referencias y se le pedia que extrajera referencias.
-      .replace(/<a\b[^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
-        (_m, href, txt) => `${String(txt).replace(/<[^>]+>/g, " ").trim()} [${href}]`)
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
-      .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
-      .replace(/\s+/g, " ")
-      .trim()
-      .slice(0, maxChars);
-  } catch {
-    return null;
-  }
+async function traerExtracto(url, maxChars = 12000) {
+  // Delegado en `red-segura.mjs`. La version anterior solo validaba el esquema,
+  // y eso no protege de nada: `http://169.254.169.254/` --- el endpoint de
+  // metadatos de la nube --- pasa la comprobacion de esquema perfectamente.
+  //
+  // Y usaba `curl -L`, que sigue redirecciones sin volver a preguntar: una URL
+  // publica y valida podia devolver un 302 a `http://127.0.0.1:6379/` y la
+  // validacion inicial no habria servido para nada.
+  //
+  // Importa porque estas URLs NO las elegimos: salen de feeds RSS de terceros y
+  // del texto de articulos ajenos. Es entrada de un atacante, no configuracion.
+  const r = await traerSeguro(url, { maxChars });
+  if (!r.texto) return { texto: null, motivo: r.motivo };
+  return { texto: r.texto, motivo: null };
 }
 
-function construirPrompt(exp, centinela) {
+async function construirPrompt(exp, centinela) {
   // El expediente trae una fuente detectada (singular) y, si las hay, fuentes
   // corroborantes. Antes este prompt solo leia `exp.fuentes`, que no existe:
   // el modelo recibia un bloque vacio y --- correctamente --- se negaba a
@@ -161,21 +137,33 @@ function construirPrompt(exp, centinela) {
     ...(exp.fuentes ?? []),
   ].filter(Boolean);
 
-  const fuentes = lista.map((f, i) => [
-    `--- FUENTE ${i + 1} ---`,
-    `titulo: ${f.titulo ?? ""}`,
-    `medio: ${f.medio ?? ""}`,
-    `url: ${f.url ?? ""}`,
-    `fecha_de_la_fuente: ${f.fecha ?? "desconocida"}`,
-    `licencia: ${f.licencia ?? "no declarada"}`,
+  const bloques = await Promise.all(lista.map(async (f, i) => {
     // Solo se descarga el texto de las fuentes cuya licencia lo permite.
     // De las demas van titulo, medio y fecha, y nada mas.
-    (() => {
-      if (!f.reproducible) return "texto: (no se copia; fuente sin licencia de reproduccion)";
-      const t = traerExtracto(f.url);
-      return t ? `texto:\n${t}` : "texto: (no se pudo leer la fuente; no inventes su contenido)";
-    })(),
-  ].join("\n")).join("\n\n");
+    //
+    // La descarga es ASINCRONA y pasa por la guarda de `red-segura.mjs`. La
+    // version anterior de este bloque llamaba a `traerExtracto` sin `await`
+    // dentro de una flecha sincrona: el valor era una promesa, siempre truthy,
+    // y el prompt acababa diciendo «texto: [object Promise]» --- basura
+    // presentada al modelo como si fuera el articulo.
+    let texto = "texto: (no se copia; fuente sin licencia de reproduccion)";
+    if (f.reproducible && f.url) {
+      const r = await traerExtracto(f.url);
+      texto = r.texto
+        ? `texto:\n${r.texto}`
+        : `texto: (no se pudo leer la fuente: ${r.motivo}; no inventes su contenido)`;
+    }
+    return [
+      `--- FUENTE ${i + 1} ---`,
+      `titulo: ${f.titulo ?? ""}`,
+      `medio: ${f.medio ?? ""}`,
+      `url: ${f.url ?? ""}`,
+      `fecha_de_la_fuente: ${f.fecha ?? "desconocida"}`,
+      `licencia: ${f.licencia ?? "no declarada"}`,
+      texto,
+    ].join("\n");
+  }));
+  const fuentes = bloques.join("\n\n");
 
   return `Eres el redactor de un canal editorial de IA, software y educacion con foco en Mexico.
 
@@ -259,7 +247,7 @@ function contieneSecreto(texto) {
 }
 
 /** Llama al modelo y devuelve el borrador estructurado. */
-export function redactarConModelo(expediente) {
+export async function redactarConModelo(expediente) {
   const centinela = "#" + randomUUID().replace(/-/g, "").slice(0, 16);
 
   // Defensa 1: si el material ya trae el centinela, no se invoca nada.
@@ -268,7 +256,7 @@ export function redactarConModelo(expediente) {
     throw Object.assign(new Error("el material contiene el centinela"), { codigo: 5 });
   }
 
-  const prompt = construirPrompt(expediente, centinela);
+  const prompt = await construirPrompt(expediente, centinela);
 
   let salida;
   try {
@@ -347,7 +335,7 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   }
 
   try {
-    const borrador = redactarConModelo(exp);
+    const borrador = await redactarConModelo(exp);
     const iS = args.indexOf("--salida");
     const texto = JSON.stringify(borrador, null, 2);
     if (iS >= 0) {

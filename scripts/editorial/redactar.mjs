@@ -101,7 +101,7 @@ export function cargarRedacciones() {
  * el canal prefiere no publicar a publicar un esqueleto (§1, «un `[COMPANY RESPONSE
  * PLACEHOLDER]` servido en produccion»).
  */
-export function redactar(expedientes, {
+export async function redactar(expedientes, {
   redacciones = cargarRedacciones(),
   // `invocar` inyecta la via de inferencia. Por defecto no hay ninguna: asi las
   // pruebas corren sin red y sin modelo, y el comportamiento sin inferencia
@@ -140,7 +140,7 @@ export function redactar(expedientes, {
 
     if (!redaccion && typeof invocar === 'function') {
       try {
-        const delModelo = invocar(exp);
+        const delModelo = await invocar(exp);
         // El modelo aporta SOLO el contenido editorial. Los campos
         // estructurales --- identificador, fechas, URL de la fuente --- los pone
         // el canal desde el expediente, y eso no es burocracia: si el modelo

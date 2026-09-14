@@ -104,3 +104,4 @@
 {"ts":"2026-09-14T17:43:27Z","id":"hecho:02598096868d8368","evento":"verificada","pieza_id":"las-pantallas-por-si-solas-no-explican-el-retraso-del-le-53f9a2","corrida":"881d8dab"}
 {"ts":"2026-09-14T17:43:27Z","id":"hecho:8b539cc38f374e0f","evento":"verificada","pieza_id":"la-uam-profesionaliza-su-divulgacion-y-prepara-a-la-ia-c-e5c93e","corrida":"881d8dab"}
 {"ts":"2026-09-14T21:27:56Z","id":"hecho:d83563044f14049f","evento":"expediente_listo","corrida":"be057980"}
+{"ts":"2026-09-14T21:58:32Z","id":"hecho:d83563044f14049f","evento":"fallo","etapa":"redactar","mensaje":"La pieza «mindspeller-propone-perfiles-cognitivos-con-eeg-para-ori-1f2c7d» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"b54bb546"}
