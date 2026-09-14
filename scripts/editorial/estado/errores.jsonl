@@ -1,0 +1,2 @@
+{"registrado_en":"2026-09-14T05:26:11Z","etapa":"detectar","fuente_id":"el-economista","fuente":"El Economista","url":"https://www.eleconomista.com.mx/rss/tecnologia","codigo":403,"mensaje":"HTTP 403 Forbidden","consecuencia":"sin items de esta fuente; no se genera pieza a partir de ella"}
+{"registrado_en":"2026-09-14T05:26:11Z","etapa":"detectar","fuente_id":"anthropic","fuente":"Anthropic","url":"https://www.anthropic.com/news/rss.xml","codigo":404,"mensaje":"HTTP 404 Not Found","consecuencia":"sin items de esta fuente; no se genera pieza a partir de ella"}

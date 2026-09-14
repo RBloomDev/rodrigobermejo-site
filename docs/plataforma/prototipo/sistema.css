@@ -1,0 +1,340 @@
+/* ============================================================
+   DIRECCION VISUAL — "Redaccion"
+   Prototipo de la plataforma: identidad + editorial + actividad.
+
+   El problema de diseno que resuelve, y que ninguna de las direcciones
+   anteriores tenia que resolver: la misma superficie sostiene una REDACCION
+   (piezas con autoria, fuentes y fecha) y una SUPERFICIE DE DATOS (actividad
+   filtrable con detalle detras de cada cifra). Si se disenan por separado, el
+   sitio se parte en dos productos.
+
+   La respuesta: un sistema de REGLA Y COLUMNA, que es la gramatica comun del
+   periodico y de la tabla. Ambos son rejillas densas separadas por filetes.
+   No hay tarjetas: una sucesion de tarjetas identicas es justo lo que Rodrigo
+   pidio evitar, y ademas es lo que hace que un dashboard parezca un juguete.
+
+   Paleta: la oficial de app/globals.css. Dos derivados declarados abajo.
+   ============================================================ */
+
+:root {
+  /* --- Paleta oficial, verbatim de app/globals.css :root --- */
+  --blue:        #14537e;
+  --teal:        #11abb0;
+  --white:       #fff;
+  --dark-title:  #212121;
+  --dark-alt:    #313131;
+  --gray-dark:   #474747;
+  --gray-medium: #6e757c;
+  --gray-text:   #647373;
+  --gray-border: #ccc;
+  --gray-border-subtle: #e8e8e8;
+  --gray-light:  #dedede;
+  --gray-bg:     #ebeeee;
+
+  /* --- Dos derivados, declarados y medidos. No son marca nueva. ---
+     Hacen falta porque el azul pasa a ser superficie de texto largo, y la
+     paleta oficial no trae ningun tono claro apto para eso.
+       --on-deep-soft  #cfe0ea  sobre #14537e = 5.95:1  (AA)
+       --rule-deep     #2f6a93  filete sobre azul, elemento no textual        */
+  --on-deep-soft: #cfe0ea;
+  --rule-deep:    #2f6a93;
+
+  /* --- Roles --- */
+  --bg-page:     var(--white);
+  --bg-inset:    var(--gray-bg);
+  --bg-deep:     var(--blue);
+  --ink:         var(--dark-title);
+  --ink-2:       var(--dark-alt);
+  --ink-muted:   var(--gray-medium);
+  --ink-title:   var(--blue);
+  --on-deep:     var(--white);
+  --rule:        var(--gray-border-subtle);
+  --rule-mid:    var(--gray-light);
+  --rule-strong: var(--gray-border);
+
+  /* El teal NUNCA es texto: medido, 2.81:1 sobre blanco y 2.87:1 sobre el
+     azul. Falla AA en las dos. Su sitio son los elementos no textuales y los
+     fondos de control con tinta oscura encima (#212121 sobre teal = 5.73:1). */
+  --accent:      var(--teal);
+  --focus-ring:  var(--teal);
+
+  /* --- Tipografia. Roles explicitos, sin auto-referencia. --- */
+  --ff-display: "Josefin Sans", ui-sans-serif, system-ui, sans-serif;
+  --ff-ui:      "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --ff-read:    "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --ff-sign:    "Yellowtail", cursive;
+  --ff-num:     ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* --- Escala. Razon 1.25. --- */
+  --t--2: clamp(.72rem, .70rem + .08vw, .77rem);
+  --t--1: clamp(.82rem, .80rem + .10vw, .88rem);
+  --t-0:  clamp(1rem, .97rem + .14vw, 1.06rem);
+  --t-1:  clamp(1.2rem, 1.14rem + .28vw, 1.38rem);
+  --t-2:  clamp(1.5rem, 1.38rem + .56vw, 1.9rem);
+  --t-3:  clamp(1.9rem, 1.66rem + 1.1vw, 2.7rem);
+  --t-4:  clamp(2.4rem, 1.9rem + 2.3vw, 3.9rem);
+
+  /* --- Ritmo --- */
+  --s-1: .5rem;  --s-2: 1rem;   --s-3: 1.75rem;
+  --s-4: 3rem;   --s-5: 4.5rem; --s-6: 7rem;
+
+  --measure: 66ch;
+  --measure-read: 38rem;   /* medida de lectura de una pieza editorial */
+  --radius: 2px;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--ink);
+  font-family: var(--ff-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+img, svg { max-width: 100%; display: block; }
+h1, h2, h3, h4 { margin: 0; font-weight: 700; }
+p, figure, dl, dd, ul, ol { margin: 0; padding: 0; }
+li { list-style: none; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+
+a:focus-visible, button:focus-visible, summary:focus-visible,
+input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Contenedores ---------- */
+.wrap { width: 100%; max-width: 1280px; margin-inline: auto; padding-inline: 24px; }
+.wrap-read { width: 100%; max-width: 44rem; margin-inline: auto; padding-inline: 24px; }
+
+/* ---------- Tipografia aplicada ---------- */
+.display {
+  font-family: var(--ff-display); font-weight: 700; font-size: var(--t-4);
+  line-height: 1.03; letter-spacing: -.028em; color: var(--ink-title);
+  text-wrap: balance;
+}
+.h1 {
+  font-family: var(--ff-display); font-weight: 700; font-size: var(--t-3);
+  line-height: 1.08; letter-spacing: -.022em; color: var(--ink-title);
+  text-wrap: balance;
+}
+.h2 {
+  font-family: var(--ff-display); font-weight: 700; font-size: var(--t-2);
+  line-height: 1.15; letter-spacing: -.015em; color: var(--ink-title);
+  text-wrap: balance;
+}
+.h3 {
+  font-family: var(--ff-display); font-weight: 600; font-size: var(--t-1);
+  line-height: 1.25; letter-spacing: -.008em; color: var(--ink);
+}
+.on-deep .display, .on-deep .h1, .on-deep .h2, .on-deep .h3 { color: var(--on-deep); }
+
+/* Entradilla y cuerpo de lectura: serif. Es una redaccion. */
+.lede {
+  font-family: var(--ff-read); font-size: var(--t-1); line-height: 1.55;
+  color: var(--ink-2); max-width: 52ch;
+}
+.prosa {
+  font-family: var(--ff-read); font-size: var(--t-0); line-height: 1.75;
+  color: var(--ink); max-width: var(--measure-read);
+}
+.prosa > * + * { margin-top: 1.15em; }
+.on-deep .lede, .on-deep .prosa { color: var(--on-deep-soft); }
+
+.ui   { font-family: var(--ff-ui); font-size: var(--t-0); color: var(--ink); max-width: var(--measure); }
+.muted{ color: var(--ink-muted); }
+.small{ font-size: var(--t--1); }
+.xs   { font-size: var(--t--2); }
+.on-deep .muted { color: var(--on-deep-soft); }
+
+/* Rotulo de seccion: el filete es la gramatica comun de periodico y tabla. */
+.rotulo {
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  display: flex; align-items: center; gap: .8rem;
+  padding-bottom: .6rem; border-bottom: 2px solid var(--ink-title);
+}
+.rotulo::after { content: ""; flex: 1; }
+.on-deep .rotulo { color: var(--on-deep-soft); border-bottom-color: var(--accent); }
+
+/* Cintillo de seccion editorial */
+.cintillo {
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink-title);
+}
+.on-deep .cintillo { color: var(--on-deep); }
+
+/* Firma: unico lugar donde vive Yellowtail. */
+.firma { font-family: var(--ff-sign); font-weight: 400; line-height: 1; color: var(--ink-title); }
+.on-deep .firma { color: var(--on-deep); }
+
+/* Cifras: monoespaciadas y tabulares, para que alineen en columna.
+   NUNCA mas grandes que el texto que las nombra: una cifra destacada
+   tipograficamente es la presentacion-como-logro que docs/02 §7 prohibe. */
+.cifra {
+  font-family: var(--ff-num); font-variant-numeric: tabular-nums;
+  font-size: var(--t-0); font-weight: 600; color: var(--ink);
+}
+.on-deep .cifra { color: var(--on-deep); }
+.cifra-vacia { color: var(--ink-muted); font-weight: 400; }
+
+/* ---------- Enlaces y controles ---------- */
+.link {
+  color: var(--ink-title); text-decoration: none;
+  border-bottom: 1px solid var(--accent); padding-bottom: 1px;
+}
+.link:hover { background: color-mix(in srgb, var(--teal) 14%, transparent); }
+.on-deep .link { color: var(--on-deep); border-bottom-color: var(--accent); }
+
+.link-quiet {
+  font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+  letter-spacing: .02em; color: var(--ink-title); text-decoration: none;
+  display: inline-flex; align-items: center; gap: .45rem;
+  border-bottom: 1px solid transparent; padding-bottom: 1px;
+}
+.link-quiet:hover { border-bottom-color: var(--accent); }
+.on-deep .link-quiet { color: var(--on-deep); }
+
+/* Boton primario: tinta oscura sobre teal (5.73:1). Nunca blanco sobre teal. */
+.btn {
+  font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--1);
+  letter-spacing: .04em; text-transform: uppercase;
+  background: var(--accent); color: var(--dark-title);
+  border: 0; border-radius: var(--radius); padding: .8rem 1.4rem;
+  text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
+  cursor: pointer; transition: background-color .16s ease;
+}
+/* El hover NO oscurece el teal: blanco sobre #0e8f93 mide 3.91:1 y falla AA,
+   y texto oscuro encima da 4.12:1, que tambien falla para 14px en negrita.
+   El estado activo cambia de familia de color: azul de marca con blanco, 8.59:1.
+   Cambiar de tono en hover es ademas una senal de estado mas clara que oscurecer. */
+.btn:hover, .btn:focus-visible { background: var(--blue); color: var(--white); }
+
+.btn-linea {
+  font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+  background: transparent; color: var(--ink-title);
+  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  padding: .55rem 1rem; cursor: pointer; text-decoration: none;
+  display: inline-flex; align-items: center; gap: .45rem;
+}
+.btn-linea:hover { border-color: var(--ink-title); }
+
+/* ---------- Filtros ----------
+   Autorizados por ADR 0015 §4 D y E, SOLO en actividad y proyectos.
+   El control NO muestra conteos por opcion: eso convertiria la dimension en
+   eje de comparacion, que es lo que la regla de 05:415-416 evita. */
+.filtros {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; align-items: center;
+  padding-block: var(--s-2); border-bottom: 1px solid var(--rule);
+}
+.filtro-grupo { display: flex; align-items: baseline; gap: .6rem; flex-wrap: wrap; }
+.filtro-et {
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+}
+.chip {
+  font-family: var(--ff-ui); font-size: var(--t--1); font-weight: 600;
+  background: transparent; color: var(--ink-2);
+  border: 1px solid var(--rule-mid); border-radius: 999px;
+  padding: .3rem .85rem; cursor: pointer;
+}
+.chip:hover { border-color: var(--ink-muted); }
+.chip[aria-pressed="true"] {
+  background: var(--ink-title); color: var(--white); border-color: var(--ink-title);
+}
+
+/* ---------- Regla y columna: la rejilla comun ---------- */
+.filete { height: 1px; background: var(--rule); border: 0; }
+.filete-fuerte { height: 2px; background: var(--ink-title); border: 0; }
+.on-deep .filete { background: var(--rule-deep); }
+
+/* Fila de datos: la unidad de la superficie de actividad.
+   No es una tarjeta. Es una fila de un libro de registro. */
+.fila {
+  display: grid; gap: .35rem var(--s-3);
+  padding-block: var(--s-2);
+  border-top: 1px solid var(--rule);
+  align-items: baseline;
+}
+.fila:first-of-type { border-top: 0; }
+
+/* Detalle desplegable detras de cada cifra. Nativo: sin JS, accesible por
+   teclado de serie, y sin estado de carga -- el sitio es estatico. */
+.detalle { border-top: 1px solid var(--rule); }
+.detalle > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  padding-block: var(--s-2);
+}
+.detalle > summary::-webkit-details-marker { display: none; }
+.detalle > summary::after {
+  content: "Ver detalle"; font-family: var(--ff-ui); font-size: var(--t--2);
+  font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-title); flex: none;
+}
+.detalle[open] > summary::after { content: "Ocultar"; }
+.detalle > summary:hover::after { text-decoration: underline; }
+.detalle-cuerpo { padding-bottom: var(--s-3); }
+
+/* Nota de procedencia: acompana SIEMPRE a una cifra.
+   ADR 0015 §3, condicion 4: una cifra sin su cobertura miente por omision. */
+.procedencia {
+  font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted);
+  line-height: 1.5; max-width: 60ch;
+}
+.procedencia dt {
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-muted); font-size: var(--t--2);
+}
+.procedencia dd { margin-bottom: .5rem; }
+
+/* Hueco declarado: un dato que no existe NO es un cero.
+   Se rotula por lo que es y nunca se rellena. */
+.hueco {
+  border-left: 2px solid var(--rule-strong);
+  padding: .5rem 0 .5rem .9rem;
+  color: var(--ink-muted); font-size: var(--t--1); max-width: 58ch;
+}
+.hueco strong { color: var(--ink-2); font-weight: 600; }
+
+/* Marca de simulacion. Obligatoria en cualquier dato demostrativo.
+   Deliberadamente fea: tiene que molestar para que nadie la deje puesta. */
+.simulado {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  background: repeating-linear-gradient(135deg, #ff9 0 8px, #ffe680 8px 16px);
+  color: var(--dark-title); border: 1px solid #d9c400;
+  padding: .15rem .5rem; border-radius: var(--radius);
+}
+[data-simulado] { position: relative; }
+
+/* ---------- Movimiento: un solo gesto, y opcional ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: reveal .45s cubic-bezier(.2,.7,.3,1) both; }
+  .reveal-2 { animation-delay: .06s; }
+  .reveal-3 { animation-delay: .12s; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+/* ---------- Marca de prototipo ---------- */
+.proto {
+  position: fixed; right: 12px; bottom: 12px; z-index: 99;
+  font-family: var(--ff-ui); font-size: 11px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  background: var(--ink); color: #fff; padding: 6px 10px;
+  border-radius: var(--radius); opacity: .85;
+}
+@media print { .proto { display: none; } }

@@ -1,0 +1,42 @@
+{
+  "_nota": "Redacción escrita por el agente contra el expediente que prepara redactar.mjs. No contiene prompts ni transcripciones: solo el texto final y el vínculo al modelo que lo escribió (AGENTS.md:60, 02-editorial.md §3).",
+  "id": "marco-ailit-alfabetizacion-ia-educacion",
+  "detectado_de": "https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana",
+  "tipo": "analisis",
+  "tipo_fuente_detectada": "secundaria",
+  "modelo": "claude-opus-5[1m]",
+  "ocurrido_en": "2026-06-18",
+  "redactado_en": "2026-09-14T05:35Z",
+  "titulo": "La OCDE y la Comisión Europea cerraron un marco común de alfabetización en IA para primaria y secundaria",
+  "entradilla": "El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.",
+  "hecho": "El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code.org). El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores. El marco organiza la alfabetización en IA en cuatro dominios —Engage with AI, Create with AI, Manage AI y Shape AI— y añade, por cada competencia, expectativas de aprendizaje en tres niveles de progresión y escenarios de aula, incluidas actividades sin dispositivo. La iniciativa contribuye al dominio innovador de la evaluación PISA 2029.",
+  "que_cambia": "Para quien dirige tecnología o forma talento, deja de ser cierto que no exista un referente común: hay un marco publicado, con competencias, niveles de progresión y escenarios de aula, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero. Y como alimenta el dominio innovador de PISA 2029, es razonable esperar que se vuelva el vocabulario con el que se discuta alfabetización en IA en los sistemas educativos que participen en esa evaluación. Alinear el vocabulario propio ahora cuesta menos que traducirlo después.",
+  "mexico": {
+    "estado": "no_verificado",
+    "texto": "No se comprobó si México adopta o adoptará este marco, ni si participará en el dominio innovador de esa evaluación. Ninguna de las fuentes leídas lo dice, y la página del organismo que lo detallaría respondió con un bloqueo automático al cliente de este canal, así que no se pudo leer. El estado honesto es no verificado. La vía para cerrarlo es revisión manual, no automatización: del lado oficial mexicano no hay hoy una fuente con cadencia verificable que registre esa adopción."
+  },
+  "no_establece": [
+    "No establece que ningún sistema educativo lo haya adoptado. Lanzar un marco no es adoptarlo, y no se leyó ninguna fuente que registre una adopción nacional, ni en México ni fuera.",
+    "No establece ningún efecto sobre el aprendizaje. El marco describe competencias esperadas; no se leyó evidencia de que enseñarlas mejore algún resultado medido.",
+    "No establece que el marco sea reutilizable. El sitio que lo publica declara derechos reservados y su licencia no se pudo leer, así que aquí se cita y se enlaza, y no se reproduce.",
+    "No establece cómo se traduce a la práctica. El mecanismo por el que un marco internacional llega al aula no aparece en ninguna de las fuentes leídas."
+  ],
+  "relacion_declarada": null,
+  "fuente_primaria_url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework/",
+  "fuentes": [
+    {
+      "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
+      "medio": "AILit Framework (OCDE y Comisión Europea)",
+      "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework/",
+      "fecha": "2026-06-18",
+      "tipo": "primaria"
+    },
+    {
+      "titulo": "A Common Effort to Advance AI Literacy",
+      "medio": "AILit Framework (OCDE y Comisión Europea)",
+      "url": "https://ailiteracyframework.org/about/",
+      "fecha": "2026-06-15",
+      "tipo": "primaria"
+    }
+  ]
+}

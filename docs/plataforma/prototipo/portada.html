@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rodrigo Bermejo — CTO, constructor, docente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* ---- Apertura ---- */
+  .hero { padding-block: var(--s-5) var(--s-4); }
+  .hero-grid { display: grid; gap: var(--s-4); }
+  @media (min-width: 900px) { .hero-grid { grid-template-columns: minmax(0,1.6fr) minmax(0,1fr); gap: var(--s-5); align-items: start; } }
+  .hero .display { margin-top: var(--s-2); }
+  .hero .lede { margin-top: var(--s-3); }
+  .hero-acc { margin-top: var(--s-3); display: flex; flex-wrap: wrap; gap: .9rem 1.5rem; align-items: center; }
+
+  .retrato img {
+    width: 100%; aspect-ratio: 4/5; object-fit: cover; object-position: 50% 12%;
+    filter: grayscale(1) contrast(1.04); border-radius: var(--radius);
+  }
+  /* Franja de contexto bajo los CTA: equilibra la columna y adelanta el
+     registro de actividad sin convertirlo en una fila de cifras. */
+  .ahora { margin-top: var(--s-4); border-top: 1px solid var(--rule); padding-top: var(--s-2); }
+  .ahora p + p { margin-top: .45rem; }
+  .retrato figcaption { margin-top: .6rem; border-left: 2px solid var(--accent); padding-left: .7rem; }
+
+  /* ---- Las tres dimensiones, como filas de registro ---- */
+  .dims { padding-block: var(--s-4); }
+  .dims-list { margin-top: var(--s-3); }
+  .dim { grid-template-columns: 1fr; }
+  @media (min-width: 780px) { .dim { grid-template-columns: 11rem minmax(0,1fr) auto; } }
+  .dim-verbo { font-family: var(--ff-display); font-weight: 700; font-size: var(--t-2); color: var(--ink-title); line-height: 1.1; }
+  .dim-eje { display: block; font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted); margin-bottom: .2rem; }
+
+  /* ---- Bloque editorial: portada de noticias embebida ---- */
+  .editorial { background: var(--bg-deep); padding-block: var(--s-5); margin-top: var(--s-4); }
+  .ed-grid { display: grid; gap: var(--s-3); margin-top: var(--s-3); }
+  @media (min-width: 860px) { .ed-grid { grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: var(--s-4); } }
+  .ed-sec { display: flex; flex-direction: column; }
+  .ed-lista .fila { border-top-color: var(--rule-deep); }
+  .ed-tipo {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+  }
+
+  /* ---- Actividad resumida ---- */
+  .act { padding-block: var(--s-5); }
+  .act-grid { display: grid; gap: var(--s-3); margin-top: var(--s-3); }
+  @media (min-width: 760px) { .act-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--s-4); } }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); margin-top: var(--s-4); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html" aria-current="page">Inicio</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="proyectos.html">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== Identidad ===== -->
+  <section class="hero wrap">
+    <div class="hero-grid">
+      <div>
+        <p class="rotulo reveal">Ahora</p>
+        <h1 class="display reveal reveal-2">Dirijo tecnología.<br>Construyo sistemas.<br>Formo talento.</h1>
+        <p class="lede reveal reveal-3">
+          Soy CTO en Inadaptados, una escuela donde se aprende construyendo. Dirijo la
+          plataforma que sostiene su operación educativa, diseño la currícula con la que
+          se forman desarrolladores, y doy clase.
+        </p>
+        <div class="hero-acc">
+          <a class="btn" href="proyectos.html">Ver actividad y proyectos</a>
+          <a class="link-quiet" href="noticias.html">Leer las noticias →</a>
+        </div>
+
+        <div class="ahora">
+          <p class="xs muted" style="font-weight:700;letter-spacing:.14em;text-transform:uppercase">En curso ahora mismo</p>
+          <p class="ui small">
+            La plataforma de Inadaptados en producción, el motor de evidencia de este
+            sitio en alfa, y un canal editorial de IA y software para México en su primera
+            ejecución.
+          </p>
+          <p class="xs muted">
+            Doce proyectos declarados en el Registry. Tres afirmaciones públicas, ninguna
+            con evidencia recolectada.
+          </p>
+        </div>
+      </div>
+
+      <figure class="retrato reveal reveal-3">
+        <img src="../../../public/images/profile.jpg" alt="Retrato de Rodrigo Bermejo">
+        <figcaption class="small muted">Escribo sobre lo que opero.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Tres dimensiones ===== -->
+  <section class="dims wrap">
+    <p class="rotulo">Tres dimensiones, ninguna sustituye a las otras</p>
+    <div class="dims-list">
+
+      <article class="fila dim">
+        <h2 class="dim-verbo"><span class="dim-eje">Lead</span>Dirijo</h2>
+        <p class="ui">
+          Arquitectura y dirección tecnológica en Inadaptados: la plataforma que sostiene
+          la operación educativa —LMS, web, certificados y contenido— y la infraestructura
+          que la mantiene de pie.
+        </p>
+        <p class="small"><a class="link-quiet" href="proyectos.html?dim=lead">4 proyectos →</a></p>
+      </article>
+
+      <article class="fila dim">
+        <h2 class="dim-verbo"><span class="dim-eje">Build</span>Construyo</h2>
+        <p class="ui">
+          Software, IA y automatización en producción. No solo escribo software: lo opero.
+          Cuando algo falla, el que responde soy yo.
+        </p>
+        <p class="small"><a class="link-quiet" href="proyectos.html?dim=build">8 proyectos →</a></p>
+      </article>
+
+      <article class="fila dim">
+        <h2 class="dim-verbo"><span class="dim-eje">Teach</span>Formo</h2>
+        <p class="ui">
+          Diseño la currícula y los materiales con los que se forman desarrolladores en
+          Inadaptados, e imparto ingeniería de software y bases de datos a nivel
+          universitario.
+        </p>
+        <p class="small"><a class="link-quiet" href="proyectos.html?dim=teach">2 proyectos →</a></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ===== Plataforma editorial ===== -->
+  <section class="editorial on-deep">
+    <div class="wrap">
+      <p class="rotulo">Noticias y análisis · IA, software y educación en México</p>
+
+      <div class="ed-grid">
+        <article class="ed-sec">
+          <p class="ed-tipo" style="margin-top:var(--s-3)">Análisis</p>
+          <h2 class="h2" style="margin-top:.5rem">
+            <a href="noticia.html" style="text-decoration:none">La cláusula de la UE que obliga a documentar cómo se entrenó un modelo, y qué significa para quien lo consume desde México</a>
+          </h2>
+          <p class="lede" style="margin-top:.75rem">
+            Tres fuentes primarias, una fecha de aplicación y una limitación concreta:
+            nada de esto obliga a una empresa mexicana, pero sí cambia lo que puede exigirle
+            a su proveedor.
+          </p>
+          <p class="small muted" style="margin-top:.9rem">
+            <span class="simulado">Borrador · sin publicar</span>
+          </p>
+        </article>
+
+        <div class="ed-lista">
+          <p class="cintillo on-deep" style="margin-top:var(--s-3);margin-bottom:.75rem">Últimas</p>
+
+          <article class="fila" style="grid-template-columns:1fr">
+            <p class="ed-tipo">Noticia</p>
+            <h3 class="h3" style="font-size:var(--t-0)"><a href="noticia.html" style="text-decoration:none">Un modelo abierto entra al catálogo de un proveedor con presencia en México</a></h3>
+            <p class="xs muted">2 fuentes · verificado el 2026-09-13</p>
+          </article>
+
+          <article class="fila" style="grid-template-columns:1fr">
+            <p class="ed-tipo">Opinión</p>
+            <h3 class="h3" style="font-size:var(--t-0)"><a href="noticia.html" style="text-decoration:none">Enseñar a programar cuando el editor ya escribe el código</a></h3>
+            <p class="xs muted">Firmada · declara relación con Inadaptados</p>
+          </article>
+
+          <p style="margin-top:var(--s-2)"><a class="link-quiet" href="noticias.html">Toda la cobertura →</a></p>
+        </div>
+      </div>
+
+      <div class="hueco" style="margin-top:var(--s-4);border-left-color:var(--rule-deep);color:var(--on-deep-soft)">
+        <strong style="color:var(--on-deep)">Las tres piezas de arriba son borradores del prototipo.</strong>
+        Solo una salió de una ejecución real del canal editorial; las otras dos ilustran los
+        formatos. Ninguna está publicada. El recorrido completo está en
+        <a class="link" href="noticia.html">el detalle de la pieza</a>.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Actividad ===== -->
+  <section class="act wrap">
+    <p class="rotulo">Actividad registrada</p>
+    <p class="ui" style="margin-top:var(--s-2)">
+      Lo que estos números describen es <strong>volumen de trabajo registrado</strong>, no
+      competencia ni calidad. Cada cifra lleva su fuente y su cobertura, y lo que no tiene
+      fuente aparece como hueco, no como cero.
+    </p>
+
+    <div class="act-grid">
+      <div>
+        <details class="detalle">
+          <summary>
+            <span><span class="cifra">47</span> <span class="ui">commits en el repo del sitio</span></span>
+          </summary>
+          <div class="detalle-cuerpo">
+            <dl class="procedencia">
+              <dt>Fuente</dt><dd>API de GitHub, <code>repos/RBloomDev/rodrigobermejo-site/commits</code>, leído el 2026-09-13.</dd>
+              <dt>Periodo</dt><dd>2026-01-01 a 2026-09-11.</dd>
+              <dt>Deduplicación</dt><dd>Por SHA. Los merges no se cuentan como trabajo nuevo.</dd>
+              <dt>Cobertura</dt><dd>Un repositorio de los doce proyectos del Registry. No es el total de su trabajo.</dd>
+            </dl>
+          </div>
+        </details>
+
+        <details class="detalle">
+          <summary>
+            <span><span class="cifra">24</span> <span class="ui">pull requests</span></span>
+          </summary>
+          <div class="detalle-cuerpo">
+            <dl class="procedencia">
+              <dt>Fuente</dt><dd>API de GitHub, estado <code>all</code>, mismo repositorio.</dd>
+              <dt>Cobertura</dt><dd>Solo este repositorio. Nueve de los doce proyectos son privados y no aportan aquí.</dd>
+            </dl>
+          </div>
+        </details>
+      </div>
+
+      <div>
+        <div class="hueco">
+          <strong>Tiempo humano registrado: no hay fuente.</strong>
+          No existe registro de tiempo en ninguna parte del sistema, y deducirlo de los
+          commits o de cuánto estuvo abierto un editor sería inventarlo. No es cero: es
+          desconocido.
+        </div>
+        <div class="hueco" style="margin-top:var(--s-2)">
+          <strong>Ejecuciones de agentes: no hay fuente.</strong>
+          El ledger del motor de evidencia está vacío. Cuando exista, se mostrará como
+          duración acumulada de ejecuciones, nunca sumada al tiempo humano.
+        </div>
+        <p style="margin-top:var(--s-3)"><a class="link-quiet" href="proyectos.html">Ver toda la actividad, con filtros →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Proof of Work ===== -->
+  <section class="wrap" style="padding-block:var(--s-4)">
+    <div class="filete-fuerte"></div>
+    <div class="act-grid" style="margin-top:var(--s-3)">
+      <div>
+        <h2 class="h2">Puedes comprobar lo que afirmo, o ver por qué no puedes.</h2>
+        <p class="ui" style="margin-top:.75rem">
+          Publico mis afirmaciones con su procedencia y su verificabilidad. Hoy casi todo
+          es material declarado: lo afirmo yo, y no hay forma de que un tercero lo
+          compruebe. Eso también está dicho.
+        </p>
+      </div>
+      <div>
+        <p class="ui">
+          Hay trabajo bajo acuerdo de confidencialidad que no aparece aquí en ninguna forma,
+          ni siquiera contado. No hay un número de proyectos ocultos porque ese número
+          también diría algo sobre quién los encargó.
+        </p>
+        <p style="margin-top:var(--s-2)"><a class="link-quiet" href="#">Cómo respaldo lo que afirmo →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pie wrap">
+    <p class="small muted">
+      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
+      nada de esto está publicado.
+    </p>
+  </footer>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+</body>
+</html>
