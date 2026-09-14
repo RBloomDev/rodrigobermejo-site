@@ -59,10 +59,17 @@
   @media (min-width: 860px) { .ed-grid { grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); gap: var(--s-4); } }
   .ed-sec { display: flex; flex-direction: column; }
   .ed-lista .fila { border-top-color: var(--rule-deep); }
+  /* El rotulo de tipo va en blanco sobre el azul, no en teal.
+     Medido: teal #11abb0 sobre #14537e da 2.91:1 y falla AA.
+     El sistema ya remapea .rotulo, .muted, .lede y .link bajo `.on-deep`
+     (sistema.css), pero .ed-tipo es una clase local de esta pagina y se quedo
+     fuera de ese remapeo --- que es como se cuela un fallo de contraste en un
+     sistema que por lo demas lo tiene resuelto. */
   .ed-tipo {
     font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase; color: var(--accent);
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-title);
   }
+  .on-deep .ed-tipo { color: var(--on-deep); }
 
   /* ---- Actividad resumida ---- */
   .act { padding-block: var(--s-5); }
@@ -303,5 +310,6 @@
 </main>
 
 <span class="proto">Prototipo · Redacción</span>
+<script src="menu-movil.js" defer></script>
 </body>
 </html>

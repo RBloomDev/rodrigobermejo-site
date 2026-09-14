@@ -3,26 +3,28 @@
  *
  * ======================= LA FRONTERA, Y DONDE ESTA EXACTAMENTE =======================
  *
- * **Este modulo no llama a ningun modelo.** No hay cliente HTTP a una API de inferencia,
- * no hay clave, no hay prompt. Lo que hace es preparar el EXPEDIENTE de la pieza —el
- * hecho candidato, las fuentes, las fechas, la huella— y dejarlo listo.
+ * ACTUALIZADO 2026-09-14. La version anterior de este bloque decia «este modulo no llama
+ * a ningun modelo», y esa frontera **se movio a peticion de Rodrigo**: el tramite de
+ * copiar el expediente a un agente y el resultado de vuelta no era un canal, era un paso
+ * manual disfrazado de automatizacion.
  *
- * La redaccion del texto la hace el agente (un modelo, con nombre, registrado en
- * `procedencia.redactado.modelo`) leyendo ese expediente, y deja su resultado como un
- * archivo en `redacciones/<id>.json`. Este modulo lo recoge y lo compone contra el
- * esquema de §3.
+ * Ahora el modulo SI puede invocar al redactor, pero **no sabe como**: recibe la funcion
+ * `invocar` por inyeccion. La via real vive en `invocar-redactor.mjs`, y por defecto no
+ * hay ninguna. Esa separacion es deliberada y hace tres cosas:
  *
- * Por que la frontera esta aqui y no dentro del script:
+ *   1. Las pruebas corren **sin red y sin modelo**. El comportamiento sin inferencia es
+ *      el de siempre: el expediente queda pendiente, no se inventa nada.
+ *   2. El expediente sigue siendo un ARTEFACTO, no un estado efimero dentro de una
+ *      llamada. §5.3 exige que toda cifra y toda fecha del texto exista en alguna de las
+ *      `fuentes[]`, y eso solo se puede verificar despues (§5.4) si el expediente existe
+ *      en disco.
+ *   3. **Nada del intercambio sobrevive.** `AGENTS.md:60` y §3 prohiben guardar prompts,
+ *      transcripciones y contenido intermedio. Ahora hay prompt --- se construye en
+ *      `invocar-redactor.mjs` y muere ahi. De vuelta solo viene el borrador estructurado
+ *      y la procedencia: que modelo redacto y cuando. El vinculo, no el proceso.
  *
- *   1. §5.3 exige que toda cifra y toda fecha del texto exista en alguna de las
- *      `fuentes[]`. Eso se verifica contra el expediente (§5.4, `verificar.mjs`), y solo
- *      es verificable si el expediente es un artefacto y no un estado efimero dentro de
- *      una llamada.
- *   2. `AGENTS.md:60` y §3 prohiben guardar prompts, transcripciones y contenido
- *      intermedio. Un script que llamara al modelo tendria que construir un prompt; el
- *      camino corto para depurarlo es guardarlo, y ahi es exactamente por donde esa regla
- *      se rompe. Aqui no hay prompt que guardar.
- *   3. Se guarda el VINCULO, no el proceso: que modelo redacto (`procedencia.redactado`).
+ * Y lo que no cambia: **un fallo del redactor no produce pieza**. La entrada queda
+ * pendiente y reintentable, y el fallo se registra en su etapa.
  *
  * Lo que este modulo SI hace cumplir, de forma dura, antes de que nada llegue al corpus:
  *   - minimo dos fuentes (§3);
@@ -66,6 +68,26 @@ export function prepararExpediente(item) {
   };
 }
 
+/**
+ * Identificador estable de una pieza: legible por humanos, derivado del titulo,
+ * con un sufijo de la huella para que dos piezas de titulo parecido no colisionen.
+ * Estable entre corridas porque la huella lo es.
+ */
+function idDesdeTitulo(titulo, huella) {
+  const base = String(titulo ?? 'sin-titulo')
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 56)
+    // El corte a 56 puede dejar un guion al final, y entonces el id no es
+    // kebab-case valido. Se limpia DESPUES de cortar, no antes.
+    .replace(/-+$/, '');
+  const sufijo = String(huella ?? '').replace(/^sha256:/, '').slice(0, 6);
+  return sufijo ? `${base}-${sufijo}` : base;
+}
+
 export function cargarRedacciones() {
   if (!existsSync(DIR_REDACCIONES)) return [];
   return readdirSync(DIR_REDACCIONES)
@@ -79,7 +101,14 @@ export function cargarRedacciones() {
  * el canal prefiere no publicar a publicar un esqueleto (§1, «un `[COMPANY RESPONSE
  * PLACEHOLDER]` servido en produccion»).
  */
-export function redactar(expedientes, { redacciones = cargarRedacciones() } = {}) {
+export function redactar(expedientes, {
+  redacciones = cargarRedacciones(),
+  // `invocar` inyecta la via de inferencia. Por defecto no hay ninguna: asi las
+  // pruebas corren sin red y sin modelo, y el comportamiento sin inferencia
+  // -dejar el expediente pendiente- es el mismo que habia antes.
+  invocar = null,
+  alFallar = null,
+} = {}) {
   const porUrl = new Map(
     redacciones.filter(Boolean).map((r) => [normalizarUrl(r.detectado_de), r]),
   );
@@ -87,7 +116,84 @@ export function redactar(expedientes, { redacciones = cargarRedacciones() } = {}
   const pendientes = [];
 
   for (const exp of expedientes) {
-    const redaccion = porUrl.get(exp.detectado_de);
+    let redaccion = porUrl.get(exp.detectado_de);
+
+    // Si no hay una redaccion preparada y hay via de inferencia, se pide ahora.
+    // Este es el paso que antes hacia una persona copiando el expediente a un
+    // agente y el resultado de vuelta.
+    // Una entrada de fuente `solo_detectar`, sin ninguna fuente corroborante
+    // reproducible, NO puede sostener una pieza: de ella solo existen titulo,
+    // medio y fecha. Invocar al modelo para que descubra eso cada vez cuesta
+    // dinero y tiempo, y consume reintentos hasta descartar la entrada por un
+    // motivo equivocado --- «fallo al redactar» cuando lo cierto es «falta
+    // material». Se detecta antes de llamar a nadie.
+    const hayMaterial = exp.reproducible
+      || (exp.fuentes ?? []).some((f) => f.reproducible);
+    if (!redaccion && typeof invocar === 'function' && !hayMaterial) {
+      pendientes.push({
+        ...exp,
+        motivo: 'material insuficiente: la fuente no permite reproducir su texto y no hay '
+          + 'ninguna fuente corroborante que si lo permita. Esperando corroboracion.',
+      });
+      continue;
+    }
+
+    if (!redaccion && typeof invocar === 'function') {
+      try {
+        const delModelo = invocar(exp);
+        // El modelo aporta SOLO el contenido editorial. Los campos
+        // estructurales --- identificador, fechas, URL de la fuente --- los pone
+        // el canal desde el expediente, y eso no es burocracia: si el modelo
+        // pudiera escribirlos, podria inventar una URL de fuente o fechar un
+        // hecho a conveniencia, que son justo las dos cosas que `verificar.mjs`
+        // existe para detectar. Aqui ni siquiera tiene la oportunidad.
+        redaccion = {
+          ...delModelo,
+          detectado_de: exp.detectado_de,
+          id: idDesdeTitulo(delModelo.titulo, exp.huella),
+          ocurrido_en: exp.fuente_detectada?.fecha ?? exp.detectado_en,
+          redactado_en: new Date().toISOString().slice(0, 16) + 'Z',
+          fuente_primaria_url: exp.fuente_detectada?.url,
+          tipo_fuente_detectada: 'primaria',
+          modelo: delModelo.procedencia_redaccion?.modelo ?? 'desconocido',
+          // Las corroborantes las EXTRAE el modelo del texto de la fuente, no
+          // de su memoria. Se filtran aqui a URLs http(s) bien formadas, y
+          // `verificar.mjs` comprueba despues que resuelven de verdad: una URL
+          // plausible pero inventada es el fallo mas peligroso de esta etapa,
+          // porque parece verificable hasta que alguien la abre.
+          fuentes: (delModelo.fuentes_corroborantes ?? [])
+            .filter((f) => {
+              if (!f?.url) return false;
+              try {
+                const u = new URL(f.url);
+                return u.protocol === 'https:' || u.protocol === 'http:';
+              } catch { return false; }
+            })
+            .map((f) => ({
+              titulo: f.titulo,
+              // El medio se deriva del dominio cuando el modelo no lo da. Es
+              // mecanico, no inventado: sale de la propia URL.
+              medio: f.medio || (() => {
+                try { return new URL(f.url).hostname.replace(/^www\./, ''); }
+                catch { return null; }
+              })(),
+              url: f.url,
+              fecha: f.fecha ?? null,
+              tipo: 'primaria',
+            })),
+        };
+      } catch (e) {
+        // Un fallo del redactor NO produce pieza y NO descarta la entrada:
+        // queda pendiente y reintentable. Se registra en su etapa.
+        if (alFallar) alFallar(exp, e);
+        pendientes.push({
+          ...exp,
+          motivo: `el redactor fallo (${e.codigo ?? 'sin codigo'}): ${e.message}`,
+        });
+        continue;
+      }
+    }
+
     if (!redaccion) {
       pendientes.push({ ...exp, motivo: 'sin redaccion: el expediente espera al redactor' });
       continue;
@@ -175,7 +281,15 @@ export function validarEsquema(p) {
   }
   if (!p.fuente_primaria?.url) fallos.push('`fuente_primaria` no resuelve a ninguna de las `fuentes[]`');
   for (const f of p.fuentes ?? []) {
-    if (!f.titulo || !f.medio || !f.url || !f.fecha) fallos.push(`fuente incompleta: ${f.url ?? '(sin url)'}`);
+    // `fecha` puede ser null y NO es un defecto: una cita bibliografica extraida
+    // de un articulo muchas veces no lleva fecha visible. Exigirla empuja al
+    // redactor a inventarla, y una fecha fabricada es peor que una ausente ---
+    // ademas de romper la distincion entre fecha del acontecimiento, de la
+    // fuente y de deteccion. Lo que si es obligatorio: titulo, medio y URL.
+    // Debe ser `null` explicito, no ausente: declarar que no se sabe es un acto,
+    // olvidarlo es un descuido.
+    if (!f.titulo || !f.medio || !f.url) fallos.push(`fuente incompleta: ${f.url ?? '(sin url)'}`);
+    if (f.fecha === undefined) fallos.push(`fuente sin declarar fecha (usa null si se desconoce): ${f.url}`);
     if (!['primaria', 'secundaria'].includes(f.tipo)) fallos.push(`fuente sin tipo valido: ${f.url}`);
   }
   if (p.procedencia?.redactado?.por !== 'ia' || !p.procedencia?.redactado?.modelo) {

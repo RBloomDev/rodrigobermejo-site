@@ -1,0 +1,16 @@
+corrida   inicio                estado          dur   etapas con fallo   eventos
+--------  --------------------  --------------  ----  -----------------  -------------------------
+6b839672  2026-09-14T17:05:48  exito_parcial     40  redactar           expediente_listo:1 fallo:1
+b24f2bb2  2026-09-14T17:07:38  exito_parcial     39  redactar           expediente_listo:1 fallo:1
+483cba2a  2026-09-14T17:10:50  exito_parcial      0  redactar           fallo:1
+f3bfa6cb  2026-09-14T17:11:46  exito              0  -                  expediente_listo:6
+06589ae9  2026-09-14T17:12:27  exito              0  -                  expediente_listo:4
+0fe5fc2d  2026-09-14T17:15:51  exito_parcial    148  redactar           fallo:3
+70228222  2026-09-14T17:19:30  exito_parcial    238  redactar           expediente_listo:3 fallo:3
+9ab4923d  2026-09-14T17:26:18  exito_parcial    171  redactar           fallo:3
+47f2179a  2026-09-14T17:30:08  exito_parcial    288  redactar,verificar  expediente_listo:2 redactada:1 fallo:2
+ce33f5b7  2026-09-14T17:35:55  exito_parcial    167  verificar          expediente_listo:1 redactada:2 fallo:2
+881d8dab  2026-09-14T17:40:56  exito_parcial    151  redactar           redactada:1 fallo:1 verificada:2
+be057980  2026-09-14T21:27:56  exito_parcial      0  detectar           expediente_listo:1
+
+12 corrida(s). Sin titulos, sin URLs, sin prompts: solo operacion.

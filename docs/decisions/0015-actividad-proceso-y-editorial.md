@@ -2,7 +2,10 @@
 
 - **Estado:** **PROPUESTA.** No autoriza nada todavía.
 - **Fecha:** 2026-09-13
-- **Decide:** Rodrigo. Redactada por el agente a petición suya del 2026-09-13.
+- **Decide:** Rodrigo. **Nada de este documento lo ha decidido él**: lo redacta el agente
+  a petición suya del 2026-09-13, y lo revisado el 2026-09-14. Donde el texto cita a
+  Rodrigo, cita lo que **pidió**, no lo que aprobó. Los razonamientos son del agente y
+  están sujetos a su revisión.
 - **Enmienda a:** `docs/00-product-brief.md` §No-objetivos · `docs/01-scope-v1.md` §Fuera de V1 · `docs/02-domain-and-evidence-model.md` §7 y §8 · `docs/05-feed-contract.md` § Contrato de presentación
 - **No toca:** `docs/03-privacy-and-publication-policy.md`. Ninguna regla de privacidad se debilita.
 
@@ -49,12 +52,18 @@ Dice, literal:
 > «No usa líneas de código, conteo de commits, streaks, stars, followers, tokens
 > consumidos, sesiones de IA ni tool calls **como indicador de nada**.»
 
-El objeto de la prohibición es **el uso**, no el número. Y el propio Rodrigo lo formuló
-igual al pedir el cambio: *«Los conteos y la telemetría describen actividad; no otorgan
-automáticamente competencia, calidad o seniority.»*
+El objeto de la prohibición es **el uso**, no el número.
 
-Esa es exactamente la distinción que `docs/02-domain-and-evidence-model.md:496` **ya
-había tomado** para la asistencia de IA, antes de esta petición:
+Esa lectura es del agente, no de Rodrigo, y conviene separarlo. Lo que él escribió al
+pedir el cambio fue: *«Los conteos y la telemetría describen actividad; no otorgan
+automáticamente competencia, calidad o seniority.»* Es una restricción sobre lo que un
+conteo **no** confiere; **no** es una autorización a publicarlo, y no dice nada sobre la
+distinción entre uso y número. La construcción de esa distinción, y todo lo que se apoya
+en ella en este documento, es propuesta del agente y está sujeta a su revisión.
+
+Lo que sí es anterior a esta petición, y no lo propone el agente, es que
+`docs/02-domain-and-evidence-model.md:496` **ya había tomado** una decisión de la misma
+forma para la asistencia de IA:
 
 > «**Será una anotación de procedencia, no una métrica de productividad.** Es
 > divulgación: declara *cómo* se produjo el trabajo. Que un PR fuera asistido no lo hace
@@ -66,7 +75,11 @@ que le faltaba a `02` §7.
 
 ---
 
-## Decisión
+## Lo que se propone
+
+> Todo lo de esta seccion esta **propuesto**, no decidido. Los verbos en presente
+> describen como funcionaria el sistema si Rodrigo acepta la enmienda, no como funciona
+> hoy. Hoy rige el contrato sin enmendar.
 
 ### 1. Tres registros, no uno
 
@@ -134,9 +147,9 @@ ahorradas» o cualquier ratio equivalente.** No hay denominador honesto para esa
 y construirlo sería exactamente el indicador que `00:65` prohíbe. Rodrigo lo pidió con
 esas palabras y aquí queda como regla.
 
-### 4. Autorizaciones concretas
+### 4. Autorizaciones que se solicitan
 
-| # | Qué se autoriza | Qué regla se acota | Qué se conserva |
+| # | Qué se pide autorizar | Qué regla se acotaría | Qué se conserva intacto |
 |---|---|---|---|
 | A | **Adelantar `activity.json` de V1.1 al alcance actual** | `01:39`, `01:66`, `05:18` | El schema no cambia: `claim_ids` obligatorio, periodo mes o trimestre, los cinco `counts` enteros, los ocho campos prohibidos. **Es calendario, no contrato** |
 | B | **Adelantar la anotación de procedencia de asistencia de V2** | `01:55`, `02:488` | Su forma ya estaba decidida en `02` §8 y no se rediscute: `provider_id` como valor, **el vínculo y nunca el contenido**, procedencia y **nunca métrica**, sin tokens ni tool calls |
@@ -146,19 +159,74 @@ esas palabras y aquí queda como regla.
 | F | **Una pantalla de proyectos y actividad con presencia visual plena** | Ninguna sobre lo visual | **`/evidencia` sigue siendo el índice canónico del sistema de evidencia.** La pantalla de actividad no reclama serlo y enlaza a él |
 | G | **Una plataforma editorial dentro del sitio** | Ninguna. No existía regla sobre contenido editorial salvo la frontera | `03:136` intacta: el editorial **enlaza** a evidencia y **jamás se deriva de ella ni la alimenta** |
 
-### 5. Lo que esta enmienda NO autoriza, y hay que decirlo
+### 4-bis. Cómo se presentan las cifras: explorar sin calificar
 
-- **No autoriza publicar registros individuales de `Evidence`.** Eso lo decide
+Rodrigo pidió poder **explorar contenido, entregas, tiempo registrado y uso de IA
+mediante cifras, tendencias y detalles visuales**. La tensión con el producto es real y
+no se resuelve prohibiendo la exploración: se resuelve fijando qué separa explorar de
+calificar.
+
+**La prueba, en una frase:** una cifra **describe un periodo**; una calificación
+**ordena a personas**. Todo lo que sigue sale de ahí.
+
+| Se puede | No se puede |
+|---|---|
+| Una cifra **con su unidad y su periodo** al lado | Una cifra sola, grande, sin contexto |
+| Una **tendencia dentro de una serie propia** («marzo tuvo más que febrero») | Una tendencia presentada como **mejora o progreso** |
+| **Detalle desplegable** con fuente, cobertura y deduplicación | Un detalle que solo repita la cifra más grande |
+| Comparar **un periodo consigo mismo** | Comparar contra **otra persona**, un promedio o un objetivo |
+| **Filtrar** para ver un subconjunto | Filtrar y que el control **muestre conteos por opción** |
+| Decir **qué no cubre** la cifra | Dejar la cobertura implícita |
+
+**Seis reglas de forma**, que se pueden verificar mirando la pantalla:
+
+1. **Ninguna cifra es tipográficamente mayor que la etiqueta que la nombra.** Un numeral
+   grande es un titular, y un titular sobre una persona es una calificación.
+2. **Cero flechas de tendencia, cero verdes y rojos, cero comparación contra el periodo
+   anterior como juicio.** Una serie puede subir y bajar; la interfaz no dice si eso es
+   bueno. Es la prohibición que `02:447` ya impone a la metadata, extendida.
+3. **Sin ranking ni orden descendente por magnitud** en ninguna lista de proyectos,
+   periodos o lenguajes. El orden es cronológico o del Registry.
+4. **Sin barras de progreso, sin porcentajes de completitud, sin rachas.** Una racha
+   premia la continuidad por sí misma, que es una calificación disfrazada de dato.
+5. **Sin contadores animados.** Un número que sube solo está actuando un logro.
+6. **Toda cifra lleva su detalle accesible**, y el detalle incluye qué **no** cubre.
+
+**Y una regla sobre la serie temporal**, porque es donde más fácil se cuela el juicio:
+una serie se dibuja **completa, con sus huecos visibles**. Un mes sin dato no se dibuja
+como cero ni se interpola: se marca como sin dato. Recortar la serie al tramo favorable
+es construir una tendencia, no mostrarla.
+
+### 4-ter. Cuatro distinciones que la interfaz no puede colapsar
+
+Rodrigo las nombró una por una. Fundir cualquiera de ellas convierte el tablero en
+propaganda, y son fáciles de fundir por descuido.
+
+| No es lo mismo | Y la interfaz debe separarlo así |
+|---|---|
+| **Consumo** (tokens, llamadas) y **resultado** | El consumo no se publica. `tokens_used` sigue prohibido en cualquier clase. Nunca se presenta un consumo junto a un entregable como si lo explicara |
+| **Horas de agente** y **horas humanas** | Nunca en el mismo total, nunca en la misma serie, nunca en el mismo eje. Unidades distintas de cosas distintas. Si van en la misma pantalla, van en bloques separados y rotulados |
+| **Repositorio accesible** y **proyecto atribuible** | Tener acceso a un repositorio no significa haberlo hecho. Un proyecto con varios autores no es contribución personal, y la cifra lo dice o no se publica |
+| **Trabajo colectivo** y **contribución personal** | Donde el trabajo es de equipo, se atribuye al equipo. El porcentaje de autoría dentro de un repositorio con más gente **no se publica**: revela composición de equipo ajena |
+
+**Y la regla que las cruza todas:** *una fuente ausente sigue siendo un dato
+desconocido*. No es cero, no es «pendiente», no es «próximamente». Un hueco se rotula
+como hueco, se dice por qué, y **nunca se rellena** — ni con una estimación, ni con una
+interpolación, ni con un guion que parezca un valor.
+
+### 5. Lo que esta enmienda NO pide autorizar, y hay que decirlo
+
+- **No pide autorizar la publicacion de registros individuales de `Evidence`.** Eso lo decide
   `decisions/0013`, que sigue en PROPUESTA. Mientras tanto el motor aborta si llega
   evidencia al artefacto. **El «detalle detrás de cada cifra» llega hasta donde ese ADR
   permita, no más.**
-- **No autoriza un número que resuma a Rodrigo.** Nunca.
-- **No autoriza inferir nada.** Y aquí está el límite práctico más importante: hoy **no
+- **No pide autorizar ningun numero que resuma a una persona.** Nunca.
+- **No pide autorizar inferencia alguna.** Y aquí está el límite práctico más importante: hoy **no
   existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes**. El
   ledger de `proof-engine` contiene solo un `.gitkeep`. Así que aunque esta enmienda
   quede aprobada, **esas dos cifras seguirán vacías** hasta que exista el registro. La
   enmienda abre el permiso; no crea el dato.
-- **No autoriza saltarse `AGENTS.md:8`.** Cada superficie nueva necesita su spec antes de
+- **No pide saltarse `AGENTS.md:8`.** Cada superficie nueva necesita su spec antes de
   implementarse.
 
 ---

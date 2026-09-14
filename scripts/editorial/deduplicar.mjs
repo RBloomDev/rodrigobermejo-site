@@ -5,83 +5,104 @@
  *
  *   1. URL canonica normalizada — sin `utm_*`, sin fragmento, sin barra final.
  *      Atrapa el mismo articulo llegando por dos campañas distintas.
- *   2. Huella `sha256` del titulo normalizado + el dominio de la fuente.
+ *   2. Huella `sha256` del titulo normalizado + el dominio del medio que lo publica.
  *      Atrapa el mismo articulo republicado en otra URL del mismo medio.
- *   3. Registro persistente `estado/vistos.jsonl`, append-only.
- *      Atrapa la SEGUNDA EJECUCION. Es el nivel que hace idempotente al canal: sin el,
- *      los niveles 1 y 2 solo deduplican dentro de una misma corrida.
+ *   3. La bitacora de `estado.mjs`, plegada. Atrapa la SEGUNDA EJECUCION.
  *
- * La prueba que Rodrigo puso: una segunda ejecucion sobre las mismas entradas no debe
- * duplicar la pieza. Esa prueba la sostiene el nivel 3, y por eso `vistos.jsonl` se
- * escribe **antes** de saber si el item llego a ser pieza: lo que se registra es que el
- * item fue visto, no que produjo algo.
+ * ============================ QUE CAMBIO, Y POR QUE IMPORTA ============================
+ *
+ * El nivel 3 lo sostenia `vistos.jsonl`, y ese registro tenia un solo bit: visto o no
+ * visto. Un item se marcaba visto **al detectarlo**, asi que una entrada que no llegaba a
+ * redactarse, o que fallaba verificando, o que quedaba a medias porque el proceso murio,
+ * se perdia para siempre: la corrida siguiente la leia como «ya vista». Idempotencia
+ * comprada al precio de perder pendientes.
+ *
+ * Ahora el nivel 3 pregunta por el ESTADO, no por un bit:
+ *
+ *   - `terminada`  -> es repetida de verdad. Ya hay pieza. No vuelve a entrar.
+ *   - `descartada` -> se cerro con motivo. No vuelve a entrar sin `reabrir()`.
+ *   - cualquier estado pendiente o reintentable -> **NO es repetida**: es la misma cosa
+ *     que sigue sin terminarse. Sale en `yaPendientes`, y el orquestador la retoma.
+ *
+ * ============================ LA IDENTIDAD ES EL HECHO ============================
+ *
+ * La version anterior metia en el indice de «ya visto» **todas las URL de `fuentes[]` de
+ * todas las piezas del corpus**, incluida `fuente_primaria`. Eso confunde la identidad de
+ * una pieza con sus referencias: bastaba que una pieza publicada citara un documento para
+ * que ese documento —y cualquier hecho que viviera en esa URL— quedara borrado del canal
+ * para siempre, en silencio, sin una sola linea en ningun log.
+ *
+ * Dos noticias distintas que citan el mismo documento son **dos hechos**. Compartir una
+ * referencia no las hace la misma cosa. Del corpus, por tanto, solo se toma la identidad
+ * de cada pieza (`huella`, que viene del item detectado), nunca sus `fuentes[]`.
  */
 
-import { RUTA_VISTOS, ahoraIso, anexarJsonl, leerJsonl } from './comun.mjs';
+import { plegar } from './estado.mjs';
 
 /**
  * @param {object[]} items  items de `detectar()`
- * @param {object}   opciones
- * @param {object[]} opciones.vistos  filas de `vistos.jsonl`
- * @param {object[]} opciones.piezas  corpus actual de `piezas.json`
+ * @param {object} [opciones]
+ * @param {object[]} [opciones.piezas]  corpus actual de `piezas.json`
+ * @param {object} [opciones.indice]    resultado de `estado.plegar()`; se pliega si falta
+ * @returns {{nuevos: object[], yaPendientes: object[], repetidos: object[]}}
+ *   - `nuevos`       hechos que la bitacora no conoce
+ *   - `yaPendientes` hechos que la bitacora ya conoce y que **siguen sin terminar**
+ *   - `repetidos`    hechos cerrados (`terminada`/`descartada`) o repetidos en el lote
  */
-export function deduplicar(items, { vistos = [], piezas = [] } = {}) {
-  const urlsVistas = new Set(vistos.map((v) => v.url_canonica));
-  const huellasVistas = new Set(vistos.map((v) => v.huella));
+export function deduplicar(items, { piezas = [], indice = plegar() } = {}) {
+  const { entradas, porUrl, porHuella } = indice;
 
-  // El corpus tambien cuenta como "visto": una pieza publicada desde otra maquina, o un
-  // `vistos.jsonl` truncado, no pueden reabrir la puerta a un duplicado.
-  for (const p of piezas) {
-    if (p.huella) huellasVistas.add(p.huella);
-    for (const f of [p.fuente_primaria, ...(p.fuentes ?? [])]) {
-      if (f?.url) urlsVistas.add(f.url);
-    }
-  }
+  // Del corpus solo entra la identidad de la pieza. `fuentes[]` NO. Ver el encabezado.
+  const huellasDelCorpus = new Set(
+    (piezas ?? []).map((p) => p?.huella).filter(Boolean),
+  );
 
   const nuevos = [];
+  const yaPendientes = [];
   const repetidos = [];
   const urlsLote = new Set();
   const huellasLote = new Set();
 
   for (const item of items) {
-    const motivo = motivoDeRepeticion(item, {
-      urlsVistas, huellasVistas, urlsLote, huellasLote,
-    });
-    if (motivo) {
-      repetidos.push({ ...item, motivo });
+    if (urlsLote.has(item.url_canonica)) {
+      repetidos.push({ ...item, motivo: 'nivel_1_url_canonica_en_el_mismo_lote' });
+      continue;
+    }
+    if (huellasLote.has(item.huella)) {
+      repetidos.push({ ...item, motivo: 'nivel_2_huella_en_el_mismo_lote' });
       continue;
     }
     urlsLote.add(item.url_canonica);
     huellasLote.add(item.huella);
+
+    const id = porUrl.get(item.url_canonica) ?? porHuella.get(item.huella);
+    const previa = id ? entradas.get(id) : null;
+
+    if (previa?.estado === 'terminada') {
+      repetidos.push({ ...item, id, motivo: 'nivel_3_ya_terminada_en_la_bitacora' });
+      continue;
+    }
+    if (previa?.estado === 'descartada') {
+      repetidos.push({
+        ...item,
+        id,
+        motivo: `nivel_3_descartada_en_la_bitacora: ${previa.motivo_descarte ?? 'sin motivo'}`,
+      });
+      continue;
+    }
+    if (previa) {
+      // Conocida pero sin terminar. NO es un duplicado: es trabajo que sigue pendiente.
+      yaPendientes.push({ ...item, id, estado: previa.estado });
+      continue;
+    }
+    if (huellasDelCorpus.has(item.huella)) {
+      // El corpus sobrevivio a la bitacora (o viene de otra maquina). La pieza existe;
+      // el hecho esta cerrado aunque el log local no lo sepa.
+      repetidos.push({ ...item, motivo: 'nivel_2_huella_ya_tiene_pieza_en_el_corpus' });
+      continue;
+    }
     nuevos.push(item);
   }
 
-  return { nuevos, repetidos };
-}
-
-function motivoDeRepeticion(item, { urlsVistas, huellasVistas, urlsLote, huellasLote }) {
-  if (urlsLote.has(item.url_canonica)) return 'nivel_1_url_canonica_en_el_mismo_lote';
-  if (urlsVistas.has(item.url_canonica)) return 'nivel_1_url_canonica_ya_vista';
-  if (huellasLote.has(item.huella)) return 'nivel_2_huella_en_el_mismo_lote';
-  if (huellasVistas.has(item.huella)) return 'nivel_3_huella_en_vistos_jsonl';
-  return null;
-}
-
-/** Nivel 3: el registro append-only. Se escribe una fila por item nuevo. */
-export function registrarVistos(items, { corrida }) {
-  for (const i of items) {
-    anexarJsonl(RUTA_VISTOS, {
-      visto_en: ahoraIso(),
-      corrida,
-      fuente_id: i.fuente_id,
-      titulo: i.titulo,
-      url_canonica: i.url_canonica,
-      huella: i.huella,
-      fecha_publicacion: i.fecha_publicacion,
-    });
-  }
-}
-
-export function cargarVistos() {
-  return leerJsonl(RUTA_VISTOS);
+  return { nuevos, yaPendientes, repetidos };
 }

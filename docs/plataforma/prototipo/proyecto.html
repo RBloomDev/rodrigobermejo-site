@@ -494,30 +494,8 @@
     b.addEventListener("blur", limpiar);
     b.addEventListener("mouseleave", limpiar);
   });
-
-  // Menu movil.
-  var burger = document.querySelector(".burger");
-  var nav = document.querySelector(".nav");
-  burger.addEventListener("click", function () {
-    var abierto = burger.getAttribute("aria-expanded") === "true";
-    burger.setAttribute("aria-expanded", abierto ? "false" : "true");
-    if (abierto) {
-      nav.removeAttribute("style");
-      return;
-    }
-    nav.style.display = "flex";
-    nav.style.flexDirection = "column";
-    nav.style.alignItems = "flex-start";
-    nav.style.position = "absolute";
-    nav.style.top = "72px";
-    nav.style.left = "0";
-    nav.style.right = "0";
-    nav.style.background = "var(--bg-page)";
-    nav.style.borderBottom = "1px solid var(--rule)";
-    nav.style.padding = "1rem 24px";
-    nav.style.gap = ".5rem";
-  });
 })();
 </script>
+<script src="menu-movil.js" defer></script>
 </body>
 </html>

@@ -71,15 +71,16 @@ color sobre cinco posicionamientos distintos produce cinco marcas bonitas.
 ### Fuentes verificadas el 2026-09-12
 
 - **README del perfil de GitHub `rodrigoBermejo/rodrigoBermejo`.** Declara «CTO at
-  [Inadaptados](https://inadaptados.mx)» y «Founder of rbloom dev», además de consultor de
-  producto digital, IA y automatización. Es una **auto-declaración de Rodrigo**: la fuente es
-  el propio sujeto, no un tercero. En el lenguaje de `docs/02-domain-and-evidence-model.md`
-  §6 eso es `declared` / `unverifiable`, y se presenta como tal. El campo `company` del
+  Inadaptados» —con el nombre enlazado al sitio público de la escuela— y «Founder of
+  rbloom dev», además de consultor de producto digital, IA y automatización. Es una
+  **auto-declaración de Rodrigo**: la fuente es el propio sujeto, no un tercero. En el
+  lenguaje de `docs/02-domain-and-evidence-model.md` §6 eso es `declared` /
+  `unverifiable`, y se presenta como tal. El campo `company` del
   mismo perfil lista `@Inadaptados @RBloomDev @ISC-UPA`, y también es auto-declarado.
-- **`academy.inadaptados.mx`.** La página pública declara la propuesta **«Aprende
+- **La página pública de la academia de Inadaptados.** Declara la propuesta **«Aprende
   construyendo, no memorizando»** y nombra JavaScript, React, bootcamps, IA y automatización
-  entre sus temas. Es verificable por cualquiera abriendo la URL; lo que **no** verifica es
-  el rol de Rodrigo dentro de esa operación.
+  entre sus temas. Es verificable por cualquiera que abra la página; lo que **no** verifica
+  es el rol de Rodrigo dentro de esa operación.
 
 Ninguna de las dos fuentes prueba competencia, calidad ni resultados. Prueban existencia,
 autoría declarada y tiempo, que es exactamente el límite que fija

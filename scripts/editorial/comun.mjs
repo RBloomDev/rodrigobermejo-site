@@ -199,13 +199,21 @@ export function esCli(urlModulo) {
 }
 
 export function argumentos(argv) {
-  const banderas = { incluir: [], soloFuente: [], entradas: null, silencioso: false };
+  const banderas = {
+    incluir: [], soloFuente: [], entradas: null, silencioso: false,
+    // Cuantas entradas se intentan redactar en esta corrida. Sin limite, una
+    // corrida con el redactor conectado invoca al modelo una vez por pendiente
+    // --- con la cola actual eso son horas. El limite no descarta nada: lo que
+    // no se procesa hoy sigue pendiente y se retoma manana.
+    limite: null,
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--incluir') banderas.incluir.push(argv[++i]);
     else if (a === '--fuente') banderas.soloFuente.push(argv[++i]);
     else if (a === '--entradas') banderas.entradas = argv[++i];
     else if (a === '--silencioso') banderas.silencioso = true;
+    else if (a === '--limite') banderas.limite = Number(argv[++i]) || null;
   }
   return banderas;
 }

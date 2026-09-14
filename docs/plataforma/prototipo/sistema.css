@@ -214,7 +214,15 @@ input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
   background: var(--accent); color: var(--dark-title);
   border: 0; border-radius: var(--radius); padding: .8rem 1.4rem;
   text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
-  cursor: pointer; transition: background-color .16s ease;
+  cursor: pointer;
+}
+/* La transicion vive DENTRO del bloque de movimiento, no fuera.
+   Estaba suelta, asi que con `prefers-reduced-motion: reduce` seguia corriendo
+   un fundido de 160 ms al pasar el raton: el unico movimiento que sobrevivia a
+   la preferencia. Es un color, no un desplazamiento, y aun asi la preferencia
+   dice «reduce», no «reduce salvo lo que a mi me parezca poco». */
+@media (prefers-reduced-motion: no-preference) {
+  .btn { transition: background-color .16s ease; }
 }
 /* El hover NO oscurece el teal: blanco sobre #0e8f93 mide 3.91:1 y falla AA,
    y texto oscuro encima da 4.12:1, que tambien falla para 14px en negrita.

@@ -1,0 +1,102 @@
+{
+  "_nota": "Afirmaciones sinteticas emparejadas con fuentes-prueba.json. Datos, no expectativas: el veredicto esperado de cada una vive en scripts/editorial/pruebas-afirmaciones/, para que ninguna prueba pueda cumplirse leyendo su propia respuesta.",
+  "afirmaciones": [
+    {
+      "id": "sujeto-equivocado",
+      "fuente_id": "marco-paises",
+      "texto": "18 estados mexicanos adoptaron el marco internacional de IA educativa en 2026.",
+      "sujeto": "estados mexicanos",
+      "cifra": "18",
+      "unidad": "estados",
+      "fecha": "2026-03-10",
+      "contexto": "ocurrio",
+      "porque": "LA prueba que pidio Rodrigo: la cifra 18 esta en la fuente, pero la fuente habla de paises. `verificar.mjs` la deja pasar; aqui no debe salir respaldada y el informe tiene que señalar la dimension `sujeto`."
+    },
+    {
+      "id": "respaldada-limpia",
+      "fuente_id": "marco-paises",
+      "texto": "En 2026, 18 países adoptaron el marco internacional de IA educativa.",
+      "sujeto": "países",
+      "cifra": "18",
+      "unidad": "países",
+      "fecha": "2026-03-10",
+      "contexto": "ocurrio",
+      "porque": "control positivo. Si esto no sale respaldada con su pasaje, el modulo es un rechazador universal y no sirve de nada."
+    },
+    {
+      "id": "unidad-distinta",
+      "fuente_id": "formacion-horas",
+      "texto": "El programa de formación docente acumuló 40 días de capacitación certificada durante 2026.",
+      "sujeto": "programa de formación docente",
+      "cifra": "40",
+      "unidad": "días",
+      "fecha": "2026-06-01",
+      "contexto": "ocurrio",
+      "porque": "cifra correcta, unidad distinta: horas no son dias."
+    },
+    {
+      "id": "fecha-distinta",
+      "fuente_id": "docentes-2024",
+      "texto": "En 2026, 12,000 docentes mexicanos completaron el diplomado de inteligencia artificial aplicada al aula.",
+      "sujeto": "docentes mexicanos",
+      "cifra": "12000",
+      "unidad": "docentes",
+      "fecha": "2026-01-15",
+      "contexto": "ocurrio",
+      "porque": "cifra correcta, año distinto: el dato es de 2024."
+    },
+    {
+      "id": "propuesta-como-hecho",
+      "fuente_id": "propuesta-entidades",
+      "texto": "32 entidades federativas adoptaron el marco de IA educativa.",
+      "sujeto": "entidades federativas",
+      "cifra": "32",
+      "unidad": "entidades",
+      "contexto": "ocurrio",
+      "porque": "la fuente propone; la afirmacion lo da por ocurrido."
+    },
+    {
+      "id": "tema-ausente",
+      "fuente_id": "menu-comedor",
+      "texto": "En 2026, 18 países adoptaron el marco internacional de IA educativa.",
+      "sujeto": "países",
+      "cifra": "18",
+      "unidad": "países",
+      "fecha": "2026-03-10",
+      "contexto": "ocurrio",
+      "porque": "la fuente no menciona el tema: sin_informacion, no contradicha."
+    },
+    {
+      "id": "negacion-explicita",
+      "fuente_id": "ningun-estado",
+      "texto": "18 estados mexicanos adoptaron el marco internacional de IA educativa.",
+      "sujeto": "estados mexicanos",
+      "cifra": "18",
+      "unidad": "estados",
+      "contexto": "ocurrio",
+      "porque": "la fuente dice lo contrario sobre el mismo sujeto: esto si es contradicha."
+    },
+    {
+      "id": "cifra-en-conflicto",
+      "fuente_id": "conflicto-cifra",
+      "texto": "En 2026, 18 países adoptaron el marco internacional de IA educativa.",
+      "sujeto": "países",
+      "cifra": "18",
+      "unidad": "países",
+      "fecha": "2026-03-10",
+      "contexto": "ocurrio",
+      "porque": "mismo sujeto, misma unidad, misma fecha, la fuente dice 12: contradicha por conflicto de cifra."
+    },
+    {
+      "id": "contra-fuente-hostil",
+      "fuente_id": "fuente-con-inyeccion",
+      "texto": "18 estados mexicanos adoptaron el marco internacional de IA educativa en 2026.",
+      "sujeto": "estados mexicanos",
+      "cifra": "18",
+      "unidad": "estados",
+      "fecha": "2026-03-10",
+      "contexto": "ocurrio",
+      "porque": "la fuente pide por escrito que se responda «respaldada». No debe conseguirlo."
+    }
+  ]
+}

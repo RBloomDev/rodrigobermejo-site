@@ -9,9 +9,14 @@
  * No es una convencion de estilo: `extraerItem()` simplemente no lo lee de esas fuentes,
  * asi que no existe un camino por el que ese texto llegue al disco.
  *
- * Todo fallo de acceso se registra en `estado/errores.jsonl` y la deteccion continua con
- * las demas fuentes (§5.5). Una fuente caida no detiene la corrida, y tampoco produce
- * items inventados: produce cero items y un error.
+ * Todo fallo de acceso se registra en `estado/fallos.jsonl` **con la etapa `detectar`** y
+ * la deteccion continua con las demas fuentes (§5.5). Una fuente caida no detiene la
+ * corrida, y tampoco produce items inventados: produce cero items y un fallo registrado.
+ *
+ * La etapa importa y no es decorativa: un 403 leyendo un feed (no se supo que el hecho
+ * existe) no es lo mismo que un 403 revisando una fuente al verificar una pieza ya
+ * redactada (el hecho existe y la comprobacion no se pudo cerrar). Mezclarlos en un solo
+ * `errores.jsonl` sin etapa hacia imposible decidir cual de los dos hay que atender.
  *
  * Uso directo:
  *   node scripts/editorial/detectar.mjs
@@ -27,8 +32,8 @@ import {
   huellaDe,
   normalizarUrl,
   obtener,
-  registrarError,
 } from './comun.mjs';
+import { registrarFallo } from './estado.mjs';
 import { activas, porId } from './fuentes.mjs';
 
 /** Cuantos items de la cabeza de cada feed se miran por corrida. Ver el corte mas abajo. */
@@ -75,27 +80,32 @@ function aFechaIso(crudo) {
  * Detecta sobre las fuentes dadas.
  * @returns {Promise<{items: object[], errores: object[], fuentesLeidas: string[]}>}
  */
-export async function detectar({ fuentes = activas(), leidoEn = ahoraIso() } = {}) {
+export async function detectar({ fuentes = activas(), leidoEn = ahoraIso(), corrida = null } = {}) {
   const items = [];
   const errores = [];
   const fuentesLeidas = [];
 
+  const fallo = (fuente, codigo, mensaje, consecuencia) => registrarFallo({
+    etapa: 'detectar',
+    entrada_id: null, // no hay entrada todavia: el fallo es de la fuente, no de un hecho
+    codigo,
+    mensaje,
+    consecuencia,
+    contexto: { fuente_id: fuente.id, fuente: fuente.medio, url: fuente.url },
+    corrida,
+  });
+
   for (const fuente of fuentes) {
     const r = await obtener(fuente.url);
     if (!r.ok) {
-      // §5.5: el fallo es un dato. Se registra con fuente, codigo y mensaje, y de aqui
-      // NO sale ningun item. El conocimiento del modelo no sustituye una fuente caida.
-      errores.push(
-        registrarError({
-          etapa: 'detectar',
-          fuente_id: fuente.id,
-          fuente: fuente.medio,
-          url: fuente.url,
-          codigo: r.codigo,
-          mensaje: r.mensaje,
-          consecuencia: 'sin items de esta fuente; no se genera pieza a partir de ella',
-        }),
-      );
+      // §5.5: el fallo es un dato. Se registra con etapa, fuente, codigo y consecuencia,
+      // y de aqui NO sale ningun item. El conocimiento del modelo no sustituye una
+      // fuente caida.
+      errores.push(fallo(
+        fuente, r.codigo, r.mensaje,
+        'sin items de esta fuente en esta corrida; no se genera pieza a partir de ella. '
+        + 'La fuente se vuelve a intentar en la corrida siguiente.',
+      ));
       continue;
     }
 
@@ -103,32 +113,18 @@ export async function detectar({ fuentes = activas(), leidoEn = ahoraIso() } = {
     try {
       crudos = parsearFeed(r.texto);
     } catch (e) {
-      errores.push(
-        registrarError({
-          etapa: 'detectar',
-          fuente_id: fuente.id,
-          fuente: fuente.medio,
-          url: fuente.url,
-          codigo: 'PARSEO',
-          mensaje: `${e.name}: ${e.message}`,
-          consecuencia: 'sin items de esta fuente',
-        }),
-      );
+      errores.push(fallo(
+        fuente, 'PARSEO', `${e.name}: ${e.message}`,
+        'sin items de esta fuente; el feed respondio pero no se pudo interpretar',
+      ));
       continue;
     }
 
     if (crudos.length === 0) {
-      errores.push(
-        registrarError({
-          etapa: 'detectar',
-          fuente_id: fuente.id,
-          fuente: fuente.medio,
-          url: fuente.url,
-          codigo: 'FEED_VACIO',
-          mensaje: 'La respuesta fue 200 pero no contiene items.',
-          consecuencia: 'sin items de esta fuente',
-        }),
-      );
+      errores.push(fallo(
+        fuente, 'FEED_VACIO', 'La respuesta fue 200 pero no contiene items.',
+        'sin items de esta fuente; un 200 vacio no es una fuente sin novedades comprobada',
+      ));
       continue;
     }
 
@@ -185,6 +181,8 @@ if (esCli(import.meta.url)) {
   const banderas = argumentos(process.argv.slice(2));
   const { items, errores } = await detectar({ fuentes: resolverFuentes(banderas) });
   console.log(`detectar: ${items.length} items, ${errores.length} errores`);
-  for (const e of errores) console.log(`  ERROR ${e.fuente_id} [${e.codigo}] ${e.mensaje}`);
+  for (const e of errores) {
+    console.log(`  ERROR [${e.etapa}] ${e.contexto?.fuente_id} [${e.codigo}] ${e.mensaje}`);
+  }
   for (const i of items) console.log(`  ${i.fecha_publicacion} ${i.fuente_id} :: ${i.titulo}`);
 }

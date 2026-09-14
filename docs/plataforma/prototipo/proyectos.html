@@ -391,122 +391,95 @@
 
     <div class="act-grid">
 
-      <!-- ---- A. El agregado: cubre >=2 sujetos independientes ---- -->
+      <!-- ---- A. Tiempo registrado: fuente instrumentada, agregada ---- -->
       <div>
-        <h3 class="h3">El agregado</h3>
+        <h3 class="h3">Tiempo registrado</h3>
         <p class="ui small" style="margin-top:.5rem">
-          Cubre los cuatro contextos en los que trabaja, repartidos en 218 repositorios de
-          los que 163 son privados. <strong>Este bloque no responde a los filtros de
-          arriba</strong>: no hay desglose por proyecto ni por organización que se pueda
-          publicar, y la razón está al pie de la página.
+          Es la única serie de tiempo que existe, y no es «horas trabajadas»:
+          es <strong>tiempo con actividad en un editor instrumentado</strong>. Se publica
+          agregada y nunca por proyecto. <strong>Este bloque no responde a los filtros de
+          arriba</strong>, y la razón está al pie de la página.
         </p>
 
         <details class="detalle">
           <summary>
             <span class="cifra-linea">
-              <span class="cifra">1459</span>
-              <span class="ui">pull requests creados</span>
-              <span class="cobertura">— cobertura: los 4 contextos · 218 repositorios · 2026-01-01 a 2026-12-31</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd>Índice de búsqueda de GitHub, registrado y no inferido:<br>
-                <code>gh api "search/issues?q=type:pr+author:rodrigoBermejo+created:2026-01-01..2026-12-31"</code><br>
-                Leído el 2026-09-13.</dd>
-              <dt>Periodo</dt>
-              <dd>Año 2026 completo como ventana de consulta; el último PR encontrado es del 2026-12-31. Fechas absolutas, siempre.</dd>
-              <dt>Unidad</dt>
-              <dd>Pull requests <strong>creados por él como autor</strong>. No son commits, no son tareas y no son horas: de este número no se deduce ninguna duración.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por identidad de PR en el índice de búsqueda; un PR aparece una sola vez aunque tenga muchos commits. La suma de los meses medidos por separado reconcilia con el total: 1444 hasta el 11 de septiembre más 15 posteriores.</dd>
-              <dt>Cobertura</dt>
-              <dd>Todo lo que GitHub le atribuye como autor en 2026, en cuatro contextos distintos. Queda fuera todo el trabajo que no pasa por un pull request —clases, currícula, operación— que es una parte grande de lo que hace y aquí no aparece en ninguna forma.</dd>
-            </dl>
-          </div>
-        </details>
-
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">1423</span>
-              <span class="ui">de esos pull requests quedaron mergeados</span>
-              <span class="cobertura">— cobertura: la misma consulta, con <code>is:merged</code></span>
+              <span class="cifra">515.9</span>
+              <span class="ui">horas de actividad en editor</span>
+              <span class="cobertura">— cobertura: 82 de 91 días con dato · ventana de 90 días hasta 2026-09-14</span>
             </span>
           </summary>
           <div class="detalle-cuerpo">
             <p class="ui small" style="margin-bottom:var(--s-2)">
-              <strong>No se publica la proporción entre las dos cifras</strong>, y no por
-              pudor: en repositorios donde él mismo aprueba y mergea, una tasa de merge mide
-              sobre todo quién tiene el botón, no si el trabajo era bueno. Sería un
-              indicador de calidad construido con un dato que no mide calidad.
+              <strong>Qué no mide.</strong> Reuniones, diseño, lectura, docencia presencial,
+              ni trabajo en una máquina sin el plugin instalado. Tampoco el tiempo en que un
+              agente trabaja sin actividad humana. No es una hoja de horas y no se comporta
+              como tal.
             </p>
             <dl class="procedencia">
               <dt>Fuente</dt>
-              <dd><code>gh api "search/issues?q=type:pr+author:rodrigoBermejo+created:2026-01-01..2026-12-31+is:merged"</code>, leído el 2026-09-13.</dd>
+              <dd>API de WakaTime, registrada por instrumentación y no inferida:<br>
+                <code>node scripts/editorial/sonda-wakatime.mjs --dias 90</code><br>
+                Leído el 2026-09-14. La sonda no imprime la credencial y seudonimiza los
+                nombres de proyecto.</dd>
               <dt>Periodo</dt>
-              <dd>Mismo periodo que la cifra anterior, para que las dos sean comparables entre sí y con nada más.</dd>
+              <dd>Ventana de 90 días, agregada. El grano nativo es diario; aquí se publica
+                sumado porque el diario es un corte más fino de lo que la política admite
+                para fuentes que tocan trabajo privado.</dd>
               <dt>Unidad</dt>
-              <dd>Pull requests en estado mergeado. Los 36 restantes están abiertos o se cerraron sin mergear; ninguna de las dos cosas es un fracaso por sí misma.</dd>
+              <dd>Horas de <strong>actividad</strong>, con timeout de inactividad. Es
+                duración acumulada de actividad, <strong>no tiempo transcurrido</strong>, y
+                las dos cosas no se comparan entre sí.</dd>
               <dt>Deduplicación</dt>
-              <dd>Por identidad de PR, igual que arriba. Es un subconjunto del mismo conjunto, no una segunda medición.</dd>
+              <dd>La hace WakaTime por heartbeats: dos editores abiertos sobre el mismo
+                archivo no cuentan doble.</dd>
               <dt>Cobertura</dt>
-              <dd>Idéntica a la cifra anterior. Un PR mergeado no dice que el código funcione, ni que estuviera revisado: dice que llegó a la rama.</dd>
+              <dd><strong>Temporal: alta</strong> — 82 de 91 días tienen dato.
+                <strong>Del trabajo: desconocida</strong>. Qué fracción de su trabajo real
+                ocurre dentro de un editor no se puede derivar de aquí, y no se estima.
+                Un número sin esa aclaración mentiría por omisión.</dd>
+              <dt>Por qué se puede publicar</dt>
+              <dd>Ningún proyecto llega al 16 % del total en esta ventana, así que el
+                agregado no es un proxy de ningún sujeto. Es la prueba que el agregado de
+                pull requests no pasa.</dd>
             </dl>
           </div>
         </details>
 
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">12</span>
-              <span class="ui">pull requests revisados por él</span>
-              <span class="cobertura">— cobertura: 2026 completo · revisiones humanas, sin bots</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <p class="ui small" style="margin-bottom:var(--s-2)">
-              <strong>Las revisiones de bot no se suman a las humanas.</strong> Son clases
-              distintas de cosa, y mezclarlas sería exactamente la deshonestidad que estas
-              pantallas existen para evitar. En el repositorio público de abajo, por ejemplo,
-              las 7 revisiones que existen son todas de
-              <code>copilot-pull-request-reviewer</code>, todas en estado comentado y
-              <strong>ninguna es una aprobación</strong>: no se cuentan aquí ni en ninguna
-              otra cifra.
-            </p>
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd><code>gh api "search/issues?q=type:pr+reviewed-by:rodrigoBermejo+created:2026-01-01..2026-12-31"</code>, leído el 2026-09-13. Las de bot se midieron aparte, con <code>gh api graphql</code> sobre las revisiones del repositorio público.</dd>
-              <dt>Periodo</dt>
-              <dd>Año 2026, la misma ventana que las dos cifras anteriores.</dd>
-              <dt>Unidad</dt>
-              <dd>Pull requests en los que consta al menos una revisión suya. No es número de revisiones ni de comentarios: un PR revisado tres veces cuenta una.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por PR. La consulta devuelve PRs, no eventos de revisión.</dd>
-              <dt>Cobertura</dt>
-              <dd>Doce, frente a 1459 creados. La explicación probable es que trabaja casi siempre como autor único en repositorios donde nadie más revisa; <strong>la cifra no dice si revisa poco o si no hay a quién revisar</strong>, y esa distinción no está registrada en ninguna parte.</dd>
-            </dl>
-          </div>
-        </details>
+        <div class="hueco" style="margin-top:var(--s-3)">
+          <strong>No hay ninguna cifra derivada de estas horas.</strong>
+          Ni horas por commit, ni horas por proyecto, ni horas ahorradas, ni porcentaje de
+          trabajo hecho por IA. Ahora que hay un denominador la división es tentadora, y
+          sigue estando prohibida: ninguno de esos cocientes tiene un numerador honesto.
+        </div>
+
+        <div class="hueco" style="margin-top:var(--s-2)">
+          <strong>Y aquí iba un agregado de pull requests que se retiró.</strong>
+          Cubría los cuatro contextos de trabajo, y aun así no se publica: un solo sujeto
+          aportaba la mayor parte del total, así que el total funcionaba como un retrato de
+          ese sujeto con ruido encima. Combinar organizaciones es necesario, no suficiente.
+          La cifra está medida y no aparece en ninguna parte de este repositorio.
+        </div>
       </div>
 
       <!-- ---- B. La rebanada publica y comprobable ---- -->
       <div>
         <h3 class="h3">La rebanada que cualquiera puede comprobar</h3>
         <p class="ui small" style="margin-top:.5rem">
-          Uno de los 218 repositorios es público: el de este sitio, que es el proyecto
-          <em>Proof of Work</em>. Sus cifras se pueden reproducir sin credenciales, ejecutando
-          el comando que va en cada detalle.
+          El repositorio de este sitio —el proyecto <em>Proof of Work</em>— es público. Sus
+          cifras se pueden reproducir sin credenciales, ejecutando el comando que va en cada
+          detalle. <strong>Es la única clase de cifra de GitHub que esta pantalla
+          publica</strong>: de los repositorios que no son públicos no se publica ni el
+          nombre, ni el conteo, ni cuántos son.
         </p>
 
         <!-- Estado cuando el filtro deja fuera el proyecto de la fuente publica -->
         <div class="hueco" id="act-hueco" hidden style="margin-top:var(--s-2)">
           <strong>El filtro deja fuera el único proyecto con fuente pública.</strong>
-          Once de los doce proyectos del Registry viven en repositorios privados, y de un
-          repositorio privado no se publica un conteo por proyecto. <strong>No es cero
-          trabajo: es trabajo del que no se puede publicar la cuenta.</strong> El agregado
-          de la izquierda sí lo incluye, y por eso no se filtra.
+          La mayoría de los proyectos del Registry viven en repositorios que no son
+          públicos, y de esos no se publica un conteo por proyecto. <strong>No es cero
+          trabajo: es trabajo del que no se puede publicar la cuenta.</strong> El bloque de
+          tiempo de la izquierda no se filtra porque se publica solo agregado.
         </div>
 
         <div id="act-cuerpo">
@@ -515,7 +488,7 @@
               <span class="cifra-linea">
                 <span class="cifra">47</span>
                 <span class="ui">commits que llegaron a <code>main</code></span>
-                <span class="cobertura">— cobertura: 1 de 218 repositorios · 2026-01-01 a 2026-09-11</span>
+                <span class="cobertura">— cobertura: un repositorio, el público · 2026-01-01 a 2026-09-11</span>
               </span>
             </summary>
             <div class="detalle-cuerpo">
@@ -531,7 +504,7 @@
                 <dt>Deduplicación</dt>
                 <dd>Por SHA. 47 devueltos, 47 SHA únicos. De ellos, 19 son commits de merge y 28 no lo son; los merges se cuentan aquí porque la unidad declarada es «commits que llegaron a main», no «trabajo nuevo».</dd>
                 <dt>Cobertura</dt>
-                <dd>Un repositorio de 218, el del proyecto Proof of Work. <strong>No es el total de su trabajo ni se le aproxima</strong>: en el mismo año el agregado cuenta 1459 pull requests suyos, y este repositorio aporta 24. Los 47 commits sí son todos suyos —se comprobó autor por autor, y los 47 llevan el mismo nombre—, pero eso <strong>no se puede dar por hecho en un repositorio compartido</strong>: donde hay más de un autor, atribuir el repositorio entero a una persona es mentir, y por eso esta cifra no se extrapola a los otros 217.</dd>
+                <dd>Un solo repositorio, el del proyecto Proof of Work. <strong>No es el total de su trabajo ni se le aproxima</strong>: trabaja en bastantes más, y ninguno de esos otros aparece aquí ni como nombre ni como cifra. Los 47 commits sí son todos suyos —se comprobó autor por autor, y los 47 llevan el mismo nombre—, pero eso <strong>no se puede dar por hecho en un repositorio compartido</strong>: donde hay más de un autor, atribuir el repositorio entero a una persona es mentir, y por eso esta cifra no se extrapola a ningún otro.</dd>
               </dl>
             </div>
           </details>
@@ -541,7 +514,7 @@
               <span class="cifra-linea">
                 <span class="cifra">24</span>
                 <span class="ui">pull requests abiertos</span>
-                <span class="cobertura">— cobertura: ese mismo repositorio · 24 de los 1459 del agregado</span>
+                <span class="cobertura">— cobertura: ese mismo repositorio público, todos sus PR</span>
               </span>
             </summary>
             <div class="detalle-cuerpo">
@@ -605,8 +578,8 @@
             Commits que llegaron a <code>main</code> en ese repositorio, mes a mes. La tira
             no ordena, no compara contra el mes anterior y no marca tendencia:
             <strong>un mes alto no es un mes mejor</strong>, solo un mes con más registro en
-            esta fuente. <strong>No es la serie del agregado de 1459</strong>, y abajo está
-            dicho por qué esa serie no se publica.
+            esta fuente. <strong>No es la serie de toda su actividad</strong>, y abajo está
+            dicho por qué esa otra serie no se publica.
           </p>
 
           <ul class="tira" id="tira">
@@ -654,7 +627,7 @@
                 <dt>Deduplicación</dt>
                 <dd>Por SHA, dentro de cada mes y entre meses. La suma de los meses da 47, igual que el total declarado arriba.</dd>
                 <dt>Cobertura</dt>
-                <dd><strong>Los ceros de esta tira son ceros de este repositorio, no de su trabajo.</strong> De febrero a julio de 2026 este repositorio no registró nada, y eso está medido; en esos mismos seis meses el agregado cuenta 956 pull requests suyos en otros repositorios (31 + 102 + 163 + 278 + 140 + 242, medidos mes a mes con la misma consulta de búsqueda). Los cuatro meses de 2025 no tienen barra porque la fuente todavía no existía. Leer esta tira como una curva de actividad personal sería leerla al revés.</dd>
+                <dd><strong>Los ceros de esta tira son ceros de este repositorio, no de su trabajo.</strong> De febrero a julio de 2026 este repositorio no registró nada, y eso está medido; en esos mismos seis meses trabajó en otros repositorios, <strong>y cuánto no se publica</strong> —ni el total ni su reparto por mes—, porque esa serie describe trabajo que no está publicado. Los cuatro meses de 2025 no tienen barra porque la fuente todavía no existía. Leer esta tira como una curva de actividad personal sería leerla al revés.</dd>
               </dl>
             </div>
           </details>
@@ -677,35 +650,35 @@
       <h3 class="h3">Medido, y deliberadamente no publicado</h3>
       <div class="act-grid" style="margin-top:var(--s-2)">
         <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>El reparto de esos 1459 por organización está medido y no se publica.</strong>
-          Cualquier renglón por organización sería un agregado atribuible a una institución
-          identificable: <strong>un solo sujeto</strong>, por muchos eventos que tenga. La
-          regla pide <strong>al menos dos sujetos independientes</strong> en todo agregado
-          que incluya fuentes privadas. El total de 1459 la cumple porque mezcla cuatro
-          contextos de trabajo distintos; cualquier corte más fino por organización, no. Y
-          por eso esta nota tampoco describe la forma del reparto: decir cuál renglón es el
-          grande sería publicarlo en prosa.
+          <strong>El agregado de pull requests está medido y no se publica, ni siquiera
+          como total.</strong> Una versión anterior de esta página lo publicaba diciendo que
+          un agregado que combina organizaciones ya cumple la regla de los <strong>dos
+          sujetos independientes</strong>. <strong>Eso era insuficiente.</strong> Combinar
+          sujetos es necesario, no suficiente: si uno solo aporta la mayor parte del total,
+          el total lo describe a él. Aquí pasa eso, así que el total tampoco sale. Y esta
+          nota no dice cuánto es, ni cuál es el renglón grande: decirlo sería publicar en
+          prosa lo que se declara no publicar.
         </div>
         <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>Tampoco se publica la serie mensual del agregado</strong>, y es la decisión
-          más discutible de la página. Los doce meses están medidos, pero un bucket mensual
-          es un corte mucho más fino que el anual y deja de cubrir con holgura los dos
-          sujetos que la regla exige: una serie así acabaría describiendo la cadencia de
-          desarrollo de una organización identificable. La tira de barras de arriba se queda
-          por eso en el repositorio público, donde no hay ningún tercero que proteger y
-          cualquiera puede reproducir cada cifra.
+          <strong>Tampoco se publica su serie mensual.</strong> Los meses están medidos, pero
+          un bucket mensual es un corte mucho más fino que el anual y acabaría describiendo
+          la cadencia de desarrollo de una organización identificable. La tira de barras de
+          arriba se queda por eso en el repositorio público, donde no hay ningún tercero que
+          proteger y cualquiera puede reproducir cada cifra.
         </div>
         <div class="hueco" style="border-left-color:var(--ink-title)">
           <strong>Y no se publican dos cortes que se resten entre sí.</strong> Si esta página
-          mostrara el total y además el renglón de una organización, el resto quedaría
+          mostrara un total y además el renglón de una organización, el resto quedaría
           despejado por diferencia. Ese cruce está prohibido explícitamente, y no basta con
-          no enseñarlo: hay que no poder derivarlo desde lo que sí se enseña.
+          no enseñarlo: hay que no poder derivarlo desde lo que sí se enseña. Por la misma
+          razón no aparece cuántos repositorios hay, ni cuántos de ellos no son públicos.
         </div>
         <div class="hueco" style="border-left-color:var(--ink-title)">
           <strong>Esto no es prudencia: es la regla escrita.</strong> Y conviene decir lo que
-          cuesta. Sin el desglose, el 1459 es menos informativo y más difícil de creer, y esa
-          es exactamente la incomodidad correcta: el producto prefiere un número que no
-          señale a un tercero antes que uno más persuasivo que sí lo haga.
+          cuesta. Lo que queda publicable de GitHub es lo que sale de repositorios públicos,
+          que es una esquina pequeña y poco impresionante del trabajo real. Esa es
+          exactamente la incomodidad correcta: el producto prefiere una cifra comprobable y
+          modesta antes que una persuasiva que señale a un tercero.
         </div>
       </div>
     </div>
@@ -713,18 +686,19 @@
     <div style="margin-top:var(--s-4)">
       <h3 class="h3">Sin fuente, que no es lo mismo</h3>
       <p class="ui small" style="margin-top:.5rem">
-        Tres cosas que se pidieron ver y de las que no hay nada que leer.
+        Cosas que se pidieron ver y de las que no hay nada que leer.
       </p>
     </div>
 
     <div class="act-grid" style="margin-top:var(--s-2)">
       <div>
         <div class="hueco">
-          <strong>Tiempo humano registrado: no existe la fuente.</strong>
-          Ningún sistema anota cuánto tiempo se dedicó a nada. Deducirlo de los commits, de
-          los mensajes o de cuánto estuvo abierto un editor sería inventarlo. Si algún día
-          existe registro, se publicará en horas declaradas y con su cobertura,
-          <strong>y nunca sumado a ninguna otra clase</strong>.
+          <strong>Tiempo humano fuera del editor: no existe la fuente.</strong>
+          Lo que sí hay está arriba, y cubre solo lo que ocurre dentro de un editor
+          instrumentado. Reuniones, clases, diseño y lectura no los anota ningún sistema, y
+          deducirlos de los commits o de los mensajes sería inventarlos. Por eso
+          <strong>qué fracción de su trabajo cubre la cifra de arriba es desconocida</strong>
+          y se dice así, en vez de dejar que parezca una hoja de horas.
         </div>
         <div class="hueco" style="margin-top:var(--s-2)">
           <strong>Ejecuciones de agentes: no existe la fuente.</strong>
@@ -742,9 +716,9 @@
           contenido, y los tokens no son resultados.
         </div>
         <p class="ui small" style="margin-top:var(--s-3)">
-          Ninguna de estas cifras —ni las tres medidas ni las tres ausentes— se agrega en un
-          número global. <strong>No existe un número que resuma a una persona</strong>, y
-          esta pantalla no lo construye por la puerta de atrás.
+          Ninguna de estas cifras —ni las medidas ni las ausentes— se agrega en un número
+          global. <strong>No existe un número que resuma a una persona</strong>, y esta
+          pantalla no lo construye por la puerta de atrás.
         </p>
         <p style="margin-top:var(--s-2)"><a class="link-quiet" href="#">Cómo respaldo lo que afirmo →</a></p>
       </div>
@@ -829,8 +803,8 @@
 
     // La rebanada comprobable procede de UN repositorio publico: el del proyecto
     // Proof of Work. Si el filtro lo deja fuera, no hay fuente publica -> hueco
-    // declarado, nunca cero. El agregado de la izquierda NO se filtra: cubre los
-    // cuatro contextos y no tiene desglose por proyecto que se pueda publicar.
+    // declarado, nunca cero. El bloque de tiempo de la izquierda NO se filtra:
+    // se publica solo agregado y no tiene desglose por proyecto que se pueda publicar.
     var pow = document.querySelector('.proy[data-proj="proof-of-work"]');
     var hayFuente = !!pow && !pow.hidden;
     actCuerpo.hidden = !hayFuente;
@@ -906,31 +880,9 @@
     b.addEventListener("mouseleave", limpiar);
   });
 
-  // Menu movil.
-  var burger = document.querySelector(".burger");
-  var nav = document.querySelector(".nav");
-  burger.addEventListener("click", function () {
-    var abierto = burger.getAttribute("aria-expanded") === "true";
-    burger.setAttribute("aria-expanded", abierto ? "false" : "true");
-    if (abierto) {
-      nav.removeAttribute("style");
-      return;
-    }
-    nav.style.display = "flex";
-    nav.style.flexDirection = "column";
-    nav.style.alignItems = "flex-start";
-    nav.style.position = "absolute";
-    nav.style.top = "72px";
-    nav.style.left = "0";
-    nav.style.right = "0";
-    nav.style.background = "var(--bg-page)";
-    nav.style.borderBottom = "1px solid var(--rule)";
-    nav.style.padding = "1rem 24px";
-    nav.style.gap = ".5rem";
-  });
-
   aplicar();
 })();
 </script>
+<script src="menu-movil.js" defer></script>
 </body>
 </html>

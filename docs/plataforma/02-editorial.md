@@ -201,10 +201,19 @@ entradas no debe duplicar la pieza.**
 Tres niveles, en orden:
 1. **URL canónica normalizada** — sin `utm_*`, sin fragmento, sin barra final.
 2. **Huella de contenido** — `sha256` del título normalizado (minúsculas, sin acentos, sin
-   puntuación) más el dominio de la fuente primaria.
-3. **Registro persistente** — `scripts/editorial/estado/vistos.jsonl`, append-only. Un
-   ítem cuya huella ya está en el registro **no genera pieza nueva**: se añade como fuente
-   adicional a la pieza existente si aporta, o se descarta.
+   puntuación) más el dominio **de la entrada detectada**.
+3. **Registro persistente** — la bitácora append-only de `scripts/editorial/estado/`. Una
+   entrada cuya huella ya está registrada **no genera pieza nueva**.
+
+> **Corregido el 2026-09-14, y era un defecto de esta spec, no de la implementación.**
+> Este apartado decía «el dominio de **la fuente primaria**». Con esa definición, dos
+> hechos distintos que citan el mismo documento producen la misma huella y el segundo se
+> descarta como duplicado — que es exactamente lo que Rodrigo puso como quinta prueba de
+> recuperación. La identidad de una pieza es **el hecho detectado**, no sus referencias.
+>
+> Corolario, y va aparte porque es la otra mitad del mismo error: **las referencias de una
+> pieza ya publicada no entran al índice de identidad**. Si entraran, citar un documento
+> en una pieza bloquearía cualquier pieza futura sobre ese documento.
 
 ### 5.3 Redactar
 Un modelo redacta el borrador contra el esquema de §3. **Toda cifra y toda fecha que
