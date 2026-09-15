@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --conditions=react-server \"tests/**/*.test.ts\"",
+    "test": "node --test --conditions=react-server \"tests/**/*.test.ts\" \"scripts/editorial/pruebas/*.test.mjs\" \"scripts/editorial/pruebas-verificacion/*.test.mjs\" \"scripts/editorial/pruebas-afirmaciones/*.test.mjs\"",
+    "guard:exposicion": "node scripts/auditoria-exposicion.mjs",
     "guard:funnel": "node scripts/check-funnel-isolation.mjs"
   },
   "dependencies": {
