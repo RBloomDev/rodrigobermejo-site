@@ -199,7 +199,7 @@ No son convenciones de UI:
 Un claim puede apoyarse en proyectos de visibilidad distinta. Al publicar:
 
 1. Se **elimina** de `project_ids` todo proyecto que **no aparezca en `projects.json`**, sea cual sea la razón: `visibility: confidential`, `publish: none`, o `context: client` sin `release` que lo cubra. No aparecen ni como id opaco.
-2. La evidencia de esos proyectos no entra en `evidence_ids`, porque no entra en `evidence.json`.
+2. La evidencia de esos proyectos no entra en `evidence_ids`, porque no entra en `evidence.json`. **Y que el proyecto sea publicable no basta para que su evidencia lo sea:** desde el 2026-09-15 hace falta además `publish_evidence: true` en el proyecto y `public: true` en la fuente del registro (`03` §2, `decisions/0013`). El recorte que provoca es **por proyecto, no por claim**: un claim sostenido por dos proyectos, uno autorizado y otro no, conserva la evidencia del autorizado y deriva su verificabilidad sobre ella.
 3. Si tras el filtro `project_ids` queda vacío, **el claim no se publica**: G1 se evalúa sobre el artefacto, no sobre el Registry. Un claim sostenido solo por trabajo que no se publica no tiene forma pública honesta.
 4. `provenance` y `verifiability` se derivan de la evidencia **publicada**, no de la total. Un claim no puede acreditar verificabilidad con evidencia que nadie puede abrir.
 
@@ -207,7 +207,9 @@ Un claim puede apoyarse en proyectos de visibilidad distinta. Al publicar:
 
 ```
 1. decidir proyectos publicables      →  projects.json
-2. filtrar evidencia a esos proyectos →  evidence.json
+2. filtrar evidencia: proyecto publicable
+   Y publish_evidence: true
+   Y fuente public: true           →  evidence.json
 3. recortar claim.project_ids
 4. recortar claim.evidence_ids
 5. descartar claims que quedaron vacios
@@ -227,6 +229,20 @@ no mostrado se dice **una vez**, en la prosa de `/evidencia`.
 ## `evidence.json`
 
 Solo registros publicables. Los `private` no aparecen aquí; se reflejan agregados en `activity.json`, sujetos a §3 de `03`. Los `confidential` no se reflejan en ninguna parte.
+
+**Publicable exige tres condiciones, no una** (`03` §2, decidido el 2026-09-15): el
+proyecto aparece en `projects.json`, el proyecto declara `publish_evidence: true`, y
+la fuente de la que vino el evento tiene `public: true`. La tercera es por **fuente**
+y no por proyecto a propósito: un proyecto público puede apoyarse en repositorios
+privados. Si un registro no se puede atar a una fuente declarada, no se publica.
+
+Los campos de abajo son la allowlist completa y cerrada. Quedan fuera del artefacto
+`subject`, `observed_at`, `source_event_id`, `digest`, `visibility` y `redactions`;
+la exclusión de `subject` es la que más importa, porque ahí viven los nombres de
+repositorio que `03` §2 prohíbe publicar salvo alias.
+
+Nada de esto se anuncia: no hay contador de evidencia omitida, por la misma razón que
+no hay contador de proyectos confidenciales.
 
 ```
 {

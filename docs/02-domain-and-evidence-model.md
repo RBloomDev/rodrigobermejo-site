@@ -301,7 +301,9 @@ Orden estricto de precedencia. El primero que aplica gana:
 
 ### `sources[].paths` — los globs del nivel 2
 
-> **Propuesto el 2026-09-11.** El nivel 2 estaba nombrado en una línea y sin forma:
+> **Propuesto el 2026-09-11, aprobado sin cambios el 2026-09-15.** Deja de ser una
+> propuesta: es el contrato vigente del nivel 2, y `correlate/` lo implementa contra
+> este texto. El nivel 2 estaba nombrado en una línea y sin forma:
 > ni dónde vivía el campo, ni su sintaxis, ni qué pasaba con `period`. El
 > correlacionador lo dejó **abortando** a propósito antes que adivinar el contrato
 > (`proof-engine#17`). Esto es ese contrato.

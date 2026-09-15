@@ -41,6 +41,10 @@ publish: none | record | aggregate  # default: record   si visibility: private
 #               context, role, has_private_sources). Sin agregados.
 #   aggregate → record + buckets de activity.json, sujetos a §3
 
+publish_evidence: true | false      # default: false. Autoriza publicar registros
+                                    # INDIVIDUALES de Evidence de este proyecto.
+                                    # Ningun valor de publish lo autoriza: ver abajo.
+
 nda: true | false                   # nda: true  ⇒  visibility: confidential
                                     #            ⇒  publish: none
 
@@ -52,6 +56,60 @@ release?: {                         # ÚNICA vía para publicar algo de un proye
 ```
 
 `visibility` y `nda` no son ortogonales y es deliberado: `visibility` es la regla de publicación, `nda` es un hecho legal que la restringe. El validador impone la implicación. Ver `02-domain-and-evidence-model.md` §2.
+
+### Publicar evidencia: `publish_evidence` (decidido el 2026-09-15)
+
+Ningún valor de `publish` autoriza publicar registros **individuales** de
+`Evidence`. `record` publica el registro *declarado del proyecto*; `aggregate` le
+añade buckets. Un `Evidence` no es ninguna de las dos cosas. El hueco se descubrió
+al conectar el ledger —con uno sintético, `feed:build` emitía evidencia de un
+proyecto `private`/`record` **con su `public_url`**— y se cierra con un campo
+propio, opt-in y con default cerrado (`decisions/0013`).
+
+**La autorización es por proyecto; la comprobación de privacidad es POR FUENTE.**
+Hacen falta las dos, y la segunda es la que más fácil sería implementar mal:
+
+1. El proyecto declara `publish_evidence: true`. El validador lo comprueba y falla
+   si no: `publish` distinto de `none`, `visibility` distinto de `confidential`, y
+   un `release` firmado si `context: client`.
+2. **Además**, cada registro se publica solo si la fuente de la que vino el evento
+   tiene `sources[].public == true`. Un proyecto público puede apoyarse en
+   repositorios privados —`proof-of-work` es el caso real, con el sitio público y el
+   motor privado— y sin esta segunda regla `publish_evidence: true` publicaría la
+   evidencia del motor.
+3. **Default cerrado:** si no se puede atar un registro a una fuente declarada, no se
+   publica. En la práctica, un `Evidence` sin `subject.repo` no es publicable.
+
+**Cuando falta la autorización, la evidencia se omite del artefacto; no aborta.** Y
+el recorte es **por proyecto, no por claim**: un claim sostenido por dos proyectos,
+uno autorizado y otro no, **sigue publicando la evidencia del autorizado**; se le
+quitan las aristas hacia el que no lo está y `provenance`/`verifiability` se derivan
+sobre lo que sobrevive. Solo cuando no sobrevive ninguna evidencia el claim deriva a
+`declared`/`unverifiable`, que es entonces la afirmación honesta. Decirlo al revés
+declararía menos verificabilidad de la que la evidencia publicada sostiene, y eso
+también hace mentir al artefacto.
+
+La omisión **no se anuncia**: no hay contador de evidencia excluida, por la misma
+razón que no hay contador de proyectos confidenciales (`05-feed-contract.md`).
+
+Campos publicables de un `Evidence`, que son los que el motor ya proyecta:
+`id`, `project_id`, `source`, `kind`, `occurred_at`, `actor_role`, `provenance`,
+`verifiability`, y `public_url` **si y solo si** `verifiability` lo permite. Quedan
+fuera `subject`, `observed_at`, `source_event_id`, `digest`, `visibility` y
+`redactions`. La exclusión de `subject` es la que más importa: ahí viven los nombres
+de repositorio, que esta misma sección prohíbe publicar salvo alias.
+
+**Estado hoy:** ningún proyecto del Registry declara `publish_evidence`. El campo
+existe; activarlo es una edición del Registry, proyecto por proyecto, y una decisión
+humana. El motor todavía no lo implementa, así que `buildFeed` **sigue abortando**
+si llega evidencia al artefacto: es la medida provisional, no el comportamiento
+definitivo.
+
+**Fuera de la primera entrega, explícitamente:** toda fuente `public: false`,
+cualquier proyecto `confidential`, y cualquier proyecto de `context: client` —
+incluido `docencia-universitaria`, que ya tiene un `release` firmado. Ese `release`
+se firmó para publicar su registro con alias, no su evidencia; tratarlo como
+autorización para lo segundo sería reinterpretar una firma humana.
 
 ### Default cerrado para lo confidencial
 
@@ -143,7 +201,7 @@ Dos tokens, con propósitos que no se solapan:
 
 | Token | Scope | Ubicación |
 |---|---|---|
-| Lectura | Fine-grained PAT, **read-only**, repos allowlisted explícitamente, expiración ≤ 90 días | Secret de Actions en `proof-engine` |
+| Lectura | Fine-grained PAT, **read-only**, expiración ≤ 90 días. La allowlist por repo acota lo **privado**; lo público no es acotable — ver la enmienda de abajo | Secret de Actions en `proof-engine` |
 | Escritura | Fine-grained PAT, **solo** `rodrigobermejo-site`, **solo** `contents:write` + `pull_requests:write`, expiración ≤ 90 días | Secret de Actions en `proof-engine` |
 
 Reglas:
@@ -156,13 +214,43 @@ Reglas:
 
 **Los dos tokens se emiten hoy desde la cuenta personal de Rodrigo, y eso tiene fecha de caducidad.** Un PAT personal *es* Rodrigo para GitHub: no separa la atribución, no se revoca de forma independiente y —lo que importa para el control que sostiene esta sección— tampoco queda fuera de la restricción de push de `main` (`04-architecture.md` §6.1), que está definida sobre `rodrigoBermejo`. Hoy no es explotable porque el motor no publica de forma automática todavía. `decisions/0008` decide que la automatización usará una identidad independiente, capaz de abrir PR e incapaz de mergear, y fija que se implementa **antes del primer publish automático**. No está implementada en V1, deliberadamente: es el finding P0-GOV-02 y se cierra con la decisión registrada, no con una credencial creada meses antes de tener uso.
 
+### Enmienda del 2026-09-15 — la allowlist no acota los repositorios públicos
+
+El criterio «repos allowlisted explícitamente» **no era satisfacible** tal como
+estaba escrito, y conviene decirlo: un criterio que nadie puede cumplir y que todos
+dan por cumplido es peor que no tenerlo.
+
+GitHub documenta que un PAT fine-grained **siempre incluye acceso de solo lectura a
+todos los repositorios públicos**, con independencia de la lista de repositorios que
+se elija al emitirlo, y no es configurable. La lista no filtra lo público: acota los
+repositorios **privados** a los que el token llega, y acota los permisos distintos de
+esa lectura.
+
+Consecuencia directa para el Sprint 2: los dos repositorios que hay que leer
+—`RBloomDev/rodrigobermejo-site` y `rodrigoBermejo/proof-engine`— son **públicos**,
+así que **un solo PAT de lectura basta**, aunque pertenezcan a dos propietarios
+distintos, y la allowlist no añade contención sobre ellos.
+
+Qué se sustituye y qué se conserva:
+
+| Antes | Ahora |
+|---|---|
+| La allowlist por repo era el control del scope de lectura | Vale para repos **privados**. Para los públicos no existe tal control, y no se declara como si existiera |
+| El criterio de emisión era «allowlist uno por uno» | El criterio es **read-only + expiración ≤ 90 días + rotación documentada**, más la prohibición de loguear payloads |
+
+Lo que **no** cambia: el token de lectura sigue siendo fine-grained y read-only; el
+de escritura conserva su allowlist de un solo repositorio —ahí sí muerde, porque
+`contents:write` y `pull_requests:write` no son permisos que GitHub conceda por ser
+público—; y la restricción de push en `main` sigue siendo el control que impide que
+el bot mergee su propio PR.
+
 ---
 
 ## 6. Registro de riesgos
 
 | # | Riesgo | Mitigación |
 |---|---|---|
-| 1 | Scope creep del token de lectura | Fine-grained, read-only, repos allowlisted uno por uno, expiración corta |
+| 1 | Scope creep del token de lectura | Fine-grained, read-only, expiración corta y rotación documentada. **La allowlist por repo acota lo privado, no lo público** (enmienda del 2026-09-15 en §5) |
 | 2 | Token de escritura sobre el repo del sitio | PAT separado, un solo repo, dos permisos, solo PRs. **La restricción de push en `main` impide que el bot mergee su propio PR**, que es el riesgo real: los permisos que necesita para abrirlo le bastarían para mergearlo |
 | 3 | Secreto o metadata privada en logs de CI | Prohibición de loguear payloads; regla de lint en el motor |
 | 4 | Publicación accidental de nombres privados | `publish-diff` + test de denylist + allowlist por defecto |
