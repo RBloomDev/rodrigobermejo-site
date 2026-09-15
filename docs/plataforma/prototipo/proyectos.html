@@ -27,10 +27,32 @@
   .burger span + span { margin-top: 4px; }
   @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
 
+  /* ---- CORRECCION. `.fila` y `.obra` declaran display en una hoja de autor, y
+     eso gana SIEMPRE sobre la regla `[hidden]{display:none}` del navegador, que
+     es de origen UA. Sin esto los filtros marcaban las filas como ocultas y
+     seguian viendose: el conteo decia una cosa y la pantalla otra. ---- */
+  [hidden] { display: none !important; }
+
   /* ---- Apertura de la seccion ---- */
   .cab { padding-block: var(--s-4) var(--s-2); }
   .cab .h1 { margin-top: var(--s-2); }
   .cab .lede { margin-top: var(--s-2); }
+
+  /* ---- Seleccion de trabajos ----
+     Proof of Work tiene DOS capturas autorizadas, asi que su lienzo lleva dos
+     imagenes; a partir de 60rem su tarjeta ocupa la columna ancha. No es
+     jerarquia de merito: es que hay el doble de artefacto que ensenar. */
+  @media (min-width: 60rem) {
+    .obras { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); align-items: start; }
+  }
+  #obra-pow .obra-lienzo {
+    aspect-ratio: auto; display: grid; grid-template-columns: 1fr;
+    gap: 1px; background: var(--rule-mid);
+  }
+  @media (min-width: 34rem) { #obra-pow .obra-lienzo { grid-template-columns: 1fr 1fr; } }
+  #obra-pow .obra-lienzo img { aspect-ratio: 16 / 10; height: auto; }
+  .obra .aviso { margin-top: .2rem; }
+  .obra-pie { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); }
 
   /* ---- Controles ---- */
   .sel {
@@ -50,10 +72,7 @@
   .grupo-rot { margin-top: var(--s-4); }
 
   /* ---- Bloque de actividad ---- */
-  .act { padding-block: var(--s-4); }
-  .act-grid { display: grid; gap: var(--s-3); margin-top: var(--s-2); }
-  .act-grid > * { min-width: 0; }
-  @media (min-width: 860px) { .act-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--s-4); } }
+  .act { padding-block: var(--s-4) var(--s-3); }
   .cifra-linea { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem .5rem; min-width: 0; }
   .cobertura { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); }
   /* Los comandos son cadenas largas sin espacios: sin esto, el min-content de
@@ -136,19 +155,112 @@
   <!-- ===== Cabecera de la seccion ===== -->
   <section class="cab wrap">
     <p class="rotulo">Proyectos y actividad</p>
-    <h1 class="h1">Doce proyectos declarados, y el trabajo que quedó registrado sobre ellos.</h1>
+    <h1 class="h1">El trabajo primero: dos piezas que se pueden abrir, diez que sólo se pueden declarar.</h1>
     <p class="lede">
-      Lo que estos números describen es <strong>volumen de trabajo registrado en un
-      periodo</strong>: cuánto quedó anotado en una fuente concreta. No describen
-      competencia, ni calidad, ni seniority, ni la dificultad de nada de esto. Un conteo no
-      otorga ninguna de esas cosas, y esta pantalla no lo insinúa en ninguna parte.
+      Doce proyectos en el Registry. De dos hay un artefacto autorizado que enseñar, y
+      están arriba con su captura. De los otros diez queda lo declarado, y se dice así.
     </p>
-    <p class="ui small muted" style="margin-top:var(--s-2)">
-      El índice canónico del sistema de evidencia no es esta pantalla: es
-      <a class="link" href="#">/evidencia</a>, que lista las afirmaciones en el orden del
-      Registry y sin filtros. Aquí se puede filtrar porque aquí no se afirma nada sobre
-      nadie.
-    </p>
+    <div class="aviso aviso--sim" style="margin-top:var(--s-2)">
+      <p><b>Prototipo.</b> Esta pantalla todavía no está publicada. Las capturas y las
+      cifras sí son reales: nada de lo que aparece aquí está simulado ni rellenado.</p>
+    </div>
+  </section>
+
+  <!-- ===== 1. Seleccion de trabajos ===== -->
+  <section class="wrap" aria-labelledby="h-obras" style="padding-block:var(--s-3) var(--s-2)">
+    <h2 class="rotulo" id="h-obras">Trabajo seleccionado</h2>
+
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Cobertura de esta selección: dos de doce.</b> Sólo tres proyectos del Registry
+      son públicos, y sólo dos tienen hoy un artefacto autorizado que enseñar. Que un
+      proyecto no aparezca aquí con captura no dice nada sobre su tamaño ni sobre su
+      dificultad: publicar la pantalla de un proyecto privado sería abrir superficie
+      pública sin autorización, y por eso no se hace.</p>
+    </div>
+
+    <div class="obras" id="obras-grid" style="margin-top:var(--s-3)">
+
+      <!-- ---- Proof of Work: dos capturas autorizadas ---- -->
+      <article class="obra proy" id="obra-pow" data-proj="proof-of-work" data-dim="build lead" data-start="2026-08">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-evidencia.png" width="1603" height="915"
+               alt="Captura de la pantalla «Cómo respaldo lo que afirmo»: un texto de apertura y, debajo, la primera afirmación con la etiqueta CONSTRUIR, su enunciado y una línea que declara procedencia y verificabilidad.">
+          <img src="_activos/pow-proyectos.png" width="1603" height="915"
+               alt="Captura de la pantalla «Proyectos»: la lista agrupada por estado, con el propósito declarado de cada proyecto y su tipo debajo del título.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo"><a class="link" href="proyecto.html">Proof of Work</a></h3>
+          <p class="obra-tesis">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
+
+          <dl class="aporte">
+            <dt>Contribución de Rodrigo</dt>
+            <dd>Rol declarado en el feed: <b>autor</b>. Sostiene las dimensiones
+              <b>Construyo</b> y <b>Dirijo</b>.</dd>
+            <dt>Crédito</dt>
+            <dd class="credito">El feed guarda dos cosas sobre la participación —el rol y el
+              contexto del trabajo—, y ninguna persona. Aquí no hay nombres porque no hay
+              dato de personas, no porque no los haya habido.</dd>
+            <dt>Periodo</dt>
+            <dd>Herramienta · en alfa · desde 2026-08-19.</dd>
+          </dl>
+
+          <ul class="entregas">
+            <li>Pantalla «Cómo respaldo lo que afirmo»</li>
+            <li>Índice público de proyectos</li>
+            <li>Especificación canónica en <code>docs/</code></li>
+            <li><a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">Repositorio público</a></li>
+          </ul>
+
+          <div class="aviso aviso--verif">
+            <p><b>Qué muestran las capturas.</b> Son las dos pantallas del sistema tal como
+            existen hoy en el repositorio público, no un render de diseño. Lo que cuentan
+            de sí mismas se puede comprobar abriendo ese repositorio.</p>
+          </div>
+
+          <p class="obra-pie"><a class="link-quiet" href="proyecto.html">Ver el detalle del proyecto →</a></p>
+        </div>
+      </article>
+
+      <!-- ---- Habit Tracker ---- -->
+      <article class="obra proy" data-proj="habit-tracker" data-dim="build" data-start="2026-06">
+        <div class="obra-lienzo">
+          <img src="_activos/habit-tracker.png" width="1603" height="915"
+               alt="Captura de la página del repositorio público habit-tracker en GitHub: la rama main, la lista de carpetas y archivos con el mensaje de su último commit, y el panel «About» que describe la app.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">Habit Tracker</h3>
+          <p class="obra-tesis">«Registrar y dar seguimiento a hábitos personales.»</p>
+
+          <dl class="aporte">
+            <dt>Contribución de Rodrigo</dt>
+            <dd>Rol declarado en el feed: <b>autor</b>. Sostiene la dimensión <b>Construyo</b>.</dd>
+            <dt>Crédito</dt>
+            <dd class="credito">Mismo límite que arriba: el feed registra rol y contexto, no
+              personas. Nadie queda nombrado aquí, y eso incluye no atribuirle a él en
+              exclusiva lo que haya sido de más manos.</dd>
+            <dt>Periodo</dt>
+            <dd>Producto · en beta · desde 2026-06-01.</dd>
+          </dl>
+
+          <ul class="entregas">
+            <li>Producto en beta</li>
+            <li><a class="link" href="https://github.com/rodrigoBermejo/habit-tracker">Repositorio público</a></li>
+          </ul>
+
+          <div class="aviso aviso--verif">
+            <p><b>La captura es del repositorio, no del producto.</b> Muestra el código
+            público y su historial, no la interfaz de la app. De la interfaz no hay
+            captura autorizada todavía, así que no se enseña ninguna.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="aviso aviso--verif" id="obras-vacio" hidden style="margin-top:var(--s-3)">
+      <p><b>Los filtros dejan fuera los dos trabajos con captura autorizada.</b> No es que
+      no haya trabajo en el resto: es que del resto no hay artefacto que se pueda publicar.
+      Quita el filtro para volver a verlos.</p>
+    </div>
   </section>
 
   <!-- ===== Filtros ===== -->
@@ -202,38 +314,51 @@
     </p>
   </section>
 
-  <!-- ===== Lista de proyectos ===== -->
+  <!-- ===== Indice de los otros diez ===== -->
   <section class="wrap" aria-labelledby="h-lista">
-    <div id="grupo-con">
-      <h2 class="rotulo" id="h-lista">Proyectos que sostienen una afirmación</h2>
+    <h2 class="rotulo" id="h-lista">Los otros diez proyectos del Registry</h2>
+
+    <div class="aviso" style="margin-top:var(--s-2)">
+      <p><b>Sin captura, y por una razón concreta.</b> De estos diez no hay artefacto
+      autorizado: parte del trabajo vive en repositorios que no son públicos, y de ahí se
+      publica el hecho, nunca su identidad. Lo que queda es lo declarado —tesis, tipo,
+      estado y periodo—, y no se completa con nada más.</p>
+    </div>
+
+    <div class="aviso" style="margin-top:var(--s-2)">
+      <p><b>Crédito.</b> Varios de estos proyectos son trabajo colectivo de Inadaptados. El
+      feed guarda el contexto del trabajo, no a las personas, así que aquí no aparece
+      ningún nombre —tampoco el suyo— como si el mérito fuera de uno solo.</p>
+    </div>
+
+    <div id="grupo-con" style="margin-top:var(--s-3)">
+      <h3 class="rotulo">Proyectos que sostienen una afirmación</h3>
 
       <article class="fila proy" data-proj="contenido-ia" data-dim="build" data-start="2026-03">
         <div>
-          <h3 class="h3">Producción de contenido con IA</h3>
-          <p class="proy-meta">Producto · en alfa · desde 2026-03-01</p>
+          <h4 class="h3">Producción de contenido con IA</h4>
+          <p class="proy-meta">Producto · en alfa · desde 2026-03-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo</p>
         </div>
         <div>
           <p class="proy-tesis">«Producir video y contenido con avatares e IA de forma repetible.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="curricula-inadaptados" data-dim="teach" data-start="2026-01">
         <div>
-          <h3 class="h3">Currícula y docencia Inadaptados</h3>
-          <p class="proy-meta">Docencia · en producción · desde 2026-01-01</p>
+          <h4 class="h3">Currícula y docencia Inadaptados</h4>
+          <p class="proy-meta">Docencia · en producción · desde 2026-01-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Formo</p>
         </div>
         <div>
           <p class="proy-tesis">«Diseñar la currícula y los materiales con los que se forma a desarrolladores en Inadaptados.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="docencia-universitaria" data-dim="teach" data-start="2024-08">
         <div>
-          <h3 class="h3">Docencia universitaria</h3>
+          <h4 class="h3">Docencia universitaria</h4>
           <p class="proy-meta">Docencia · en producción · desde 2024-08-01</p>
           <p class="proy-dims">Sostiene: Formo</p>
         </div>
@@ -242,126 +367,89 @@
         </div>
       </article>
 
-      <article class="fila proy" data-proj="habit-tracker" data-dim="build" data-start="2026-06">
-        <div>
-          <h3 class="h3">Habit Tracker</h3>
-          <p class="proy-meta">Producto · en beta · desde 2026-06-01</p>
-          <p class="proy-dims">Sostiene: Construyo</p>
-        </div>
-        <div>
-          <p class="proy-tesis">«Registrar y dar seguimiento a hábitos personales.»</p>
-          <p class="small" style="margin-top:.5rem"><a class="link" href="https://github.com/rodrigoBermejo/habit-tracker">Repositorio público</a></p>
-        </div>
-      </article>
-
       <article class="fila proy" data-proj="infra-interna" data-dim="build lead" data-start="2026-03">
         <div>
-          <h3 class="h3">Infraestructura y automatización interna</h3>
-          <p class="proy-meta">Herramienta · en producción · desde 2026-03-01</p>
+          <h4 class="h3">Infraestructura y automatización interna</h4>
+          <p class="proy-meta">Herramienta · en producción · desde 2026-03-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
         </div>
         <div>
           <p class="proy-tesis">«Operar VPS, contenedores y asistentes internos sin depender de terceros.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="mathgym" data-dim="build" data-start="2026-07">
         <div>
-          <h3 class="h3">MathGym</h3>
-          <p class="proy-meta">Producto · en alfa · desde 2026-07-01</p>
+          <h4 class="h3">MathGym</h4>
+          <p class="proy-meta">Producto · en alfa · desde 2026-07-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo</p>
         </div>
         <div>
           <p class="proy-tesis">«Practicar matemáticas con ejercicios y seguimiento de progreso.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="plataforma-inadaptados" data-dim="build lead" data-start="2026-02">
         <div>
-          <h3 class="h3">Plataforma Inadaptados</h3>
-          <p class="proy-meta">Producto · en producción · desde 2026-02-01</p>
+          <h4 class="h3">Plataforma Inadaptados</h4>
+          <p class="proy-meta">Producto · en producción · desde 2026-02-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
         </div>
         <div>
           <p class="proy-tesis">«Sostener la operación educativa de Inadaptados: LMS, web, certificados y contenido.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
-        </div>
-      </article>
-
-      <article class="fila proy" data-proj="proof-of-work" data-dim="build lead" data-start="2026-08">
-        <div>
-          <h3 class="h3"><a class="link" href="proyecto.html">Proof of Work</a></h3>
-          <p class="proy-meta">Herramienta · en alfa · desde 2026-08-19</p>
-          <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
-        </div>
-        <div>
-          <p class="proy-tesis">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
-          <p class="small" style="margin-top:.5rem">
-            <a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">Repositorio público</a>
-            &middot;
-            <a class="link-quiet" href="proyecto.html">Ver el detalle del proyecto →</a>
-          </p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="punto-de-venta" data-dim="build" data-start="2026-02">
         <div>
-          <h3 class="h3">Punto de venta</h3>
-          <p class="proy-meta">Producto · prototipo · desde 2026-02-01</p>
+          <h4 class="h3">Punto de venta</h4>
+          <p class="proy-meta">Producto · prototipo · desde 2026-02-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo</p>
         </div>
         <div>
           <p class="proy-tesis">«Construir un punto de venta reutilizable para comercios pequeños.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="ssp" data-dim="build lead" data-start="2026-08">
         <div>
-          <h3 class="h3">SSP</h3>
-          <p class="proy-meta">Producto · en producción · desde 2026-08-01</p>
+          <h4 class="h3">SSP</h4>
+          <p class="proy-meta">Producto · en producción · desde 2026-08-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
         </div>
         <div>
           <p class="proy-tesis">«Automatizar la captación y el seguimiento comercial de Inadaptados.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
     </div>
 
     <div id="grupo-sin">
-      <h2 class="rotulo grupo-rot">Proyectos que no sostienen ninguna afirmación</h2>
-      <p class="ui small" style="margin-top:var(--s-2);margin-bottom:var(--s-2)">
-        Existen, están declarados en el Registry y se muestran. Lo que no hacen es
-        respaldar ninguna afirmación pública, así que no tienen dimensión asignada y
-        <strong>desaparecen de la lista en cuanto se filtra por una</strong>. No es un
-        defecto de los proyectos: es dónde están hoy.
-      </p>
+      <h3 class="rotulo grupo-rot">Proyectos que no sostienen ninguna afirmación</h3>
+      <div class="aviso" style="margin-block:var(--s-2)">
+        <p><b>Existen y se muestran.</b> Lo que no hacen es respaldar ninguna afirmación
+        pública, así que no tienen dimensión asignada y desaparecen de la lista en cuanto
+        se filtra por una. No es un defecto de los proyectos: es dónde están hoy.</p>
+      </div>
 
       <article class="fila proy" data-proj="exploraciones" data-dim="" data-start="2025-05">
         <div>
-          <h3 class="h3">Exploraciones y material de práctica</h3>
-          <p class="proy-meta">Laboratorio · prototipo · desde 2025-05-01</p>
+          <h4 class="h3">Exploraciones y material de práctica</h4>
+          <p class="proy-meta">Laboratorio · prototipo · desde 2025-05-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sin afirmación asociada</p>
         </div>
         <div>
           <p class="proy-tesis">«Probar tecnologías y producir material de práctica, sin usuarios.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
 
       <article class="fila proy" data-proj="sitio-rbloom" data-dim="" data-start="2026-03">
         <div>
-          <h3 class="h3">Sitio RBloomDev</h3>
-          <p class="proy-meta">Producto · en mantenimiento · desde 2026-03-01</p>
+          <h4 class="h3">Sitio RBloomDev</h4>
+          <p class="proy-meta">Producto · en mantenimiento · desde 2026-03-01 · parte en repositorios privados</p>
           <p class="proy-dims">Sin afirmación asociada</p>
         </div>
         <div>
           <p class="proy-tesis">«Presencia web de RBloomDev, separada del sitio personal.»</p>
-          <p class="xs muted" style="margin-top:.5rem">Parte del trabajo vive en repositorios privados. Se publica el hecho, nunca su identidad.</p>
         </div>
       </article>
     </div>
@@ -377,38 +465,29 @@
     </p>
   </section>
 
-  <!-- ===== Actividad registrada ===== -->
+  <!-- ===== 2. Actividad registrada ===== -->
   <section class="act wrap" aria-labelledby="h-act">
     <h2 class="rotulo" id="h-act">Actividad registrada</h2>
 
-    <p class="ui" style="margin-top:var(--s-2)">
-      Cada cifra lleva pegada su cobertura y, detrás, la fuente exacta con la que se midió.
-      Lo que no tiene fuente aparece como hueco, nunca como cero.
-      <strong>Nada de esto dice qué tan bueno es el trabajo</strong>, ni cuánto costó
-      hacerlo, ni quién es capaz de qué. Un conteo describe volumen registrado, y eso es
-      todo lo que describe.
-    </p>
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Qué describe cada cifra, y qué no.</b> Volumen de trabajo registrado en una
+      fuente concreta, dentro de un periodo concreto. No describe competencia, ni calidad,
+      ni dificultad. Periodo y cobertura van pegados a la cifra porque son parte del dato;
+      lo que no tiene fuente aparece como hueco, nunca como cero.</p>
+    </div>
 
-    <div class="act-grid">
+    <!-- ---- Tiempo, y los dos huecos que le corresponden ---- -->
+    <div class="datos" style="margin-top:var(--s-4)">
 
-      <!-- ---- A. Tiempo registrado: fuente instrumentada, agregada ---- -->
-      <div>
-        <h3 class="h3">Tiempo registrado</h3>
-        <p class="ui small" style="margin-top:.5rem">
-          Es la única serie de tiempo que existe, y no es «horas trabajadas»:
-          es <strong>tiempo con actividad en un editor instrumentado</strong>. Se publica
-          agregada y nunca por proyecto. <strong>Este bloque no responde a los filtros de
-          arriba</strong>, y la razón está al pie de la página.
+      <div class="dato">
+        <p class="dato-cifra">515.9</p>
+        <p class="dato-que">horas de actividad en editor</p>
+        <p class="dato-marco">
+          <b>Ventana de 90 días hasta 2026-09-14.</b><br>
+          Cobertura: 82 de 91 días con dato. Agregada, nunca por proyecto.
         </p>
-
         <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">515.9</span>
-              <span class="ui">horas de actividad en editor</span>
-              <span class="cobertura">— cobertura: 82 de 91 días con dato · ventana de 90 días hasta 2026-09-14</span>
-            </span>
-          </summary>
+          <summary><span class="ui small">Qué no mide, fuente y unidad</span></summary>
           <div class="detalle-cuerpo">
             <p class="ui small" style="margin-bottom:var(--s-2)">
               <strong>Qué no mide.</strong> Reuniones, diseño, lectura, docencia presencial,
@@ -440,57 +519,65 @@
                 Un número sin esa aclaración mentiría por omisión.</dd>
               <dt>Por qué se puede publicar</dt>
               <dd>Ningún proyecto llega al 16 % del total en esta ventana, así que el
-                agregado no es un proxy de ningún sujeto. Es la prueba que el agregado de
-                pull requests no pasa.</dd>
+                agregado no es un proxy de ningún sujeto.</dd>
+              <dt>Por qué no se filtra</dt>
+              <dd>Los filtros de arriba no la tocan: se publica sólo agregada y no tiene
+                desglose por proyecto que se pueda publicar.</dd>
             </dl>
           </div>
         </details>
-
-        <div class="hueco" style="margin-top:var(--s-3)">
-          <strong>No hay ninguna cifra derivada de estas horas.</strong>
-          Ni horas por commit, ni horas por proyecto, ni horas ahorradas, ni porcentaje de
-          trabajo hecho por IA. Ahora que hay un denominador la división es tentadora, y
-          sigue estando prohibida: ninguno de esos cocientes tiene un numerador honesto.
-        </div>
-
-        <div class="hueco" style="margin-top:var(--s-2)">
-          <strong>Y aquí iba un agregado de pull requests que se retiró.</strong>
-          Cubría los cuatro contextos de trabajo, y aun así no se publica: un solo sujeto
-          aportaba la mayor parte del total, así que el total funcionaba como un retrato de
-          ese sujeto con ruido encima. Combinar organizaciones es necesario, no suficiente.
-          La cifra está medida y no aparece en ninguna parte de este repositorio.
-        </div>
       </div>
 
-      <!-- ---- B. La rebanada publica y comprobable ---- -->
-      <div>
-        <h3 class="h3">La rebanada que cualquiera puede comprobar</h3>
-        <p class="ui small" style="margin-top:.5rem">
-          El repositorio de este sitio —el proyecto <em>Proof of Work</em>— es público. Sus
-          cifras se pueden reproducir sin credenciales, ejecutando el comando que va en cada
-          detalle. <strong>Es la única clase de cifra de GitHub que esta pantalla
-          publica</strong>: de los repositorios que no son públicos no se publica ni el
-          nombre, ni el conteo, ni cuántos son.
+      <div class="dato dato--hueco">
+        <p class="dato-cifra">Sin fuente</p>
+        <p class="dato-que">tiempo humano total</p>
+        <p class="dato-marco">
+          <b>No existe la fuente.</b><br>
+          Reuniones, clases, diseño y lectura no los anota ningún sistema. Deducirlos de los
+          commits sería inventarlos, así que esto se queda vacío.
         </p>
+      </div>
 
-        <!-- Estado cuando el filtro deja fuera el proyecto de la fuente publica -->
-        <div class="hueco" id="act-hueco" hidden style="margin-top:var(--s-2)">
-          <strong>El filtro deja fuera el único proyecto con fuente pública.</strong>
-          La mayoría de los proyectos del Registry viven en repositorios que no son
-          públicos, y de esos no se publica un conteo por proyecto. <strong>No es cero
-          trabajo: es trabajo del que no se puede publicar la cuenta.</strong> El bloque de
-          tiempo de la izquierda no se filtra porque se publica solo agregado.
-        </div>
+      <div class="dato dato--hueco">
+        <p class="dato-cifra">Sin fuente</p>
+        <p class="dato-que">ejecuciones de agentes</p>
+        <p class="dato-marco">
+          <b>No existe la fuente: el ledger del motor está vacío.</b><br>
+          Si llegara a haber dato, sería duración acumulada de ejecuciones —que no es tiempo
+          transcurrido— y jamás sumada al tiempo humano.
+        </p>
+      </div>
+    </div>
 
-        <div id="act-cuerpo">
+    <!-- ---- La rebanada publica y comprobable ---- -->
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">La rebanada que cualquiera puede comprobar</h3>
+      <p class="ui small" style="margin-top:.5rem">
+        Son las cifras del repositorio público del proyecto <em>Proof of Work</em>:
+        reproducibles sin credenciales, con el comando que va en cada detalle. De los
+        repositorios que no son públicos no se publica ni el nombre, ni el conteo, ni
+        cuántos son.
+      </p>
+
+      <!-- Estado cuando el filtro deja fuera el proyecto de la fuente publica -->
+      <div class="aviso aviso--verif" id="act-hueco" hidden style="margin-top:var(--s-2)">
+        <p><b>El filtro deja fuera el único proyecto con fuente pública.</b> La mayoría de
+        los proyectos del Registry viven en repositorios que no son públicos, y de esos no
+        se publica un conteo por proyecto. No es cero trabajo: es trabajo del que no se
+        puede publicar la cuenta.</p>
+      </div>
+
+      <div class="datos" id="act-cuerpo" style="margin-top:var(--s-3)">
+
+        <div class="dato">
+          <p class="dato-cifra">47</p>
+          <p class="dato-que">commits que llegaron a <code>main</code></p>
+          <p class="dato-marco">
+            <b>2026-01-01 a 2026-09-11.</b><br>
+            Cobertura: un repositorio, el público.
+          </p>
           <details class="detalle">
-            <summary>
-              <span class="cifra-linea">
-                <span class="cifra">47</span>
-                <span class="ui">commits que llegaron a <code>main</code></span>
-                <span class="cobertura">— cobertura: un repositorio, el público · 2026-01-01 a 2026-09-11</span>
-              </span>
-            </summary>
+            <summary><span class="ui small">Fuente, unidad y cobertura</span></summary>
             <div class="detalle-cuerpo">
               <dl class="procedencia">
                 <dt>Fuente</dt>
@@ -508,15 +595,17 @@
               </dl>
             </div>
           </details>
+        </div>
 
+        <div class="dato">
+          <p class="dato-cifra">24</p>
+          <p class="dato-que">pull requests abiertos</p>
+          <p class="dato-marco">
+            <b>Sin recorte de periodo.</b><br>
+            Cobertura: ese mismo repositorio público, todos sus PR.
+          </p>
           <details class="detalle">
-            <summary>
-              <span class="cifra-linea">
-                <span class="cifra">24</span>
-                <span class="ui">pull requests abiertos</span>
-                <span class="cobertura">— cobertura: ese mismo repositorio público, todos sus PR</span>
-              </span>
-            </summary>
+            <summary><span class="ui small">Fuente, unidad y cobertura</span></summary>
             <div class="detalle-cuerpo">
               <dl class="procedencia">
                 <dt>Fuente</dt>
@@ -528,25 +617,27 @@
                 <dt>Deduplicación</dt>
                 <dd>Por número de PR, único por repositorio. No hay duplicados posibles.</dd>
                 <dt>Cobertura</dt>
-                <dd>Un repositorio de doce proyectos, y solo desde que ese repositorio trabaja con PR. El trabajo de enero no pasó por PR y por eso no aparece aquí; eso no lo convierte en menos trabajo.</dd>
+                <dd>Un repositorio de doce proyectos, y sólo desde que ese repositorio trabaja con PR. El trabajo de enero no pasó por PR y por eso no aparece aquí; eso no lo convierte en menos trabajo.</dd>
               </dl>
             </div>
           </details>
+        </div>
 
+        <div class="dato">
+          <p class="dato-cifra">23</p>
+          <p class="dato-que">commits declaran co-autoría de un asistente</p>
+          <p class="dato-marco">
+            <b>2026-01-01 a 2026-09-11.</b><br>
+            Cobertura: los 28 commits sin merge del periodo. Es procedencia declarada, no
+            productividad.
+          </p>
           <details class="detalle">
-            <summary>
-              <span class="cifra-linea">
-                <span class="cifra">23</span>
-                <span class="ui">commits declaran co-autoría de un asistente</span>
-                <span class="cobertura">— cobertura: los 28 commits sin merge del periodo</span>
-              </span>
-            </summary>
+            <summary><span class="ui small">Qué no dice, fuente y cobertura</span></summary>
             <div class="detalle-cuerpo">
               <p class="ui small" style="margin-bottom:var(--s-2)">
-                Esto es <strong>procedencia declarada, no productividad</strong>. El trailer
-                dice que hubo asistencia en ese commit. <strong>No dice qué parte del
-                trabajo hizo la IA</strong>, y de este dato no se deriva ningún porcentaje de
-                «trabajo hecho por IA» ni de «horas ahorradas»: no hay denominador honesto
+                El trailer dice que hubo asistencia en ese commit. <strong>No dice qué parte
+                del trabajo hizo la IA</strong>, y de este dato no se deriva ningún porcentaje
+                de «trabajo hecho por IA» ni de «horas ahorradas»: no hay denominador honesto
                 para esa fracción, y construirlo sería exactamente el indicador que el
                 producto prohíbe.
               </p>
@@ -570,16 +661,15 @@
     </div>
 
     <!-- ---- Evolucion temporal: del repositorio publico, no del agregado ---- -->
-    <div id="act-tira" style="margin-top:var(--s-3)">
+    <div id="act-tira" style="margin-top:var(--s-4)">
       <div class="filete"></div>
       <div style="margin-top:var(--s-2)">
-          <h3 class="h3">Cuándo se registró, en el repositorio público</h3>
+        <h3 class="h3">Cuándo se registró, en el repositorio público</h3>
           <p class="ui small" style="margin-top:.5rem;max-width:62ch">
             Commits que llegaron a <code>main</code> en ese repositorio, mes a mes. La tira
             no ordena, no compara contra el mes anterior y no marca tendencia:
-            <strong>un mes alto no es un mes mejor</strong>, solo un mes con más registro en
-            esta fuente. <strong>No es la serie de toda su actividad</strong>, y abajo está
-            dicho por qué esa otra serie no se publica.
+            <strong>un mes alto no es un mes mejor</strong>, sólo un mes con más registro en
+            esta fuente. <strong>No es la serie de toda su actividad</strong>.
           </p>
 
           <ul class="tira" id="tira">
@@ -635,94 +725,94 @@
       </div>
   </section>
 
-  <!-- ===== Huecos declarados ===== -->
-  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-huecos">
-    <h2 class="rotulo" id="h-huecos">Lo que esta pantalla no muestra, y por qué</h2>
+  <!-- ===== 3. Metodologia y limites, al final y plegada ===== -->
+  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-metodo">
+    <h2 class="rotulo" id="h-metodo">Metodología y límites de publicación</h2>
+
     <p class="ui small" style="margin-top:var(--s-2);max-width:66ch">
-      Hay dos razones distintas para que falte un número, y no se parecen en nada. La
-      primera es que <strong>no existe la fuente</strong>. La segunda es que la fuente
-      existe, el dato está medido y <strong>aun así no se publica</strong>, porque
-      publicarlo señalaría a un tercero. Confundirlas sería esconder la segunda detrás de la
-      primera.
+      Hay dos razones distintas para que falte un número, y no se parecen en nada: que
+      <strong>no exista la fuente</strong>, o que la fuente exista, el dato esté medido y
+      <strong>aun así no se publique</strong> porque publicarlo señalaría a un tercero. Los
+      huecos de arriba son de la primera clase; lo que sigue explica la segunda.
     </p>
 
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Ninguna de estas cifras se agrega en un número global.</b> Ni las medidas ni las
+      ausentes. No existe un número que resuma a una persona, y esta pantalla no lo
+      construye por la puerta de atrás.</p>
+    </div>
+
     <div style="margin-top:var(--s-3)">
-      <h3 class="h3">Medido, y deliberadamente no publicado</h3>
-      <div class="act-grid" style="margin-top:var(--s-2)">
-        <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>El agregado de pull requests está medido y no se publica, ni siquiera
-          como total.</strong> Una versión anterior de esta página lo publicaba diciendo que
-          un agregado que combina organizaciones ya cumple la regla de los <strong>dos
-          sujetos independientes</strong>. <strong>Eso era insuficiente.</strong> Combinar
-          sujetos es necesario, no suficiente: si uno solo aporta la mayor parte del total,
-          el total lo describe a él. Aquí pasa eso, así que el total tampoco sale. Y esta
-          nota no dice cuánto es, ni cuál es el renglón grande: decirlo sería publicar en
-          prosa lo que se declara no publicar.
+      <details class="detalle">
+        <summary><span class="ui">Medido, y deliberadamente no publicado</span></summary>
+        <div class="detalle-cuerpo">
+          <div class="hueco">
+            <strong>El agregado de pull requests está medido y no se publica, ni siquiera
+            como total.</strong> Una versión anterior de esta página lo publicaba diciendo que
+            un agregado que combina organizaciones ya cumple la regla de los <strong>dos
+            sujetos independientes</strong>. <strong>Eso era insuficiente.</strong> Combinar
+            sujetos es necesario, no suficiente: si uno solo aporta la mayor parte del total,
+            el total lo describe a él. Aquí pasa eso, así que el total tampoco sale. Y esta
+            nota no dice cuánto es, ni cuál es el renglón grande: decirlo sería publicar en
+            prosa lo que se declara no publicar.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Tampoco se publica su serie mensual.</strong> Los meses están medidos, pero
+            un bucket mensual es un corte mucho más fino que el anual y acabaría describiendo
+            la cadencia de desarrollo de una organización identificable. La tira de barras de
+            arriba se queda por eso en el repositorio público, donde no hay ningún tercero que
+            proteger y cualquiera puede reproducir cada cifra.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Y no se publican dos cortes que se resten entre sí.</strong> Si esta página
+            mostrara un total y además el renglón de una organización, el resto quedaría
+            despejado por diferencia. Ese cruce está prohibido explícitamente, y no basta con
+            no enseñarlo: hay que no poder derivarlo desde lo que sí se enseña. Por la misma
+            razón no aparece cuántos repositorios hay, ni cuántos de ellos no son públicos.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Esto no es prudencia: es la regla escrita.</strong> Y conviene decir lo que
+            cuesta. Lo que queda publicable de GitHub es lo que sale de repositorios públicos,
+            que es una esquina pequeña y poco impresionante del trabajo real. Esa es
+            exactamente la incomodidad correcta: el producto prefiere una cifra comprobable y
+            modesta antes que una persuasiva que señale a un tercero.
+          </div>
         </div>
-        <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>Tampoco se publica su serie mensual.</strong> Los meses están medidos, pero
-          un bucket mensual es un corte mucho más fino que el anual y acabaría describiendo
-          la cadencia de desarrollo de una organización identificable. La tira de barras de
-          arriba se queda por eso en el repositorio público, donde no hay ningún tercero que
-          proteger y cualquiera puede reproducir cada cifra.
+      </details>
+
+      <details class="detalle">
+        <summary><span class="ui">Sin fuente, que no es lo mismo</span></summary>
+        <div class="detalle-cuerpo">
+          <p class="ui small" style="margin-bottom:var(--s-2)">
+            Los dos huecos que se piden más a menudo —tiempo humano total y ejecuciones de
+            agentes— están arriba, a la vista y con el mismo espacio que las cifras medidas.
+            Queda un tercero.
+          </p>
+          <div class="hueco">
+            <strong>Participación de IA más allá del trailer del commit: no existe la fuente.</strong>
+            Lo único medible hoy es si un commit declara co-autoría. Cuánto del contenido
+            produjo el asistente no está registrado en ninguna parte, y no se va a estimar.
+            Tokens, prompts y tool calls siguen prohibidos en cualquier clase: un prompt es
+            contenido, y los tokens no son resultados.
+          </div>
         </div>
-        <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>Y no se publican dos cortes que se resten entre sí.</strong> Si esta página
-          mostrara un total y además el renglón de una organización, el resto quedaría
-          despejado por diferencia. Ese cruce está prohibido explícitamente, y no basta con
-          no enseñarlo: hay que no poder derivarlo desde lo que sí se enseña. Por la misma
-          razón no aparece cuántos repositorios hay, ni cuántos de ellos no son públicos.
+      </details>
+
+      <details class="detalle">
+        <summary><span class="ui">Por qué esta pantalla se puede filtrar y el índice de evidencia no</span></summary>
+        <div class="detalle-cuerpo">
+          <p class="ui small">
+            El índice canónico del sistema de evidencia no es esta pantalla: es
+            <a class="link" href="#">/evidencia</a>, que lista las afirmaciones en el orden del
+            Registry y sin filtros. Aquí se puede filtrar porque aquí no se afirma nada sobre
+            nadie. Y el bloque de tiempo no responde a los filtros porque se publica sólo
+            agregado: no tiene desglose por proyecto que se pueda publicar.
+          </p>
         </div>
-        <div class="hueco" style="border-left-color:var(--ink-title)">
-          <strong>Esto no es prudencia: es la regla escrita.</strong> Y conviene decir lo que
-          cuesta. Lo que queda publicable de GitHub es lo que sale de repositorios públicos,
-          que es una esquina pequeña y poco impresionante del trabajo real. Esa es
-          exactamente la incomodidad correcta: el producto prefiere una cifra comprobable y
-          modesta antes que una persuasiva que señale a un tercero.
-        </div>
-      </div>
+      </details>
     </div>
 
-    <div style="margin-top:var(--s-4)">
-      <h3 class="h3">Sin fuente, que no es lo mismo</h3>
-      <p class="ui small" style="margin-top:.5rem">
-        Cosas que se pidieron ver y de las que no hay nada que leer.
-      </p>
-    </div>
-
-    <div class="act-grid" style="margin-top:var(--s-2)">
-      <div>
-        <div class="hueco">
-          <strong>Tiempo humano fuera del editor: no existe la fuente.</strong>
-          Lo que sí hay está arriba, y cubre solo lo que ocurre dentro de un editor
-          instrumentado. Reuniones, clases, diseño y lectura no los anota ningún sistema, y
-          deducirlos de los commits o de los mensajes sería inventarlos. Por eso
-          <strong>qué fracción de su trabajo cubre la cifra de arriba es desconocida</strong>
-          y se dice así, en vez de dejar que parezca una hoja de horas.
-        </div>
-        <div class="hueco" style="margin-top:var(--s-2)">
-          <strong>Ejecuciones de agentes: no existe la fuente.</strong>
-          El ledger del motor de evidencia está vacío. Si llegara a haber dato, se mostraría
-          como duración acumulada de ejecuciones —que no es tiempo transcurrido— y jamás
-          sumada al tiempo humano: son unidades distintas de cosas distintas.
-        </div>
-      </div>
-      <div>
-        <div class="hueco">
-          <strong>Participación de IA más allá del trailer del commit: no existe la fuente.</strong>
-          Lo único medible hoy es si un commit declara co-autoría. Cuánto del contenido
-          produjo el asistente no está registrado en ninguna parte, y no se va a estimar.
-          Tokens, prompts y tool calls siguen prohibidos en cualquier clase: un prompt es
-          contenido, y los tokens no son resultados.
-        </div>
-        <p class="ui small" style="margin-top:var(--s-3)">
-          Ninguna de estas cifras —ni las medidas ni las ausentes— se agrega en un número
-          global. <strong>No existe un número que resuma a una persona</strong>, y esta
-          pantalla no lo construye por la puerta de atrás.
-        </p>
-        <p style="margin-top:var(--s-2)"><a class="link-quiet" href="#">Cómo respaldo lo que afirmo →</a></p>
-      </div>
-    </div>
+    <p style="margin-top:var(--s-3)"><a class="link-quiet" href="#">Cómo respaldo lo que afirmo →</a></p>
   </section>
 
   <footer class="pie wrap">
@@ -749,6 +839,8 @@
   var vacio    = document.getElementById("vacio");
   var grupoCon = document.getElementById("grupo-con");
   var grupoSin = document.getElementById("grupo-sin");
+  var obrasGrid  = document.getElementById("obras-grid");
+  var obrasVacio = document.getElementById("obras-vacio");
   var actCuerpo = document.getElementById("act-cuerpo");
   var actHueco  = document.getElementById("act-hueco");
   var actTira   = document.getElementById("act-tira");
@@ -792,6 +884,13 @@
     grupoSin.hidden = visiblesEn(grupoSin) === 0;
     vacio.hidden = n !== 0;
 
+    // La seleccion de trabajos participa del filtro como cualquier proyecto. Si el
+    // filtro la vacia, se dice por que: no es que no haya trabajo, es que del resto
+    // no hay artefacto publicable.
+    var obrasVis = visiblesEn(obrasGrid);
+    obrasGrid.hidden = obrasVis === 0;
+    obrasVacio.hidden = obrasVis !== 0;
+
     // Recuento de resultados. El control nunca muestra conteos por opcion.
     if (n === 0) {
       conteo.textContent = "Ningún proyecto cumple estos filtros. El Registry tiene 12 en total.";
@@ -803,8 +902,8 @@
 
     // La rebanada comprobable procede de UN repositorio publico: el del proyecto
     // Proof of Work. Si el filtro lo deja fuera, no hay fuente publica -> hueco
-    // declarado, nunca cero. El bloque de tiempo de la izquierda NO se filtra:
-    // se publica solo agregado y no tiene desglose por proyecto que se pueda publicar.
+    // declarado, nunca cero. El bloque de tiempo NO se filtra: se publica solo
+    // agregado y no tiene desglose por proyecto que se pueda publicar.
     var pow = document.querySelector('.proy[data-proj="proof-of-work"]');
     var hayFuente = !!pow && !pow.hidden;
     actCuerpo.hidden = !hayFuente;

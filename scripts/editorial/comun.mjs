@@ -203,7 +203,21 @@ export function argumentos(argv) {
     else if (a === '--fuente') banderas.soloFuente.push(argv[++i]);
     else if (a === '--entradas') banderas.entradas = argv[++i];
     else if (a === '--silencioso') banderas.silencioso = true;
-    else if (a === '--limite') banderas.limite = Number(argv[++i]) || null;
+    else if (a === '--limite') {
+      // `Number(x) || null` convertia `--limite 0` en `null`, y `null` significa
+      // SIN LIMITE aguas abajo: pedir cero piezas invocaba al modelo una vez por
+      // pendiente --- hoy 41 --- que es lo contrario de lo que se pidio. Lo mismo
+      // con un valor no numerico. Ahora cero es cero y la basura se rechaza.
+      const crudo = argv[++i];
+      // `Number('')` y `Number('  ')` dan 0, que es un entero valido. Pero una cadena
+      // vacia es una errata de quien invoca, no la peticion de un limite de cero, y
+      // confundirlas devuelve el mismo defecto por otra puerta.
+      const n = typeof crudo === 'string' && crudo.trim() === '' ? NaN : Number(crudo);
+      if (!Number.isInteger(n) || n < 0) {
+        throw new Error(`--limite espera un entero >= 0, se recibio: ${JSON.stringify(crudo)}`);
+      }
+      banderas.limite = n;
+    }
   }
   return banderas;
 }
