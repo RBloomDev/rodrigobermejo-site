@@ -2,22 +2,23 @@
   {
     "id": "marco-ailit-alfabetizacion-ia-educacion",
     "tipo": "analisis",
-    "titulo": "La OCDE y la Comisión Europea cerraron un marco común de alfabetización en IA para primaria y secundaria",
-    "entradilla": "El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.",
+    "titulo": "La Comisión Europea y la OCDE presentaron un marco común de alfabetización en IA para primaria y secundaria",
+    "entradilla": "El marco AILit se presentó el 18 de junio de 2026 en Bruselas. Organiza la alfabetización en IA en cuatro dominios y la Comisión Europea lo declara complementario de la evaluación PISA 2029 de alfabetización mediática y en IA.",
     "estado": "borrador",
     "ocurrido_en": "2026-06-18",
     "redactado_en": "2026-09-14T05:35Z",
-    "hecho": "El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code.org). El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores. El marco organiza la alfabetización en IA en cuatro dominios —Engage with AI, Create with AI, Manage AI y Shape AI— y añade, por cada competencia, expectativas de aprendizaje en tres niveles de progresión y escenarios de aula, incluidas actividades sin dispositivo. La iniciativa contribuye al dominio innovador de la evaluación PISA 2029.",
-    "que_cambia": "Para quien dirige tecnología o forma talento, deja de ser cierto que no exista un referente común: hay un marco publicado, con competencias, niveles de progresión y escenarios de aula, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero. Y como alimenta el dominio innovador de PISA 2029, es razonable esperar que se vuelva el vocabulario con el que se discuta alfabetización en IA en los sistemas educativos que participen en esa evaluación. Alinear el vocabulario propio ahora cuesta menos que traducirlo después.",
+    "hecho": "El 18 de junio de 2026, la Comisión Europea y la OCDE presentaron el marco de alfabetización en inteligencia artificial AILit para educación primaria y secundaria. El anuncio ocurrió en Bruselas, durante el evento insignia del European Digital Education Hub «Collaborate for Impact: Advancing European Digital Education and Skills», que reunió a 150 responsables de política pública, docentes, expertos y participantes de toda Europa. El marco se desarrolló con apoyo de expertos internacionales, entre ellos CodeAI, y organiza la alfabetización en IA en cuatro dominios: Engage with AI, Create with AI, Manage AI y Shape AI. Viene acompañado de ejemplos prácticos de aula para ambos niveles. La Comisión Europea lo enumera entre los recursos que complementan la evaluación PISA 2029 de alfabetización mediática y en IA (MAIL). Según el sitio del propio proyecto —única fuente leída que lo dice—, el borrador se publicó en mayo de 2025 y la consulta previa recogió comentarios de más de 2000 personas de más de 100 países.",
+    "que_cambia": "Para quien dirige tecnología o forma talento, deja de ser cierto que no exista un referente común: hay un marco presentado por dos instituciones internacionales, con cuatro dominios de competencia y ejemplos de aula, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero. Que la Comisión Europea lo liste como complementario de PISA 2029 sugiere que su vocabulario será el que se use para discutir alfabetización en IA en los sistemas que participen en esa evaluación; alinear el vocabulario propio ahora cuesta menos que traducirlo después. Lo que NO se sigue de esto es que ningún sistema educativo lo haya adoptado.",
     "mexico": {
       "estado": "no_verificado",
-      "texto": "No se comprobó si México adopta o adoptará este marco, ni si participará en el dominio innovador de esa evaluación. Ninguna de las fuentes leídas lo dice, y la página del organismo que lo detallaría respondió con un bloqueo automático al cliente de este canal, así que no se pudo leer. El estado honesto es no verificado. La vía para cerrarlo es revisión manual, no automatización: del lado oficial mexicano no hay hoy una fuente con cadencia verificable que registre esa adopción."
+      "texto": "No se comprobó si México adopta o adoptará este marco, ni si participará en la evaluación PISA 2029 de alfabetización mediática y en IA. Ninguna de las fuentes leídas lo dice. La única fuente mexicana leída —el Observatorio del Tec— reporta el marco como movimiento internacional, no como adopción nacional. Cerrar esto exige revisión manual: del lado oficial mexicano no hay hoy una fuente con cadencia verificable que registre esa adopción."
     },
     "no_establece": [
-      "No establece que ningún sistema educativo lo haya adoptado. Lanzar un marco no es adoptarlo, y no se leyó ninguna fuente que registre una adopción nacional, ni en México ni fuera.",
+      "No establece que ningún sistema educativo lo haya adoptado, ni en México ni fuera. Presentar un marco no es adoptarlo, y no se leyó ninguna fuente que registre una adopción.",
+      "No establece que el marco forme parte del instrumento PISA 2029. Lo que dice la Comisión Europea es que lo «complementa», que es una relación más débil que integrarlo.",
       "No establece ningún efecto sobre el aprendizaje. El marco describe competencias esperadas; no se leyó evidencia de que enseñarlas mejore algún resultado medido.",
-      "No establece que el marco sea reutilizable. El sitio que lo publica declara derechos reservados y su licencia no se pudo leer, así que aquí se cita y se enlaza, y no se reproduce.",
-      "No establece cómo se traduce a la práctica. El mecanismo por el que un marco internacional llega al aula no aparece en ninguna de las fuentes leídas."
+      "No establece que el marco sea reutilizable. Aquí se cita y se enlaza; no se reproduce.",
+      "No hay una segunda voz independiente sobre las cifras. La consulta previa y el número de asistentes los sostiene una sola fuente cada uno, y ninguna es ajena a la iniciativa."
     ],
     "fuente_primaria": {
       "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
@@ -27,25 +28,55 @@
     },
     "fuentes": [
       {
+        "titulo": "New AI Literacy Framework helps schools prepare learners for the age of artificial intelligence",
+        "medio": "Comisión Europea — European Education Area",
+        "url": "https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence",
+        "fecha": "2026-06-18",
+        "tipo": "primaria",
+        "procedencia": "coautor del marco",
+        "independiente": false,
+        "nota_independencia": "La Comisión Europea es una de las dos instituciones que presentan el marco. Es la fuente autorizada sobre el hecho, no una corroboración independiente de él."
+      },
+      {
+        "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
+        "medio": "AILit Framework — sitio del propio proyecto",
+        "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+        "fecha": "2026-06-18",
+        "tipo": "primaria",
+        "procedencia": "sitio del propio proyecto",
+        "independiente": false,
+        "nota_independencia": "Es el sitio de la iniciativa. Comparte procedencia con la OCDE y la Comisión Europea: no cuenta como segunda voz."
+      },
+      {
         "titulo": "La inteligencia artificial no revolucionará la educación: lo harán las personas",
         "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
         "url": "https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana",
         "fecha": "2026-09-09",
-        "tipo": "secundaria"
-      },
-      {
-        "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
-        "medio": "AILit Framework (OCDE y Comisión Europea)",
-        "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
-        "fecha": "2026-06-18",
-        "tipo": "primaria"
+        "tipo": "secundaria",
+        "procedencia": "tercero sin relación con el marco",
+        "independiente": true,
+        "nota_independencia": "Institución mexicana ajena al marco. Es la única voz independiente leída, y confirma la existencia y el alcance del marco, no su fecha."
       },
       {
         "titulo": "A Common Effort to Advance AI Literacy",
-        "medio": "AILit Framework (OCDE y Comisión Europea)",
+        "medio": "AILit Framework — sitio del propio proyecto",
         "url": "https://ailiteracyframework.org/about",
-        "fecha": "2026-06-15",
-        "tipo": "primaria"
+        "fecha": "2024-09-19",
+        "fecha_modificacion": "2026-06-15",
+        "tipo": "primaria",
+        "procedencia": "sitio del propio proyecto",
+        "independiente": false,
+        "nota_independencia": "Página de contexto del proyecto, publicada en 2024 y modificada el 2026-06-15. Se cita por el dato de PISA, no por la fecha del lanzamiento."
+      },
+      {
+        "titulo": "Empowering Learners for the Age of AI (publicación)",
+        "medio": "OCDE",
+        "url": "https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html",
+        "fecha": "2026-06-18",
+        "tipo": "primaria",
+        "procedencia": "coautor del marco",
+        "independiente": false,
+        "nota_independencia": "Coautora del marco, junto con la Comisión Europea. Su página de la publicación confirma por su cuenta la fecha y la autoría. Es fuente autorizada sobre el hecho, no corroboración independiente de él."
       }
     ],
     "relacion_declarada": null,
@@ -60,12 +91,10 @@
       },
       "verificado": {
         "por": "pendiente",
-        "veredicto": "no_verificada",
-        "detalle": "VEREDICTO NO_VERIFICADA. Fuentes: 3 citadas — 3 leidas, 0 no consultadas, 0 inexistentes; 1/2 corroborantes contando solo fuentes leidas. Afirmaciones: 0 con respaldo legible, 3 pendientes, 0 contradichas. Fechas por fuente: coincide/coincide/discrepancia — solo la fecha de publicacion confirma. Cifras: 6/6 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.» (ninguna de las 3 fuentes legibles la respalda) | «El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code.» (ninguna de las 3 fuentes legibles la respalda) | «El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores.» (ninguna de las 3 fuentes legibles la respalda) NO PASA: fecha declarada 2026-06-15 no es la fecha de publicacion de https://ailiteracyframework.org/about: el documento se publico 2024-09-19 | corroboracion insuficiente: 1 de 2 fuentes corroborantes (leidas y utiles). Citadas 3, leidas 3, no consultadas 0, inexistentes 0. §3 exige 2 y se cuentan solo las leidas. Revision humana pendiente. Avisos: https://ailiteracyframework.org/about se publico 2024-09-19 y se modifico 2026-06-15: la pieza puede estar citando un texto que cambio despues.",
+        "veredicto": "parcial",
+        "detalle": "VEREDICTO PARCIAL. Fuentes: 5 citadas — 4 leidas, 1 no consultadas, 0 inexistentes; 2/2 corroborantes contando solo fuentes leidas. Afirmaciones: 3 con respaldo legible, 1 pendientes, 0 contradichas. Fechas por fuente: no_confirmada/coincide/coincide/coincide/no_consultada — solo la fecha de publicacion confirma. Cifras: 7/7 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El marco AILit se presentó el 18 de junio de 2026 en Bruselas.» (ninguna de las 4 fuentes legibles la respalda; quedan 1 fuentes sin consultar) 1 fuentes sin consultar: de ellas no se puede afirmar que no contradigan. Revision humana pendiente. Avisos: sin fecha de publicacion con rol explicito en https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence (la pieza declara 2026-06-18); 0 fechas sueltas en la pagina, que NO confirman nada | https://ailiteracyframework.org/about se publico 2024-09-19 y se modifico 2026-06-15: la pieza puede estar citando un texto que cambio despues. | fuente NO CONSULTADA: https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista.",
         "pendientes": [
-          "El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029. — ninguna de las 3 fuentes legibles la respalda",
-          "El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code. — ninguna de las 3 fuentes legibles la respalda",
-          "El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores. — ninguna de las 3 fuentes legibles la respalda"
+          "El marco AILit se presentó el 18 de junio de 2026 en Bruselas. — ninguna de las 4 fuentes legibles la respalda; quedan 1 fuentes sin consultar"
         ]
       },
       "publicado": {
@@ -74,7 +103,105 @@
       }
     },
     "huella": "sha256:d637bed95c98a17f849182f4f03fab56ce6667b968ceb6e0fad7dfeccc90668b",
-    "correcciones": []
+    "correcciones": [
+      {
+        "fecha": "2026-09-14",
+        "que": "Se bajó la afirmación sobre PISA 2029 de «alimenta el dominio innovador» a «la Comisión Europea lo lista como complementario», que es lo que la fuente sostiene. Se corrigió la fecha declarada de ailiteracyframework.org/about, que era la de modificación y no la de publicación. Se añadió la página de la Comisión Europea como fuente y se registró la de la OCDE como no consultada (403).",
+        "por": "agente"
+      },
+      {
+        "fecha": "2026-09-14",
+        "que": "La pagina de la OCDE responde de forma intermitente: en unas peticiones entrega el documento y en otras rechaza al cliente. La version anterior de esta pieza afirmaba que estaba bloqueada, y eso no es exacto. En la corrida de verificacion que sello esta pieza no se pudo leer, asi que cuenta como fuente NO CONSULTADA: no corrobora, y tampoco permite afirmar que no contradiga.",
+        "por": "agente"
+      }
+    ],
+    "respaldo": [
+      {
+        "afirmacion": "El 18 de junio de 2026 la Comisión Europea y la OCDE presentaron el marco AILit para primaria y secundaria.",
+        "estado": "respaldada",
+        "pasajes": [
+          {
+            "url": "https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html",
+            "independiente": false,
+            "cita": "OECD/European Commission (2026), Empowering Learners for the Age of AI: An AI Literacy Framework for Primary and Secondary Education, OECD Publishing — 18 June 2026"
+          },
+          {
+            "url": "https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence",
+            "independiente": false,
+            "cita": "On 18 June, the European Commission and the Organisation for Economic Cooperation and Development (OECD) presented an AI Literacy (AILit) Framework for primary and secondary education."
+          },
+          {
+            "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+            "independiente": false,
+            "cita": "…the finalised AI Literacy Framework for Primary and Secondary Education, launched on 18 June 2026 during the European Digital Education Hub (EDEH) flagship event, Collaborate for Impact: Advancing European Digital Education and Skills."
+          },
+          {
+            "url": "https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana",
+            "independiente": true,
+            "cita": "La OCDE y la Comisión Europea han impulsado el marco AILit sobre la alfabetización en IA orientado a la educación primaria y secundaria."
+          }
+        ],
+        "nota": "Las dos instituciones coautoras lo confirman por separado (OCDE y Comisión Europea), y una fuente independiente —el Observatorio del Tec— confirma la existencia y el alcance del marco, aunque no su fecha."
+      },
+      {
+        "afirmacion": "El anuncio fue en Bruselas y reunió a 150 asistentes.",
+        "estado": "respaldada",
+        "pasajes": [
+          {
+            "url": "https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence",
+            "independiente": false,
+            "cita": "The announcement took place in Brussels during the European Digital Education Hub flagship event, Collaborate for Impact: Advancing European Digital Education and Skills which brought together 150 policymakers, educators, experts and stakeholders from across Europe."
+          }
+        ],
+        "nota": "Una sola fuente, y es coautora. No hay corroboración independiente de la cifra."
+      },
+      {
+        "afirmacion": "El marco organiza la alfabetización en IA en cuatro dominios: Engage, Create, Manage y Shape.",
+        "estado": "respaldada",
+        "pasajes": [
+          {
+            "url": "https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence",
+            "independiente": false,
+            "cita": "It enables learners to engage, create with, manage, and shape AI, while critically evaluating its benefits, risks and ethical implications."
+          },
+          {
+            "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+            "independiente": false,
+            "cita": "The framework spans four domains: Engage with AI, Create with AI, Manage AI, and Shape AI—covering awareness, creative use, responsible decision making, and how AI systems are shaped by human values."
+          }
+        ],
+        "nota": "Dos fuentes, pero ambas de la misma procedencia institucional. Dos URLs no son dos corroboraciones."
+      },
+      {
+        "afirmacion": "La Comisión Europea lo lista como complementario de la evaluación PISA 2029 de alfabetización mediática y en IA.",
+        "estado": "respaldada",
+        "pasajes": [
+          {
+            "url": "https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence",
+            "independiente": false,
+            "cita": "The AI Literacy Framework also complements several European initiative and policy priorities: PISA 2029 Media and AI Literacy (MAIL) assessment…"
+          },
+          {
+            "url": "https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana",
+            "independiente": true,
+            "cita": "PISA integrará en 2029 la alfabetización mediática y en inteligencia artificial."
+          }
+        ],
+        "nota": "CORRECCIÓN. Una versión anterior de esta pieza decía que el marco «alimenta el dominio innovador de PISA 2029». Ninguna fuente dice eso: la Comisión Europea dice que lo «complementa», y el Observatorio confirma por separado que PISA 2029 incluirá esa evaluación. Se bajó la afirmación a lo que las fuentes sostienen."
+      },
+      {
+        "afirmacion": "El borrador se publicó en mayo de 2025 y la consulta recogió comentarios de más de 2000 personas de más de 100 países.",
+        "estado": "respaldada_por_una_sola_fuente_no_independiente",
+        "pasajes": [
+          {
+            "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+            "independiente": false,
+            "cita": "…the OECD and the European Commission, with support from CodeAI (formerly Code.org) and international experts, released a draft AI Literacy Framework in May 2025… The draft framework was informed by extensive global consultation, drawing feedback from over 2000 individuals across a wide range of stakeholder groups, including teachers, education leaders, policymakers, learning designers, NGOs and researchers from over 100 countries representing all continents."
+          }
+        ],
+        "nota": "Solo lo dice el sitio del propio proyecto. La página de la Comisión Europea NO trae estas cifras, y ninguna fuente independiente las repite. Se publica atribuida, no como hecho corroborado."
+      }
+    ]
   },
   {
     "id": "las-pantallas-por-si-solas-no-explican-el-retraso-del-le-53f9a2",

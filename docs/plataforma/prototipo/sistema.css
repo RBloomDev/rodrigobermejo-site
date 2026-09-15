@@ -10,8 +10,15 @@
 
    La respuesta: un sistema de REGLA Y COLUMNA, que es la gramatica comun del
    periodico y de la tabla. Ambos son rejillas densas separadas por filetes.
-   No hay tarjetas: una sucesion de tarjetas identicas es justo lo que Rodrigo
-   pidio evitar, y ademas es lo que hace que un dashboard parezca un juguete.
+
+   CORREGIDO 2026-09-15. La version anterior de este bloque decia «no hay
+   tarjetas». Esa regla me la invente yo. Lo que Rodrigo pidio evitar es
+   REPETIR UN MISMO COMPONENTE SIN CRITERIO, que no es lo mismo. Una tarjeta
+   con la captura real de un producto muestra trabajo mucho mejor que una fila
+   de texto, y aqui se usa exactamente para eso --- `.obra`, y SOLO donde hay
+   un artefacto autorizado que ensenar. El indice completo de proyectos y la
+   superficie de actividad siguen siendo filas, porque ahi la tarjeta no
+   aporta nada y solo anadiria ruido.
 
    Paleta: la oficial de app/globals.css. Dos derivados declarados abajo.
    ============================================================ */
@@ -346,3 +353,156 @@ input:focus-visible, select:focus-visible, [tabindex]:focus-visible {
   border-radius: var(--radius); opacity: .85;
 }
 @media print { .proto { display: none; } }
+
+/* ============================================================
+   COMPONENTES DE PRODUCTO — anadidos el 2026-09-15
+
+   Nacen de una critica concreta: las pantallas dedicaban la mayor parte de su
+   superficie a explicar restricciones y funcionamiento interno, y el trabajo
+   quedaba reducido a una lista de titulos. Lo que sigue existe para poner el
+   trabajo delante, SIN esconder los avisos que tienen que viajar con el.
+   ============================================================ */
+
+/* ---------- .obra: una pieza de trabajo con artefacto que ensenar ----------
+   Solo se usa donde hay una captura o demostracion REAL y autorizada. Un
+   proyecto sin artefacto publicable NO se disfraza de tarjeta vacia: va en la
+   lista de filas, que es donde no miente. */
+.obras {
+  display: grid; gap: var(--s-3);
+  grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+}
+.obra {
+  display: flex; flex-direction: column;
+  border: 1px solid var(--rule-mid); border-radius: var(--radius);
+  background: var(--bg-page); overflow: hidden;
+}
+.obra-lienzo {
+  aspect-ratio: 16 / 10; background: var(--bg-inset);
+  border-bottom: 1px solid var(--rule-mid); overflow: hidden;
+}
+.obra-lienzo img {
+  width: 100%; height: 100%; object-fit: cover; object-position: top center;
+  display: block;
+}
+.obra-cuerpo { padding: var(--s-2) var(--s-2) var(--s-3); display: grid; gap: .6rem; }
+.obra-titulo {
+  font-family: var(--ff-display); font-size: var(--t-1); font-weight: 700;
+  color: var(--ink-title); margin: 0; line-height: 1.15;
+}
+.obra-tesis { margin: 0; font-size: var(--t--1); color: var(--ink-2); line-height: 1.5; }
+
+/* Contribucion y credito. Dos hechos distintos que no se mezclan:
+   que hizo Rodrigo, y de quien mas es el trabajo. */
+.aporte {
+  display: grid; gap: .3rem; margin: 0;
+  font-family: var(--ff-ui); font-size: var(--t--2); line-height: 1.5;
+}
+.aporte dt {
+  font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.aporte dd { margin: 0 0 .35rem; color: var(--ink-2); }
+.credito { color: var(--ink-muted); font-style: italic; }
+
+/* Entregas: lo que existe al final, enumerado. Sin cifras inventadas. */
+.entregas { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: 0; }
+.entregas li {
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 600;
+  border: 1px solid var(--rule-mid); border-radius: 999px;
+  padding: .2rem .7rem; color: var(--ink-2);
+}
+
+/* ---------- .dato: una cifra con jerarquia de verdad ----------
+   Antes la cifra y su explicacion tenian el mismo peso, asi que ninguna se
+   leia. Aqui la cifra manda, y periodo y cobertura viajan pegadas a ella
+   SIEMPRE --- son parte del dato, no una nota al pie. La metodologia larga se
+   va al <details>, que es lo unico que se pliega. */
+.datos {
+  display: grid; gap: var(--s-3);
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+.dato { display: grid; gap: .25rem; border-top: 2px solid var(--ink-title); padding-top: var(--s-2); }
+.dato-cifra {
+  font-family: var(--ff-display); font-weight: 700;
+  font-size: clamp(2.2rem, 1.6rem + 2.6vw, 3.4rem); line-height: 1;
+  color: var(--ink-title); font-variant-numeric: tabular-nums;
+}
+.dato-que { font-family: var(--ff-ui); font-size: var(--t-0); color: var(--ink); line-height: 1.35; }
+.dato-marco {
+  font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted);
+  line-height: 1.5;
+}
+.dato-marco b { color: var(--ink-2); font-weight: 600; }
+/* Un dato que no existe. Mismo espacio, distinto peso: se ve que falta. */
+.dato--hueco .dato-cifra { color: var(--ink-muted); font-size: var(--t-2); font-style: italic; }
+.dato--hueco { border-top-color: var(--rule-strong); }
+
+/* ---------- Portada editorial: una principal, varias secundarias ---------- */
+.ed-portada { display: grid; gap: var(--s-4); }
+@media (min-width: 60rem) {
+  .ed-portada { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: var(--s-4) var(--s-5); }
+}
+.ed-principal .ed-titular {
+  font-family: var(--ff-display); font-weight: 700; line-height: 1.06;
+  font-size: var(--t-3); margin: .4rem 0 .6rem; color: var(--ink-title);
+}
+.on-deep .ed-principal .ed-titular { color: var(--white); }
+.ed-secundarias { display: grid; gap: 0; list-style: none; padding: 0; margin: 0; }
+.ed-secundarias li { border-top: 1px solid var(--rule); padding-block: var(--s-2); }
+.on-deep .ed-secundarias li { border-top-color: var(--rule-deep); }
+.ed-secundarias li:first-child { border-top: 0; }
+.ed-sec-titular {
+  font-family: var(--ff-display); font-size: var(--t-1); font-weight: 600;
+  line-height: 1.2; margin: .2rem 0 .3rem; color: var(--ink-title);
+}
+.on-deep .ed-sec-titular { color: var(--white); }
+.categoria {
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+}
+.on-deep .categoria { color: var(--on-deep-soft); }
+
+/* ---------- .aviso: lo que NUNCA se pliega ----------
+   Simulacion, falta de verificacion y cobertura viajan con el contenido y a la
+   vista. Plegarlos mejoraria el aspecto y empeoraria la honestidad, que es
+   justo el intercambio que este proyecto no acepta. */
+.aviso {
+  /* `display: flex` convierte cada hijo en item, asi que un `<b>` suelto se
+     apilaba en columna en vez de leerse en linea. El contenido va envuelto en un
+     unico `<span>`; se deja `flex` por la alineacion del filete lateral. */
+  display: flex; gap: .6rem; align-items: flex-start;
+  font-family: var(--ff-ui); font-size: var(--t--2); line-height: 1.5;
+  border-left: 3px solid var(--rule-strong);
+  padding: .5rem 0 .5rem .8rem; color: var(--ink-2); max-width: 62ch;
+}
+.aviso b { font-weight: 700; }
+.aviso--verif { border-left-color: var(--ink-title); }
+.aviso--sim   { border-left-color: #d9c400; }
+.on-deep .aviso { border-left-color: var(--rule-deep); color: var(--on-deep-soft); }
+
+/* Sello de verificacion. Tres valores, mismo peso visual: el veredicto se lee,
+   no se celebra. Sin verde, sin palomita, sin insignia. */
+.sello {
+  display: inline-flex; align-items: baseline; gap: .45rem;
+  font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--rule-strong); border-radius: var(--radius);
+  padding: .2rem .6rem; color: var(--ink-2);
+}
+.sello span { font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-muted); }
+/* Sobre fondo azul hay que remapearlo. Sin esto, `--ink-2` (#313131) sobre #14537e
+   da 1.94:1 --- ilegible, y falla AA por mucho. Lo encontro la revision de la
+   portada; se arregla aqui y no en una pantalla, porque el defecto es del sistema
+   y lo heredaria cualquier pantalla que ponga un sello sobre la banda azul. */
+.on-deep .sello { color: var(--on-deep); border-color: var(--rule-deep); }
+.on-deep .sello span { color: var(--on-deep-soft); }
+
+/* ---------- Pasaje citado de una fuente ---------- */
+.pasaje {
+  border-left: 2px solid var(--rule-mid); margin: .5rem 0 .9rem; padding: .1rem 0 .1rem .9rem;
+  font-family: var(--ff-read); font-size: var(--t--1); line-height: 1.6; color: var(--ink-2);
+}
+.pasaje cite {
+  display: block; margin-top: .4rem; font-family: var(--ff-ui); font-style: normal;
+  font-size: var(--t--2); color: var(--ink-muted);
+}

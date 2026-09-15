@@ -16,7 +16,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { destinoPermitido } from '../red-segura.mjs';
+import { destinoPermitido, seguirConGuarda } from '../red-segura.mjs';
 
 // Cada fila: [url, fragmento esperado del motivo]. No basta con comprobar que se rechaza:
 // se comprueba QUE SE RECHACE POR LO CORRECTO. Un rechazo por «URL mal formada» cuando lo
@@ -69,76 +69,178 @@ test('un nombre que no resuelve se rechaza como dato, no como excepcion', async 
   assert.match(r.motivo, /no resuelve/i);
 });
 
-// --- La redireccion, que es la parte que mas se olvida ------------------------------
+// --- Las IPv4 escondidas dentro de una IPv6 ---------------------------------------
 //
-// Validar la primera URL no sirve de nada si despues se obedece un 302 a ciegas. Aqui se
-// comprueba la puerta de red del canal entero (`comun.obtener`) contra ese caso exacto,
-// con `fetch` sustituido: sin red, y deterministico.
+// Son cuatro formas distintas de escribir la MISMA direccion IPv4, y las cuatro terminan
+// alcanzandola. Una revision adversarial encontro NAT64 y 6to4 abiertas: la version
+// anterior solo desenvolvia la forma mapeada, y las otras dos salian PERMITIDO.
 //
-// COMO SE PONE ROJA: cambia `redirect: 'manual'` por `redirect: 'follow'` en `obtener`.
+// COMO SE PONEN ROJAS: borra la rama correspondiente de `ipv6Vetada`.
+const IPV6_CON_IPV4_DENTRO = [
+  ['http://[::ffff:127.0.0.1]/', 'mapeada a loopback'],
+  ['http://[::ffff:169.254.169.254]/', 'mapeada a metadatos de nube'],
+  ['http://[::127.0.0.1]/', 'compatible (obsoleta) a loopback'],
+  ['http://[64:ff9b::7f00:1]/', 'NAT64 a 127.0.0.1'],
+  ['http://[64:ff9b::a9fe:a9fe]/', 'NAT64 a 169.254.169.254'],
+  ['http://[2002:7f00:1::]/', '6to4 a 127.0.0.1'],
+  ['http://[2002:a9fe:a9fe::]/', '6to4 a 169.254.169.254'],
+  ['http://[2002:c0a8:101::]/', '6to4 a 192.168.1.1'],
+];
 
-test('un 302 hacia la IP de metadatos NO se sigue', async () => {
-  const { obtener } = await import('../comun.mjs');
-  const original = globalThis.fetch;
-  const visitadas = [];
-  const METADATOS = 'http://169.254.169.254/latest/meta-data/';
-  // El doble HONRA `init.redirect`, y eso no es un detalle: la primera version de esta
-  // prueba devolvia siempre 302 pasara lo que pasara, asi que seguia verde aunque se
-  // cambiara `manual` por `follow` --- una prueba que no puede ponerse roja. Con un
-  // `fetch` real, `follow` sigue la redireccion por dentro y nunca nos devuelve el 302:
-  // la guarda quedaria puenteada sin que nadie lo notara. El doble reproduce eso.
-  globalThis.fetch = async (url, init) => {
-    visitadas.push(String(url));
-    if (init?.redirect === 'follow') {
-      visitadas.push(METADATOS);         // fetch salta solo, sin preguntar
-      return {
-        status: 200,
-        ok: true,
-        statusText: 'OK',
-        headers: { get: () => null },
-        text: async () => 'credenciales-de-instancia',
-      };
-    }
-    return {
-      status: 302,
-      ok: false,
-      statusText: 'Found',
-      headers: { get: (k) => (k.toLowerCase() === 'location' ? METADATOS : null) },
-      text: async () => '',
-    };
-  };
-  try {
-    // Primer salto: IP publica literal, para que la prueba no dependa de DNS.
-    const r = await obtener('https://93.184.216.34/noticia');
-    assert.equal(r.ok, false);
-    assert.equal(r.codigo, 'DESTINO_VETADO');
-    assert.match(r.mensaje, /vetad/i);
-    // Y lo que de verdad importa: la segunda peticion NUNCA se hizo.
-    assert.equal(visitadas.length, 1, 'no debe pedirse el destino de la redireccion');
-    assert.equal(visitadas[0], 'https://93.184.216.34/noticia');
-  } finally {
-    globalThis.fetch = original;
+for (const [url, que] of IPV6_CON_IPV4_DENTRO) {
+  test(`IPv6 que envuelve una IPv4 vetada: ${que}`, async () => {
+    const r = await destinoPermitido(url);
+    assert.equal(r.permitido, false, `${url} (${que}) deberia rechazarse`);
+  });
+}
+
+test('una IPv6 publica de verdad NO se veta por error', async () => {
+  // Si la guarda rechazara toda IPv6, el arreglo de arriba seria un apagon disfrazado de
+  // seguridad. `2606:4700::1111` es Cloudflare; `2002:5db8:d822::` es 6to4 sobre una
+  // IPv4 publica (93.184.216.34) y tambien debe pasar.
+  for (const url of ['http://[2606:4700::1111]/', 'http://[2002:5db8:d822::]/']) {
+    const r = await destinoPermitido(url);
+    assert.equal(r.permitido, true, `${url} deberia permitirse`);
   }
 });
 
-test('una cadena de redirecciones publicas se corta a los 5 saltos', async () => {
-  const { obtener } = await import('../comun.mjs');
-  const original = globalThis.fetch;
-  let n = 0;
-  globalThis.fetch = async () => {
-    n += 1;
+// --- DNS REBINDING: la demostracion ------------------------------------------------
+//
+// Esta es la prueba que el usuario pidio: que un cambio de resolucion ENTRE la validacion
+// y la conexion no alcance un destino vetado.
+//
+// El montaje: un resolutor hostil que contesta una IP publica la primera vez ---para pasar
+// la validacion--- y `127.0.0.1` a partir de la segunda. Es exactamente lo que hace un
+// servidor DNS con TTL 0 bajo control del atacante.
+//
+// Lo que se observa es `pedir`, que recibe la `ip` a la que la conexion se va a hacer. Si
+// la guarda fija la direccion validada, ahi llega la publica. Si volviera a resolver,
+// llegaria `127.0.0.1` --- y ese es el fallo que esto impide.
+
+function resolutorQueCambia(primera, despues) {
+  let llamadas = 0;
+  const fn = async () => {
+    llamadas += 1;
+    return llamadas === 1
+      ? [{ address: primera, family: 4 }]
+      : [{ address: despues, family: 4 }];
+  };
+  fn.llamadas = () => llamadas;
+  return fn;
+}
+
+test('REBINDING: la conexion usa la direccion validada, no la que el DNS contesta despues', async () => {
+  const resolver = resolutorQueCambia('93.184.216.34', '127.0.0.1');
+  const vistas = [];
+  const pedir = async (url, opciones) => {
+    vistas.push(opciones.ip);
+    return { ok: true, codigo: 200, texto: 'ok', cabeceras: {}, ms: 1 };
+  };
+
+  const r = await seguirConGuarda('http://rebind.ejemplo/', { resolver, pedir });
+
+  assert.equal(r.ok, true);
+  // Lo que importa: se conecto a la direccion VALIDADA.
+  assert.deepEqual(vistas, ['93.184.216.34']);
+  assert.notEqual(vistas[0], '127.0.0.1');
+  // Y solo se resolvio UNA vez. Una segunda resolucion es, por definicion, la ventana.
+  assert.equal(resolver.llamadas(), 1);
+});
+
+test('REBINDING: el control negativo --- volver a resolver SI alcanza el loopback', async () => {
+  // Sin este control, la prueba de arriba no demuestra nada: podria estar verde porque el
+  // resolutor nunca cambia. Aqui se reproduce a mano el comportamiento ingenuo ---resolver
+  // para validar y volver a resolver para conectar--- y se comprueba que SI llega a
+  // 127.0.0.1. Esa es la diferencia exacta que introduce el fijado.
+  const resolver = resolutorQueCambia('93.184.216.34', '127.0.0.1');
+
+  const permiso = await destinoPermitido('http://rebind.ejemplo/', { resolver });
+  assert.equal(permiso.permitido, true);
+  assert.equal(permiso.ip, '93.184.216.34');
+
+  const segunda = await resolver('rebind.ejemplo', { all: true });
+  assert.equal(segunda[0].address, '127.0.0.1');
+  assert.notEqual(segunda[0].address, permiso.ip);
+});
+
+test('REBINDING: si la PRIMERA resolucion ya es privada, no hay conexion en absoluto', async () => {
+  const resolver = resolutorQueCambia('127.0.0.1', '93.184.216.34');
+  let seLlamo = false;
+  const pedir = async () => { seLlamo = true; return { ok: true, codigo: 200 }; };
+
+  const r = await seguirConGuarda('http://hostil.ejemplo/', { resolver, pedir });
+
+  assert.equal(r.ok, false);
+  assert.equal(r.codigo, 'DESTINO_VETADO');
+  assert.equal(seLlamo, false, 'no debe abrirse ninguna conexion');
+});
+
+// --- Las redirecciones, sobre el cliente nuevo ------------------------------------
+//
+// COMO SE PONEN ROJAS: haz que `seguirConGuarda` deje de revalidar en cada salto.
+
+test('un 302 hacia la IP de metadatos NO se sigue', async () => {
+  const pedidas = [];
+  const pedir = async (url) => {
+    pedidas.push(url);
     return {
-      status: 302,
-      ok: false,
-      statusText: 'Found',
-      headers: { get: () => `https://93.184.216.${34 + n}/` },
-      text: async () => '',
+      ok: false, codigo: 302, texto: '',
+      cabeceras: { location: 'http://169.254.169.254/latest/meta-data/' }, ms: 1,
     };
   };
-  try {
-    const r = await obtener('https://93.184.216.34/bucle');
-    assert.equal(r.codigo, 'DEMASIADAS_REDIRECCIONES');
-  } finally {
-    globalThis.fetch = original;
-  }
+
+  const r = await seguirConGuarda('https://93.184.216.34/noticia', { pedir });
+
+  assert.equal(r.ok, false);
+  assert.equal(r.codigo, 'DESTINO_VETADO');
+  assert.match(r.mensaje, /vetad/i);
+  // Lo que de verdad importa: la segunda peticion nunca se hizo.
+  assert.deepEqual(pedidas, ['https://93.184.216.34/noticia']);
+});
+
+test('cada salto se valida por separado, no solo el primero', async () => {
+  // Dos saltos publicos y un tercero al loopback. El tercero tiene que morir aunque los
+  // dos anteriores fueran legitimos.
+  const cadena = {
+    'https://93.184.216.34/uno': 'https://93.184.216.35/dos',
+    'https://93.184.216.35/dos': 'http://10.0.0.5/admin',
+  };
+  const pedidas = [];
+  const pedir = async (url) => {
+    pedidas.push(url);
+    const destino = cadena[url];
+    return destino
+      ? { ok: false, codigo: 302, texto: '', cabeceras: { location: destino }, ms: 1 }
+      : { ok: true, codigo: 200, texto: 'llegue', cabeceras: {}, ms: 1 };
+  };
+
+  const r = await seguirConGuarda('https://93.184.216.34/uno', { pedir });
+
+  assert.equal(r.codigo, 'DESTINO_VETADO');
+  assert.equal(pedidas.length, 2, 'el tercer salto no debe pedirse');
+});
+
+test('una cadena de redirecciones publicas se corta a los 5 saltos', async () => {
+  let n = 0;
+  const pedir = async () => {
+    n += 1;
+    return {
+      ok: false, codigo: 302, texto: '',
+      cabeceras: { location: `https://93.184.216.${34 + n}/` }, ms: 1,
+    };
+  };
+  const r = await seguirConGuarda('https://93.184.216.34/bucle', { pedir });
+  assert.equal(r.codigo, 'DEMASIADAS_REDIRECCIONES');
+});
+
+test('con credencial no se sigue ninguna redireccion', async () => {
+  // Seguir un 3xx reenviaria la cabecera Authorization a un destino que elige quien
+  // controle la respuesta. `maxSaltos: 0` lo impide, y la sonda de WakaTime lo usa.
+  const pedir = async () => ({
+    ok: false, codigo: 302, texto: '',
+    cabeceras: { location: 'https://93.184.216.99/' }, ms: 1,
+  });
+  const r = await seguirConGuarda('https://93.184.216.34/api', { pedir, maxSaltos: 0 });
+  assert.equal(r.codigo, 'DEMASIADAS_REDIRECCIONES');
+  assert.match(r.mensaje, /credencial/i);
 });

@@ -9,7 +9,7 @@ import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { destinoPermitido } from './red-segura.mjs';
+import { seguirConGuarda } from './red-segura.mjs';
 
 export const DIR_EDITORIAL = dirname(fileURLToPath(import.meta.url));
 export const DIR_ESTADO = join(DIR_EDITORIAL, 'estado');
@@ -106,98 +106,40 @@ export function huellaDe(titulo, url) {
 
 // --- HTTP ------------------------------------------------------------------------
 
-// La guarda de destino vive en `red-segura.mjs` porque el redactor tambien
-// descarga por su cuenta y comparte el mismo riesgo. Aqui se aplica a TODO el
-// canal: esta es la unica puerta de red, asi que es el unico sitio donde hay
-// que acertar.
-const MAX_SALTOS_RED = 5;
-
 /**
  * Una sola puerta de red para todo el canal. Devuelve siempre un objeto; nunca lanza.
  * Quien llama decide, y el fallo SIEMPRE es un dato registrable, no una excepcion que
  * se traga (§5.5).
+ *
+ * **Toda la mecanica vive en `red-segura.mjs`.** Antes este modulo tenia su propio
+ * `fetch` con su propio bucle de redirecciones, y el redactor tenia otro con `curl`:
+ * dos implementaciones distintas del mismo problema, o sea dos sitios donde acertar.
+ * Ahora las dos son capas sobre `seguirConGuarda`, que valida el destino, **fija la
+ * direccion ya validada en la conexion** --- conservando Host, SNI y validacion de
+ * certificado --- y revalida cada salto de redireccion.
+ *
+ * Esta funcion solo traduce la forma del resultado a la que el canal ya esperaba.
  */
-export async function obtener(url, { timeoutMs = 20000, metodo = 'GET' } = {}) {
-  const control = new AbortController();
-  const reloj = setTimeout(() => control.abort(), timeoutMs);
-  const t0 = Date.now();
-  try {
-    // --- La guarda, antes de tocar la red ---------------------------------------
-    // Estas URLs no las elegimos: salen de feeds RSS de terceros y del texto de
-    // articulos ajenos que el redactor cita. Son entrada de un atacante, no
-    // configuracion. Sin esta comprobacion, `http://169.254.169.254/` --- el
-    // endpoint de metadatos de la nube --- pasa como cualquier otra.
-    //
-    // Y las redirecciones se siguen A MANO, revalidando cada salto: `redirect:
-    // 'follow'` obedece un 302 hacia `http://127.0.0.1:6379/` sin volver a
-    // preguntar, y entonces validar la primera URL no habria servido de nada.
-    let actual = url;
-    let r = null;
-    for (let salto = 0; salto <= MAX_SALTOS_RED; salto += 1) {
-      const permiso = await destinoPermitido(actual);
-      if (!permiso.permitido) {
-        return {
-          ok: false,
-          // Codigo propio, y deliberadamente NO 404: `verificar.mjs` clasifica
-          // 404/410 como `no_existe` --- fallo de la pieza --- y todo lo demas
-          // como `no_consultada`. Que nosotros nos neguemos a pedir una URL no
-          // prueba que el documento no exista; prueba que no lo consultamos.
-          codigo: 'DESTINO_VETADO',
-          texto: '',
-          ms: Date.now() - t0,
-          mensaje: `destino no permitido: ${permiso.motivo}`,
-        };
-      }
-      r = await fetch(actual, {
-        method: metodo,
-        signal: control.signal,
-        redirect: 'manual',
-        headers: { 'user-agent': AGENTE_UA, accept: '*/*' },
-      });
-      if (r.status < 300 || r.status >= 400) break;
-      const destino = r.headers.get('location');
-      if (!destino) break;            // redireccion sin Location: se entrega tal cual
-      actual = new URL(destino, actual).href;
-      r = null;
-    }
-    if (!r) {
-      return {
-        ok: false,
-        codigo: 'DEMASIADAS_REDIRECCIONES',
-        texto: '',
-        ms: Date.now() - t0,
-        mensaje: `mas de ${MAX_SALTOS_RED} redirecciones desde ${url}`,
-      };
-    }
-    const texto = metodo === 'HEAD' ? '' : await r.text();
-    return {
-      ok: r.ok,
-      codigo: r.status,
-      texto,
-      ms: Date.now() - t0,
-      mensaje: r.ok ? 'OK' : `HTTP ${r.status} ${r.statusText}`.trim(),
-    };
-  } catch (e) {
-    return {
-      ok: false,
-      codigo: clasificarFallo(e),
-      texto: '',
-      ms: Date.now() - t0,
-      mensaje: `${e.name}: ${e.message}${e.cause?.code ? ` (${e.cause.code})` : ''}`,
-    };
-  } finally {
-    clearTimeout(reloj);
-  }
+export async function obtener(url, { timeoutMs = 20000, metodo = 'GET', resolver } = {}) {
+  const r = await seguirConGuarda(url, {
+    metodo,
+    timeoutMs,
+    resolver,
+    cabeceras: { 'user-agent': AGENTE_UA, accept: '*/*' },
+  });
+  // `DESTINO_VETADO` es deliberadamente NO 404: `verificar.mjs` clasifica 404/410 como
+  // `no_existe` --- fallo de la pieza --- y todo lo demas como `no_consultada`. Que
+  // nosotros nos neguemos a pedir una URL no prueba que el documento no exista; prueba
+  // que no lo consultamos.
+  return {
+    ok: r.ok,
+    codigo: r.codigo,
+    texto: r.texto ?? '',
+    ms: r.ms ?? 0,
+    mensaje: r.mensaje,
+  };
 }
 
-function clasificarFallo(e) {
-  if (e.name === 'AbortError') return 'TIMEOUT';
-  const causa = e.cause?.code ?? '';
-  if (/CERT|SSL|TLS/i.test(causa)) return 'TLS_INVALIDO';
-  if (/ENOTFOUND|EAI_AGAIN/i.test(causa)) return 'DNS';
-  if (causa) return causa;
-  return 'RED';
-}
 
 // --- Texto -----------------------------------------------------------------------
 
@@ -261,7 +203,21 @@ export function argumentos(argv) {
     else if (a === '--fuente') banderas.soloFuente.push(argv[++i]);
     else if (a === '--entradas') banderas.entradas = argv[++i];
     else if (a === '--silencioso') banderas.silencioso = true;
-    else if (a === '--limite') banderas.limite = Number(argv[++i]) || null;
+    else if (a === '--limite') {
+      // `Number(x) || null` convertia `--limite 0` en `null`, y `null` significa
+      // SIN LIMITE aguas abajo: pedir cero piezas invocaba al modelo una vez por
+      // pendiente --- hoy 41 --- que es lo contrario de lo que se pidio. Lo mismo
+      // con un valor no numerico. Ahora cero es cero y la basura se rechaza.
+      const crudo = argv[++i];
+      // `Number('')` y `Number('  ')` dan 0, que es un entero valido. Pero una cadena
+      // vacia es una errata de quien invoca, no la peticion de un limite de cero, y
+      // confundirlas devuelve el mismo defecto por otra puerta.
+      const n = typeof crudo === 'string' && crudo.trim() === '' ? NaN : Number(crudo);
+      if (!Number.isInteger(n) || n < 0) {
+        throw new Error(`--limite espera un entero >= 0, se recibio: ${JSON.stringify(crudo)}`);
+      }
+      banderas.limite = n;
+    }
   }
   return banderas;
 }

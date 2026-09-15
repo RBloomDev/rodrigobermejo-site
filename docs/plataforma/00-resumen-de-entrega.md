@@ -4,7 +4,7 @@
 > ningún PR, no se tocó ningún perfil social, no se envió ningún mensaje y no se contrató
 > ningún servicio.
 
-Fecha: 2026-09-13 · WakaTime resondeado el 2026-09-14 · Rama: `feat/plataforma-editorial-y-actividad`
+Fecha: 2026-09-13 · actualizado el 2026-09-15 · WakaTime resondeado el 2026-09-14 · Rama: `feat/plataforma-editorial-y-actividad`
 
 > **Este repositorio es PÚBLICO.** Estos documentos **no** nombran repositorios no públicos,
 > ni publican conteos atribuidos a una organización, ni series mensuales de actividad
@@ -24,23 +24,40 @@ Cosas con comando detrás, salida pegada y verificación en navegador.
 | **El canal editorial es idempotente** | Dos corridas sobre las mismas entradas: la primera produce 1 pieza, la segunda `0 nuevos, 50 ya vistos`. Exit 0 en ambas. |
 | **Un error de acceso no fabrica una noticia** | El Economista 403 y Anthropic 404 quedan en `errores.jsonl` con código y consecuencia. Cero piezas generadas de esas fuentes. Exit 2, éxito parcial. |
 | **La verificación de hechos puede fallar** | Control negativo ejecutado: una cifra inventada da `cifras que no existen en ninguna fuente: 47`; una URL rota da `[404]`; una fecha falsa da `2020-01-01 no aparece; el documento declara 2026-06-18`. Un gate que nunca ha fallado puede estar desconectado. |
-| **Una pieza real, de detección real** | `marco-ailit-alfabetizacion-ia-educacion`, detectada en el feed del Observatorio del Tec, corroborada con dos fuentes primarias (OCDE y Comisión Europea) que resuelven 200. |
+| **Una pieza real, con respaldo completado** | `marco-ailit-alfabetizacion-ia-educacion`. Veredicto **`parcial`**: 5 fuentes citadas, 4 leídas, 1 no consultada; **2 de 2 corroborantes**; 4 afirmaciones con pasaje literal; **1 pendiente, señalada en pantalla**; 0 fallos. Revisión humana pendiente y sin publicar. |
+| **Leer las fuentes cambió la pieza** | Tres correcciones que salieron de leerlas, no de ajustar el verificador: decía que el marco «alimenta el dominio innovador de PISA 2029» y ninguna fuente dice eso —la Comisión Europea dice que lo «complementa»—; declaraba como fecha de publicación de una fuente la de su **modificación**; y afirmaba que la OCDE estaba bloqueada cuando responde de forma **intermitente**. Las tres están en el registro de correcciones de la pieza. |
+| **Dos URLs no son dos corroboraciones** | La OCDE, la Comisión Europea y `ailiteracyframework.org` comparten procedencia: las dos primeras son coautoras del marco y la tercera es el sitio del proyecto. La única voz independiente leída es el Observatorio del Tec, y **no** confirma la fecha. La pantalla lo dice fuente por fuente. |
 | **Los filtros filtran** | «Formo» → 2 de 12 proyectos; «Dirijo» → 4; por periodo → 2 y 4; limpiar → 12. Con `aria-pressed` y recuento actualizado. |
-| **Accesibilidad medida, no estimada** | 0 fallos de contraste en las cuatro pantallas, mínimo 4.67:1. Recorrido de teclado completo con foco visible en las 35 paradas. Sin scroll horizontal a 320, 400, 768 y 1280 px. |
+| **Accesibilidad medida, no estimada** | 0 fallos de contraste en las cinco pantallas, mínimo 4.67:1. Recorrido de teclado completo con foco visible en las 35 paradas. Sin scroll horizontal a 320, 400, 768 y 1280 px. |
 | **La sonda de contraste puede fallar** | Se le inyectó a propósito un par de 1.64:1 y se puso roja. |
-| **El canal no se deja usar como proxy** | Una revisión de seguridad encontró SSRF: las URLs vienen de feeds de terceros y se seguían redirecciones a ciegas. Guarda en `red-segura.mjs`, aplicada en la única puerta de red del canal. 22 pruebas, incluida la del 302 hacia la IP de metadatos. |
-| **Esas pruebas pueden fallar** | Comprobado rompiendo la guarda a propósito, dos veces: desactivar el veto de IPv4 pone 6 en rojo; cambiar `manual` por `follow` pone 1. La primera versión de esa prueba **seguía verde con la guarda rota** —el doble de `fetch` ignoraba la opción `redirect`— y se corrigió. |
+| **El canal no se deja usar como proxy** | Una revisión de seguridad encontró SSRF: las URLs vienen de feeds de terceros y se seguían redirecciones a ciegas. Guarda en `red-segura.mjs`, aplicada en la única puerta de red del canal. |
+| **El DNS rebinding está cerrado, no «aceptado»** | La versión anterior lo declaraba riesgo residual porque «`--resolve` rompe SNI y virtual hosting». **Era falso** — la documentación de curl dice lo contrario. Ahora el nombre se resuelve una vez, se valida, y esa dirección se **fija** en la conexión conservando Host, SNI y validación de certificado. En cada salto de redirección. |
+| **Y está demostrado, no afirmado** | Sin red: un resolutor que contesta público la primera vez y `127.0.0.1` después; la conexión usa la validada y el resolutor se llama **una** vez. Con su control negativo, que reproduce el comportamiento ingenuo y **sí** alcanza el loopback. Con red (`demo-red-fijada.mjs`, 7/7): HTTPS permitido funciona, virtual hosting intacto, y la validación de certificado activa en tres formas. |
+| **Tres evasiones más que seguían abiertas** | NAT64 (`64:ff9b::7f00:1`) y 6to4 (`2002:7f00:1::`) salían PERMITIDO: sólo se desenvolvía la forma `::ffff:`. Ahora se comprueban las cuatro maneras de meter una IPv4 dentro de una IPv6. |
+| **Las pruebas ya corren en CI** | Defecto encontrado en la revisión: las 114 del canal y la compuerta de exposición no las alcanzaba `npm test`, así que CI nunca las corría y se podía romper la guarda en verde. Ahora `npm test` son **192** y sale con código 1 si la guarda se rompe. Comprobado. |
+| **Esas pruebas pueden fallar** | Comprobado rompiendo la guarda a propósito dos veces. Y la primera versión de la prueba del 302 **seguía verde con la guarda rota** —el doble de `fetch` ignoraba la opción `redirect`—: una prueba que no puede ponerse roja no prueba nada. Corregida. |
 
-### Las cuatro pantallas
+### Las cinco pantallas
 
 `portada.html` · `noticias.html` · `noticia.html` · `proyectos.html` · `proyecto.html`,
 todas en `docs/plataforma/prototipo/`, navegables entre sí con la misma cabecera.
 
 Dirección visual nueva: **«Redacción»**. Un sistema de **regla y columna** —la gramática
 común del periódico y de la tabla— porque la misma superficie tiene que sostener una
-redacción y un tablero de datos sin partirse en dos productos. **Sin tarjetas**, que es lo
-que pediste evitar. Conserva la paleta y las familias tipográficas de la marca, con dos
-valores derivados declarados y medidos.
+redacción y un tablero de datos sin partirse en dos productos. Conserva la paleta y las
+familias tipográficas de la marca, con dos valores derivados declarados y medidos.
+
+**Corrección del 2026-09-15.** Esta sección decía «sin tarjetas, que es lo que pediste
+evitar». Esa regla me la inventé yo: lo que pediste evitar es **repetir un mismo
+componente sin criterio**, que no es lo mismo. Ahora hay tarjeta (`.obra`) **solo donde
+hay un artefacto autorizado que enseñar** —dos proyectos de doce—, y el índice completo y
+la actividad siguen siendo filas, porque ahí la tarjeta no aporta nada.
+
+Las cinco pantallas se rehicieron el 2026-09-15 con el trabajo al frente: la explicación
+de restricciones y funcionamiento interno bajó a desplegables y a una sección de
+metodología. Los avisos de simulación, falta de verificación y cobertura **no** bajaron:
+se quedan junto al contenido. Comprobado por máquina — **36 avisos en las cinco pantallas
+y cero escondidos dentro de un `<details>` cerrado**.
 
 ---
 
@@ -48,8 +65,9 @@ valores derivados declarados y medidos.
 
 Marcado en pantalla, no escondido.
 
-- **Cuatro de las cinco piezas de la portada editorial** son ilustrativas y llevan la
-  marca amarilla `.simulado`. La quinta —la del marco AILit— es real y no la lleva.
+- **Dos de las tres piezas del canal** son ilustrativas del formato y llevan la marca
+  amarilla `.simulado`. La tercera —la del marco AILit— salió de una ejecución real, tiene
+  veredicto `parcial` y no la lleva.
 - **Las dos capturas de producto** de `proyecto.html` las generé yo del sitio publicado.
   No existía ninguna captura en el repo: `public/` tiene seis archivos y ninguno es una
   pantalla. Nada las regenera automáticamente, y la pantalla lo dice.

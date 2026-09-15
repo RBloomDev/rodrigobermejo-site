@@ -180,7 +180,9 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
   // fuera NO se descarta ni se marca: sigue pendiente en la bitacora y lo toma
   // la corrida siguiente. Es acotar el trabajo, no perderlo.
   const enRedaccion = pendientesDeRedaccion(
-    banderas.limite ? { limite: banderas.limite } : {},
+    // `!= null` y no un truthy: con truthy, `--limite 0` caia al objeto vacio y
+    // el limite pasaba a ser Infinity. Cero tiene que llegar como cero.
+    banderas.limite != null ? { limite: banderas.limite } : {},
   );
   const enVerificacion = pendientesDeVerificacion();
   const idsEnRedaccion = new Set(enRedaccion.map((e) => e.id));
