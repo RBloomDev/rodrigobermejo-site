@@ -78,7 +78,7 @@ son otra cosa.
 | Fragmento | Fuente |
 |---|---|
 | «CTO en Inadaptados» | README del perfil de GitHub de `rodrigoBermejo`. Es una autodeclaración de Rodrigo, no una verificación de terceros |
-| «una escuela donde se aprende construyendo» | `academy.inadaptados.mx`: *«Aprende construyendo, no memorizando»* |
+| «una escuela donde se aprende construyendo» | Página pública de la academia de Inadaptados: *«Aprende construyendo, no memorizando»* |
 | «la plataforma que sostiene su operación educativa» | `projects.json`, `plataforma-inadaptados`: *«Sostener la operación educativa de Inadaptados: LMS, web, certificados y contenido»* |
 | «diseño la currícula con la que se forman desarrolladores» | `claims.json`, `ensino-y-mentoreo`, literal |
 | «y doy clase» | `claims.json`, `ensino-y-mentoreo`, literal |

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "marco-ailit-alfabetizacion-ia-educacion--linkedin",
+    "pieza_id": "marco-ailit-alfabetizacion-ia-educacion",
+    "plataforma": "linkedin",
+    "estado": "borrador",
+    "contenido": "BORRADOR, SIN PUBLICAR. Adaptación automática de una pieza que tampoco está publicada.\n\nEl 18 de junio de 2026, la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria. Organiza la materia en cuatro dominios, añade expectativas de aprendizaje por nivel, y contribuye al dominio innovador de PISA 2029.\n\nQué cambia para quien forma talento: existe un referente común, con competencias y niveles, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero.\n\nQué no establece: que algún sistema educativo lo haya adoptado —lanzar no es adoptar—, ni ningún efecto medido sobre el aprendizaje.\n\nAplicabilidad en México: no verificado. Ninguna de las fuentes leídas dice si México lo adopta o si participará en ese dominio de la evaluación.\n\nFuente primaria: https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+    "procedencia": {
+      "adaptado": { "por": "ia", "modelo": "claude-opus-5[1m]" },
+      "revisado": { "por": "pendiente", "detalle": "sin revisión humana" },
+      "publicado": { "por": "pendiente", "detalle": "Requiere decisión de Rodrigo. Esta entrega no publica nada." }
+    },
+    "restricciones_aplicadas": [
+      "sin emoji",
+      "sin cifras que no estén en la pieza: 18, 2026 y 2029 aparecen en `hecho` y `entradilla`",
+      "sin llamada a la acción: no se pide seguir, comentar, registrarse ni descargar nada",
+      "el propio contenido declara que es un borrador, en la primera línea",
+      "no reproduce el cuerpo de ninguna fuente: enlaza a la primaria y cita su hecho"
+    ]
+  },
+  {
+    "id": "marco-ailit-alfabetizacion-ia-educacion--x",
+    "pieza_id": "marco-ailit-alfabetizacion-ia-educacion",
+    "plataforma": "x",
+    "estado": "borrador",
+    "contenido": "BORRADOR, SIN PUBLICAR. El 18 de junio de 2026 la OCDE y la Comisión Europea cerraron su marco de alfabetización en IA para primaria y secundaria, ligado al dominio innovador de PISA 2029. Sin evidencia leída de adopción ni de efecto en aprendizaje. México: no verificado.",
+    "procedencia": {
+      "adaptado": { "por": "ia", "modelo": "claude-opus-5[1m]" },
+      "revisado": { "por": "pendiente", "detalle": "sin revisión humana" },
+      "publicado": { "por": "pendiente", "detalle": "Requiere decisión de Rodrigo. Esta entrega no publica nada." }
+    },
+    "restricciones_aplicadas": [
+      "sin emoji",
+      "sin cifras que no estén en la pieza: 18, 2026 y 2029 aparecen en `hecho` y `entradilla`",
+      "sin llamada a la acción y sin hashtags",
+      "el propio contenido declara que es un borrador, en la primera línea",
+      "sin enlace: el hilo hacia la fuente vive en la pieza, y acortar una URL en X abre una vía para que el destino no coincida con lo citado"
+    ]
+  }
+]

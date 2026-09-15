@@ -1,0 +1,314 @@
+[
+  {
+    "id": "marco-ailit-alfabetizacion-ia-educacion",
+    "tipo": "analisis",
+    "titulo": "La OCDE y la Comisión Europea cerraron un marco común de alfabetización en IA para primaria y secundaria",
+    "entradilla": "El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.",
+    "estado": "borrador",
+    "ocurrido_en": "2026-06-18",
+    "redactado_en": "2026-09-14T05:35Z",
+    "hecho": "El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code.org). El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores. El marco organiza la alfabetización en IA en cuatro dominios —Engage with AI, Create with AI, Manage AI y Shape AI— y añade, por cada competencia, expectativas de aprendizaje en tres niveles de progresión y escenarios de aula, incluidas actividades sin dispositivo. La iniciativa contribuye al dominio innovador de la evaluación PISA 2029.",
+    "que_cambia": "Para quien dirige tecnología o forma talento, deja de ser cierto que no exista un referente común: hay un marco publicado, con competencias, niveles de progresión y escenarios de aula, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero. Y como alimenta el dominio innovador de PISA 2029, es razonable esperar que se vuelva el vocabulario con el que se discuta alfabetización en IA en los sistemas educativos que participen en esa evaluación. Alinear el vocabulario propio ahora cuesta menos que traducirlo después.",
+    "mexico": {
+      "estado": "no_verificado",
+      "texto": "No se comprobó si México adopta o adoptará este marco, ni si participará en el dominio innovador de esa evaluación. Ninguna de las fuentes leídas lo dice, y la página del organismo que lo detallaría respondió con un bloqueo automático al cliente de este canal, así que no se pudo leer. El estado honesto es no verificado. La vía para cerrarlo es revisión manual, no automatización: del lado oficial mexicano no hay hoy una fuente con cadencia verificable que registre esa adopción."
+    },
+    "no_establece": [
+      "No establece que ningún sistema educativo lo haya adoptado. Lanzar un marco no es adoptarlo, y no se leyó ninguna fuente que registre una adopción nacional, ni en México ni fuera.",
+      "No establece ningún efecto sobre el aprendizaje. El marco describe competencias esperadas; no se leyó evidencia de que enseñarlas mejore algún resultado medido.",
+      "No establece que el marco sea reutilizable. El sitio que lo publica declara derechos reservados y su licencia no se pudo leer, así que aquí se cita y se enlaza, y no se reproduce.",
+      "No establece cómo se traduce a la práctica. El mecanismo por el que un marco internacional llega al aula no aparece en ninguna de las fuentes leídas."
+    ],
+    "fuente_primaria": {
+      "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
+      "medio": "AILit Framework (OCDE y Comisión Europea)",
+      "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+      "fecha": "2026-06-18"
+    },
+    "fuentes": [
+      {
+        "titulo": "La inteligencia artificial no revolucionará la educación: lo harán las personas",
+        "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
+        "url": "https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana",
+        "fecha": "2026-09-09",
+        "tipo": "secundaria"
+      },
+      {
+        "titulo": "Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education",
+        "medio": "AILit Framework (OCDE y Comisión Europea)",
+        "url": "https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework",
+        "fecha": "2026-06-18",
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "A Common Effort to Advance AI Literacy",
+        "medio": "AILit Framework (OCDE y Comisión Europea)",
+        "url": "https://ailiteracyframework.org/about",
+        "fecha": "2026-06-15",
+        "tipo": "primaria"
+      }
+    ],
+    "relacion_declarada": null,
+    "procedencia": {
+      "detectado": {
+        "por": "agente",
+        "detalle": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) · feed leido el 2026-09-14T05:25:44Z"
+      },
+      "redactado": {
+        "por": "ia",
+        "modelo": "claude-opus-5[1m]"
+      },
+      "verificado": {
+        "por": "pendiente",
+        "veredicto": "no_verificada",
+        "detalle": "VEREDICTO NO_VERIFICADA. Fuentes: 3 citadas — 3 leidas, 0 no consultadas, 0 inexistentes; 1/2 corroborantes contando solo fuentes leidas. Afirmaciones: 0 con respaldo legible, 3 pendientes, 0 contradichas. Fechas por fuente: coincide/coincide/discrepancia — solo la fecha de publicacion confirma. Cifras: 6/6 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.» (ninguna de las 3 fuentes legibles la respalda) | «El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code.» (ninguna de las 3 fuentes legibles la respalda) | «El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores.» (ninguna de las 3 fuentes legibles la respalda) NO PASA: fecha declarada 2026-06-15 no es la fecha de publicacion de https://ailiteracyframework.org/about: el documento se publico 2024-09-19 | corroboracion insuficiente: 1 de 2 fuentes corroborantes (leidas y utiles). Citadas 3, leidas 3, no consultadas 0, inexistentes 0. §3 exige 2 y se cuentan solo las leidas. Revision humana pendiente. Avisos: https://ailiteracyframework.org/about se publico 2024-09-19 y se modifico 2026-06-15: la pieza puede estar citando un texto que cambio despues.",
+        "pendientes": [
+          "El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000 personas de más de 100 países, y alimenta el dominio innovador de PISA 2029. — ninguna de las 3 fuentes legibles la respalda",
+          "El 18 de junio de 2026, durante el evento del European Digital Education Hub «Collaborate for Impact», la OCDE y la Comisión Europea lanzaron la versión final de su marco de alfabetización en inteligencia artificial para educación primaria y secundaria, «Empowering Learners for the Age of AI», con apoyo de CodeAI (antes Code. — ninguna de las 3 fuentes legibles la respalda",
+          "El borrador se había publicado en mayo de 2025 y pasó por una consulta con más de 2000 personas de más de 100 países: docentes, directivos, responsables de política pública, diseñadores de aprendizaje, ONG e investigadores. — ninguna de las 3 fuentes legibles la respalda"
+        ]
+      },
+      "publicado": {
+        "por": "pendiente",
+        "detalle": "Requiere decision de Rodrigo. Nada de esta entrega se publica."
+      }
+    },
+    "huella": "sha256:d637bed95c98a17f849182f4f03fab56ce6667b968ceb6e0fad7dfeccc90668b",
+    "correcciones": []
+  },
+  {
+    "id": "las-pantallas-por-si-solas-no-explican-el-retraso-del-le-53f9a2",
+    "tipo": "analisis",
+    "titulo": "Las pantallas por sí solas no explican el retraso del lenguaje, según la evidencia que revisa el Observatorio del Tec de Monterrey",
+    "entradilla": "En sus últimas actualizaciones, la Academia Americana de Pediatría advierte que no existe un tiempo exacto frente a pantallas que pueda considerarse universalmente seguro o adecuado para los menores de edad.",
+    "estado": "borrador",
+    "ocurrido_en": "2026-08-06",
+    "redactado_en": "2026-09-14T17:40Z",
+    "hecho": "El 6 de agosto de 2026, el Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó un artículo de Andrea Cristina Alvarez Pacheco que revisa la evidencia sobre la relación entre el uso de pantallas y el desarrollo del lenguaje en la primera infancia. La revisión sostiene que las pantallas, por sí mismas, no constituyen la causa del retraso del lenguaje: su influencia depende de cómo, cuánto y en qué contexto se utilizan, y sobre todo de las oportunidades de interacción comunicativa que ofrecen los adultos. El expediente no establece la fecha de ningún acontecimiento distinto a la publicación del propio artículo.",
+    "que_cambia": "Para quien forma talento, el material traza una cadena que llega hasta la educación superior: según los estudios que cita, las dificultades del desarrollo del lenguaje pueden mantenerse hasta la adultez y reflejarse en tareas universitarias concretas —comprender clases con vocabulario especializado, participar en debates, organizar trabajos escritos, comunicarse en situaciones académicas y sociales— y se asocian, en promedio, con menores niveles de formación académica y profesional y mayor necesidad de apoyos educativos. El mismo material señala que esos resultados varían mucho entre personas y que el nivel de apoyo recibido, las oportunidades educativas y las estrategias compensatorias influyen de forma significativa. Para quien construye producto, la distinción que hace el texto es entre exposición pasiva y prolongada, por un lado, y uso intencional con acompañamiento adulto y oportunidades de conversar, jugar y reflexionar, por el otro. El expediente no contiene recomendaciones de diseño de producto ni de política educativa, así que no puede afirmarse más que eso.",
+    "mexico": {
+      "estado": "aplica_sin_datos_locales",
+      "texto": "El material lo publica una institución mexicana —el Observatorio del Instituto para el Futuro de la Educación del Tec de Monterrey— y está escrito en español para audiencia educativa. Pero ninguno de los estudios que cita reporta población mexicana, y el texto no ofrece una sola cifra de México: ni de exposición a pantallas, ni de prevalencia de dificultades del lenguaje, ni de su efecto en la trayectoria educativa nacional. La aplicación al contexto mexicano no está sostenida por datos locales en este expediente."
+    },
+    "no_establece": [
+      "No establece causalidad: el texto habla de una asociación entre uso prolongado de pantallas y mayor riesgo de dificultades del lenguaje, y afirma explícitamente que las pantallas por sí mismas no son la causa del retraso.",
+      "No establece un umbral seguro de tiempo de pantalla: según el propio material, la AAP advierte en sus últimas actualizaciones que no existe un tiempo exacto universalmente seguro o adecuado.",
+      "No establece nada sobre la población infantil mexicana: no aparece ninguna cifra ni estudio de México en el expediente.",
+      "No establece que un contenido educativo, una app o un producto digital concreto mejore o empeore el desarrollo del lenguaje: el material no evalúa ningún producto.",
+      "No establece el tamaño del efecto: no hay porcentajes, coeficientes ni tamaños de muestra en el texto, solo direcciones de asociación descritas en prosa."
+    ],
+    "fuente_primaria": {
+      "titulo": "¿Qué tanto afectan las pantallas al desarrollo del lenguaje?",
+      "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
+      "url": "https://observatorio.tec.mx/pantallas-y-desarrollo-del-lenguaje",
+      "fecha": "2026-08-06"
+    },
+    "fuentes": [
+      {
+        "titulo": "¿Qué tanto afectan las pantallas al desarrollo del lenguaje?",
+        "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
+        "url": "https://observatorio.tec.mx/pantallas-y-desarrollo-del-lenguaje",
+        "fecha": "2026-08-06",
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Madigan et al. (2020), estudio sobre uso de pantallas y desarrollo del lenguaje en la primera infancia",
+        "medio": "JAMA Pediatrics",
+        "url": "https://jamanetwork.com/journals/jamapediatrics/fullarticle/2762864",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Nwachukwu et al. (2025), estudio sobre uso de pantallas y dificultades del desarrollo del lenguaje",
+        "medio": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/41431552",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Massaroni et al. (2023), estudio sobre pantallas y comunicación social en la infancia",
+        "medio": "MDPI",
+        "url": "https://mdpi.com/2076-3425/14/1/27",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Estudio citado sobre la exposición a pantallas antes de los dos años de edad",
+        "medio": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/17889070",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Estudio citado sobre el aumento del riesgo con exposición elevada y consumo pasivo",
+        "medio": "JAMA Pediatrics",
+        "url": "https://jamanetwork.com/journals/jamapediatrics/fullarticle/2815514",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Conti-Ramsden et al. (2018), estudio sobre jóvenes adultos con problemas del desarrollo del lenguaje",
+        "medio": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/29139196",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Gillespie et al. (2020), revisión sistemática sobre la transición a la vida adulta",
+        "medio": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/33022192",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Screen Time Guidelines — Center of Excellence on Social Media and Youth Mental Health",
+        "medio": "American Academy of Pediatrics (AAP)",
+        "url": "https://aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/qa-portal/qa-portal-library/qa-portal-library-questions/screen-time-guidelines",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Serve and Return (interacciones de ida y vuelta)",
+        "medio": "Center on the Developing Child, Harvard",
+        "url": "https://developingchild.harvard.edu/key-concept/serve-and-return",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Estudio citado sobre la interacción constante y la adquisición del lenguaje",
+        "medio": "PubMed",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/11405580",
+        "fecha": null,
+        "tipo": "primaria"
+      }
+    ],
+    "relacion_declarada": null,
+    "procedencia": {
+      "detectado": {
+        "por": "agente",
+        "detalle": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) · feed leido el 2026-09-14T05:25:46Z"
+      },
+      "redactado": {
+        "por": "ia",
+        "modelo": "claude-code-cli"
+      },
+      "verificado": {
+        "por": "pendiente",
+        "veredicto": "no_verificada",
+        "detalle": "VEREDICTO NO_VERIFICADA. Fuentes: 11 citadas — 8 leidas, 3 no consultadas, 0 inexistentes; 1/2 corroborantes contando solo fuentes leidas. Afirmaciones: 0 con respaldo legible, 1 pendientes, 0 contradichas. Fechas por fuente: coincide/no_consultada/omitida_por_la_pieza/no_consultada/omitida_por_la_pieza/no_consultada/omitida_por_la_pieza/omitida_por_la_pieza/omitida_por_la_pieza/omitida_por_la_pieza/omitida_por_la_pieza — solo la fecha de publicacion confirma. Cifras: 2/2 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El 6 de agosto de 2026, el Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó un artículo de Andrea Cristina Alvarez Pacheco que revisa la evidencia sobre la relación entre el uso de pantallas y el desarrollo del lenguaje en la primera infancia.» (ninguna de las 8 fuentes legibles la respalda; quedan 3 fuentes sin consultar) 3 fuentes sin consultar: de ellas no se puede afirmar que no contradigan. NO PASA: corroboracion insuficiente: 1 de 2 fuentes corroborantes (leidas y utiles). Citadas 11, leidas 8, no consultadas 3, inexistentes 0. §3 exige 2 y se cuentan solo las leidas. Revision humana pendiente. Avisos: fuente NO CONSULTADA: https://jamanetwork.com/journals/jamapediatrics/fullarticle/2762864 [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://jamanetwork.com/journals/jamapediatrics/fullarticle/2762864 es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista. | la pieza no declaro fecha para https://pubmed.ncbi.nlm.nih.gov/41431552; el documento declara publicacion (ninguna con rol). Se puede completar. | fuente NO CONSULTADA: https://mdpi.com/2076-3425/14/1/27 [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://mdpi.com/2076-3425/14/1/27 es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista. | la pieza no declaro fecha para https://pubmed.ncbi.nlm.nih.gov/17889070; el documento declara publicacion (ninguna con rol). Se puede completar. | fuente NO CONSULTADA: https://jamanetwork.com/journals/jamapediatrics/fullarticle/2815514 [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://jamanetwork.com/journals/jamapediatrics/fullarticle/2815514 es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista. | la pieza no declaro fecha para https://pubmed.ncbi.nlm.nih.gov/29139196; el documento declara publicacion (ninguna con rol). Se puede completar. | la pieza no declaro fecha para https://pubmed.ncbi.nlm.nih.gov/33022192; el documento declara publicacion (ninguna con rol). Se puede completar. | la pieza no declaro fecha para https://aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/qa-portal/qa-portal-library/qa-portal-library-questions/screen-time-guidelines; el documento declara publicacion (ninguna con rol). Se puede completar. | la pieza no declaro fecha para https://developingchild.harvard.edu/key-concept/serve-and-return; el documento declara publicacion 2024-10-08. Se puede completar. | https://developingchild.harvard.edu/key-concept/serve-and-return se publico 2024-10-08 y se modifico 2026-04-01: la pieza puede estar citando un texto que cambio despues. | la pieza no declaro fecha para https://pubmed.ncbi.nlm.nih.gov/11405580; el documento declara publicacion (ninguna con rol). Se puede completar.",
+        "pendientes": [
+          "El 6 de agosto de 2026, el Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó un artículo de Andrea Cristina Alvarez Pacheco que revisa la evidencia sobre la relación entre el uso de pantallas y el desarrollo del lenguaje en la primera infancia. — ninguna de las 8 fuentes legibles la respalda; quedan 3 fuentes sin consultar"
+        ]
+      },
+      "publicado": {
+        "por": "pendiente",
+        "detalle": "Requiere decision de Rodrigo. Nada de esta entrega se publica."
+      }
+    },
+    "huella": "sha256:53f9a2789b24ff36a4f3b70855111978f331903319fd93706f34e5f96d17ca4e",
+    "correcciones": []
+  },
+  {
+    "id": "la-uam-profesionaliza-su-divulgacion-y-prepara-a-la-ia-c-e5c93e",
+    "tipo": "analisis",
+    "titulo": "La UAM profesionaliza su divulgación y prepara a la IA como apoyo, no como sustituto",
+    "entradilla": "Tras cinco años de trabajo, la Dirección de Comunicación del Conocimiento de la Universidad Autónoma Metropolitana opera su propia estrategia de divulgación en escuelas, el metro, alcaldías, museos y centros de reclusión, y plantea incorporar inteligencia artificial solo como herramienta de apoyo.",
+    "estado": "borrador",
+    "ocurrido_en": "2026-08-11",
+    "redactado_en": "2026-09-14T17:43Z",
+    "hecho": "El Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó el 11 de agosto de 2026 un texto sobre Conocimiento UAM, el área de la Universidad Autónoma Metropolitana dedicada a comunicar la investigación que genera. Según el texto, el área pasó de la gestión institucional a diseñar sus propias estrategias de divulgación, lleva cinco años de trabajo y planea incorporar inteligencia artificial para agilizar tareas y reducir tiempos, sin desplazar la intervención humana en la toma de decisiones y en la generación de contenidos. El expediente no declara una fecha del acontecimiento; la única fecha disponible es la de la fuente.",
+    "que_cambia": "Para quien dirige tecnología o forma talento, el expediente describe una postura institucional explícita sobre dónde se coloca la IA en un flujo de trabajo de contenidos: como apoyo para agilizar tareas y liberar tiempo hacia actividades que requieren experiencia, creatividad y pensamiento crítico, con la decisión y la generación de contenido reservadas a personas. También describe una operación de producto editorial —cápsulas, infografías, programas de radio y actividades presenciales breves— ajustada a las formas actuales de consumo de información, y un método de iteración: si un formato no funciona, se modifica; si una comunidad expresa una necesidad nueva, se diseña una actividad para atenderla. El expediente no alcanza para decir qué herramientas, qué procesos ni qué resultados tiene esa incorporación de IA, porque todavía se plantea a futuro.",
+    "mexico": {
+      "estado": "aplica_con_datos_locales",
+      "texto": "El caso es enteramente mexicano: la Universidad Autónoma Metropolitana, en la zona metropolitana de la Ciudad de México, con actividades en escuelas, el metro de la Ciudad de México, alcaldías, museos y centros de reclusión. Las referencias citadas también son locales: la UNAM, la Universidad Veracruzana y el Colegio Nacional. Ahora bien, los datos locales del expediente son cualitativos y de un solo caso: no hay cifras de alcance, de público atendido, de presupuesto ni de resultados."
+    },
+    "no_establece": [
+      "No prueba ningún resultado medido: el expediente no aporta una sola cifra de personas alcanzadas, actividades realizadas, presupuesto ni impacto, y los 'momentos que confirman el impacto' que describe son testimonios y experiencias, no medición.",
+      "No prueba que la UAM esté usando inteligencia artificial hoy: el texto la plantea como exploración y como orientación 'en un futuro cercano', sin nombrar una sola herramienta, proceso o implementación en operación.",
+      "No prueba que este modelo sea replicable ni comparable: es un caso institucional descrito por la propia área, sin contraste con otras universidades ni evaluación externa.",
+      "No prueba una tendencia del sector: un artículo sobre una dirección universitaria no permite afirmar nada sobre cómo divulga el resto de las universidades mexicanas."
+    ],
+    "fuente_primaria": {
+      "titulo": "La importancia de comunicar: Conocimiento UAM",
+      "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
+      "url": "https://observatorio.tec.mx/conocimiento-uam",
+      "fecha": "2026-08-11"
+    },
+    "fuentes": [
+      {
+        "titulo": "La importancia de comunicar: Conocimiento UAM",
+        "medio": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey)",
+        "url": "https://observatorio.tec.mx/conocimiento-uam",
+        "fecha": "2026-08-11",
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Documento de la UNESCO citado sobre acceso a los descubrimientos científicos y avances tecnológicos",
+        "medio": "UNESCO",
+        "url": "https://unesdoc.unesco.org/ark:/48223/pf0000379949_spa",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Divulgación científica (Irma Lozada-Chávez)",
+        "medio": "Centro de Ciencias Genómicas, UNAM",
+        "url": "http://divulgacion.ccg.unam.mx/panel/8/divulgaci%C3%B3n-cient%C3%ADfica",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Razones (Norma Lazo)",
+        "medio": "Universidad Veracruzana",
+        "url": "https://uv.mx/cienciauv/files/2014/05/Razones_Impresa.pdf",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Es tan importante hacer divulgación de la ciencia como producir ciencia: Juan Pedro Laclette",
+        "medio": "El Colegio Nacional",
+        "url": "https://colnal.mx/noticias/es-tan-importante-hacer-divulgacion-de-la-ciencia-como-producir-ciencia-juan-pedro-laclette",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Dirección de Comunicación del Conocimiento de la UAM",
+        "medio": "Universidad Autónoma Metropolitana",
+        "url": "https://conocimiento.uam.mx/",
+        "fecha": null,
+        "tipo": "primaria"
+      },
+      {
+        "titulo": "Conocimiento UAM (cuenta de Instagram, fuente de las imágenes del texto)",
+        "medio": "Instagram",
+        "url": "https://instagram.com/conocimientouam",
+        "fecha": null,
+        "tipo": "primaria"
+      }
+    ],
+    "relacion_declarada": null,
+    "procedencia": {
+      "detectado": {
+        "por": "agente",
+        "detalle": "Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) · feed leido el 2026-09-14T05:25:46Z"
+      },
+      "redactado": {
+        "por": "ia",
+        "modelo": "claude-code-cli"
+      },
+      "verificado": {
+        "por": "pendiente",
+        "veredicto": "no_verificada",
+        "detalle": "VEREDICTO NO_VERIFICADA. Fuentes: 7 citadas — 5 leidas, 2 no consultadas, 0 inexistentes; 1/2 corroborantes contando solo fuentes leidas. Afirmaciones: 0 con respaldo legible, 1 pendientes, 0 contradichas. Fechas por fuente: coincide/no_consultada/no_consultada/omitida_por_la_pieza/omitida_por_la_pieza/omitida_por_la_pieza/omitida_por_la_pieza — solo la fecha de publicacion confirma. Cifras: 2/2 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó el 11 de agosto de 2026 un texto sobre Conocimiento UAM, el área de la Universidad Autónoma Metropolitana dedicada a comunicar la investigación que genera.» (ninguna de las 5 fuentes legibles la respalda; quedan 2 fuentes sin consultar) 2 fuentes sin consultar: de ellas no se puede afirmar que no contradigan. NO PASA: corroboracion insuficiente: 1 de 2 fuentes corroborantes (leidas y utiles). Citadas 7, leidas 5, no consultadas 2, inexistentes 0. §3 exige 2 y se cuentan solo las leidas. Revision humana pendiente. Avisos: https://observatorio.tec.mx/conocimiento-uam se publico 2026-08-11 y se modifico 2026-08-14: la pieza puede estar citando un texto que cambio despues. | fuente NO CONSULTADA: https://unesdoc.unesco.org/ark:/48223/pf0000379949_spa [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://unesdoc.unesco.org/ark:/48223/pf0000379949_spa es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista. | fuente NO CONSULTADA: http://divulgacion.ccg.unam.mx/panel/8/divulgaci%C3%B3n-cient%C3%ADfica [DNS] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: http://divulgacion.ccg.unam.mx/panel/8/divulgaci%C3%B3n-cient%C3%ADfica es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista. | la pieza no declaro fecha para https://uv.mx/cienciauv/files/2014/05/Razones_Impresa.pdf; el documento declara publicacion (ninguna con rol). Se puede completar. | la pieza no declaro fecha para https://colnal.mx/noticias/es-tan-importante-hacer-divulgacion-de-la-ciencia-como-producir-ciencia-juan-pedro-laclette; el documento declara publicacion 2026-02-11. Se puede completar. | la pieza no declaro fecha para https://conocimiento.uam.mx/; el documento declara publicacion (ninguna con rol). Se puede completar. | la pieza no declaro fecha para https://instagram.com/conocimientouam; el documento declara publicacion (ninguna con rol). Se puede completar.",
+        "pendientes": [
+          "El Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) publicó el 11 de agosto de 2026 un texto sobre Conocimiento UAM, el área de la Universidad Autónoma Metropolitana dedicada a comunicar la investigación que genera. — ninguna de las 5 fuentes legibles la respalda; quedan 2 fuentes sin consultar"
+        ]
+      },
+      "publicado": {
+        "por": "pendiente",
+        "detalle": "Requiere decision de Rodrigo. Nada de esta entrega se publica."
+      }
+    },
+    "huella": "sha256:e5c93e2a5d14307b7af4242db60ae215e6a927e0ba648f59fea7521d2b95b2a5",
+    "correcciones": []
+  }
+]

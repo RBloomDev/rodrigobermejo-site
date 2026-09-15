@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noticias y análisis — Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma (identica a portada.html) ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* Rutas largas: sin esto, `docs/plataforma/prototipo/datos/piezas.json`
+     desborda a lo ancho por debajo de 400px. Medido a 320px. */
+  code { font-family: var(--ff-num); font-size: .92em; overflow-wrap: anywhere; }
+
+  /* ---- Salto al contenido ---- */
+  .saltar {
+    position: absolute; left: 12px; top: 12px; z-index: 60;
+    transform: translateY(-200%);
+    background: var(--ink-title); color: var(--white);
+    font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--1);
+    padding: .6rem 1rem; border-radius: var(--radius); text-decoration: none;
+  }
+  .saltar:focus { transform: none; }
+
+  /* ============================================================
+     TIPO DE PIEZA — la regla dura de 02-editorial §1.
+     Tres tratamientos que se distinguen por FORMA y RELLENO, no solo por
+     color: un lector daltonico y una captura en escala de grises siguen
+     viendo tres cosas distintas. Y la palabra va siempre escrita.
+       noticia   filete + cuadro macizo
+       analisis  bloque con fondo inset y filete grueso a la izquierda
+       opinion   relleno teal macizo con tinta #212121 (5.73:1) + regla
+                 lateral en toda la pieza + firma obligatoria
+     ============================================================ */
+  .tipo {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase;
+    padding: .2rem 0; color: var(--ink-title);
+    /* Como item de rejilla, inline-flex se blockifica a flex y el rotulo se
+       estira a toda la columna (medido: 592px de caja para 116px de texto).
+       justify-self lo devuelve al ancho de su contenido. */
+    justify-self: start; align-self: start; width: fit-content;
+  }
+  .tipo .glifo { flex: none; width: .62rem; height: .62rem; }
+
+  .tipo--noticia .glifo { background: var(--ink-title); }
+  .tipo--noticia { border-bottom: 2px solid var(--ink-title); }
+
+  .tipo--analisis {
+    background: var(--bg-inset); color: var(--ink-title);
+    border-left: 4px solid var(--ink-title);
+    padding: .25rem .6rem .25rem .55rem;
+  }
+  .tipo--analisis .glifo {
+    background: linear-gradient(to bottom, var(--ink-title) 0 34%, transparent 34% 66%, var(--ink-title) 66% 100%);
+  }
+
+  .tipo--opinion {
+    background: var(--accent); color: var(--dark-title);
+    padding: .25rem .6rem; border-radius: var(--radius);
+  }
+  .tipo--opinion .glifo { background: var(--dark-title); border-radius: 50%; }
+
+  /* La pieza de opinion entera lleva regla lateral: se distingue antes de leer. */
+  .es-opinion { border-left: 4px solid var(--accent); padding-left: var(--s-2); }
+  .firma-linea {
+    font-family: var(--ff-ui); font-size: var(--t--1); font-weight: 700;
+    color: var(--ink-2); display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap;
+  }
+  .firma-linea .firma { font-size: 1.5rem; }
+
+  /* ---- Estado del campo MEXICO: los cuatro, con glifo propio ---- */
+  .mex {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+    justify-self: start; width: fit-content;
+  }
+  .mex .m-glifo {
+    flex: none; width: 1.05rem; height: 1.05rem; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .62rem; font-weight: 700; letter-spacing: 0; line-height: 1;
+    color: var(--white); font-family: var(--ff-ui);
+  }
+  .mex--con    .m-glifo { background: var(--ink-title); border: 2px solid var(--ink-title); }
+  .mex--sin    .m-glifo { background: linear-gradient(to right, var(--ink-title) 0 50%, var(--white) 50% 100%); border: 2px solid var(--ink-title); }
+  .mex--no     .m-glifo { background: var(--white); border: 2px solid var(--ink-muted); color: var(--ink-2); }
+  .mex--noverif .m-glifo { background: var(--white); border: 2px dashed var(--ink-title); color: var(--ink-title); }
+
+  /* no_verificado NO se apaga: misma tinta, mismo peso, borde propio. */
+  .mex--noverif { color: var(--ink); }
+
+  /* ---- Aviso de estado del corpus ---- */
+  .aviso {
+    border: 2px solid var(--ink-title); border-radius: var(--radius);
+    padding: var(--s-2); margin-top: var(--s-3);
+    display: grid; gap: .65rem;
+  }
+  .aviso p { max-width: 72ch; }
+
+  /* ---- Portadilla ---- */
+  .portadilla { padding-block: var(--s-4) var(--s-3); }
+  .portadilla .h1 { margin-top: var(--s-2); }
+  .portadilla .lede { margin-top: var(--s-2); }
+
+  /* ---- Apertura: la pieza principal. Densidad maxima. ---- */
+  .apertura { padding-block: var(--s-3) var(--s-4); }
+  .apertura-grid { display: grid; gap: var(--s-3); margin-top: var(--s-3); }
+  @media (min-width: 900px) {
+    .apertura-grid { grid-template-columns: minmax(0,1.55fr) minmax(0,1fr); gap: var(--s-4); }
+    .apertura-ficha { border-left: 1px solid var(--rule); padding-left: var(--s-3); }
+  }
+  .apertura .titulo { font-family: var(--ff-display); font-weight: 700; font-size: var(--t-3); line-height: 1.06; letter-spacing: -.022em; color: var(--ink-title); text-wrap: balance; margin-top: .7rem; }
+  .apertura .titulo a { text-decoration: none; }
+  .apertura .titulo a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 4px; text-decoration-thickness: 3px; }
+
+  /* Ficha: las cinco preguntas resumidas, en columna de registro. */
+  .ficha { display: grid; gap: 0; }
+  .ficha > div { border-top: 1px solid var(--rule); padding-block: .7rem; }
+  .ficha > div:first-child { border-top: 2px solid var(--ink-title); }
+  .ficha dt, .ficha .et {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    margin-bottom: .25rem;
+  }
+  .ficha .val { font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2); }
+  .ficha .val .cifra { font-size: var(--t--1); }
+
+  /* ---- Cuerpo secundario: dos piezas, densidad media ---- */
+  .cuerpo { padding-block: var(--s-3) var(--s-4); }
+  .cuerpo-grid { display: grid; gap: var(--s-3); margin-top: var(--s-3); }
+  @media (min-width: 820px) { .cuerpo-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--s-4); } }
+  .pieza-med { display: grid; gap: .6rem; align-content: start; border-top: 2px solid var(--ink-title); padding-top: var(--s-2); }
+  .pieza-med .titulo { font-family: var(--ff-display); font-weight: 700; font-size: var(--t-1); line-height: 1.2; color: var(--ink-title); }
+  .pieza-med .titulo a { text-decoration: none; }
+  .pieza-med .titulo a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+  .meta-linea {
+    font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted);
+    display: flex; flex-wrap: wrap; gap: .35rem .9rem; align-items: center;
+  }
+
+  /* ---- Breves: densidad minima, una fila de registro por pieza ---- */
+  .breves { padding-block: var(--s-3) var(--s-4); }
+  .breves-lista { margin-top: var(--s-2); }
+  .breve { grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .breve { grid-template-columns: 8.5rem minmax(0,1fr) 13rem; } }
+  .breve .titulo { font-family: var(--ff-ui); font-weight: 600; font-size: var(--t-0); line-height: 1.35; color: var(--ink); }
+  .breve .titulo a { text-decoration: none; }
+  .breve .titulo a:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+
+  /* ---- Leyenda de los cuatro estados ---- */
+  .leyenda { padding-block: var(--s-3) var(--s-5); }
+  .leyenda-lista { margin-top: var(--s-2); }
+  .ley-fila { grid-template-columns: 1fr; }
+  @media (min-width: 780px) { .ley-fila { grid-template-columns: 15rem minmax(0,1fr); } }
+  .ley-fila .ui { font-size: var(--t--1); }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); }
+</style>
+</head>
+<body>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html">Inicio</a>
+      <a href="noticias.html" aria-current="page">Noticias</a>
+      <a href="proyectos.html">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="contenido">
+
+  <!-- ===== Portadilla ===== -->
+  <section class="portadilla wrap">
+    <p class="rotulo">Canal editorial · IA, software y educación en México</p>
+    <h1 class="h1">Noticias y análisis, con las cinco preguntas resueltas en cada pieza</h1>
+    <p class="lede">
+      Qué ocurrió y cuándo · qué fuentes lo sostienen · qué cambia para quien lee ·
+      qué aplicación o limitación tiene en México · qué sigue siendo incierto.
+      Una pieza a la que le falte alguna, no se renderiza.
+    </p>
+
+    <div class="aviso">
+      <p class="ui" style="font-weight:700">
+        De las cinco piezas de esta pantalla, <strong>una es un borrador real</strong> y
+        cuatro son ilustrativas.
+      </p>
+      <p class="ui small">
+        La pieza de apertura viene de <code>docs/plataforma/prototipo/datos/piezas.json</code>,
+        producida por una ejecución del canal el 14 de septiembre de 2026, con sus tres
+        fuentes leídas. <strong>No lleva marca amarilla.</strong> Las otras cuatro se
+        construyeron con el esquema de <code>docs/plataforma/02-editorial.md</code> §3 para
+        probar el diseño de los tres tipos y de los cuatro estados del campo México, y
+        <strong>todas llevan <span class="simulado">Simulado</span></strong>.
+      </p>
+      <p class="ui small">
+        <strong>Las cinco están en <code>estado: "borrador"</code> y ninguna está publicada.</strong>
+        <code>procedencia.publicado</code> es <code>pendiente</code> en todo el corpus, y
+        <code>procedencia.verificado</code> también: ningún humano ha revisado nada de esto.
+        No hay autopublicación, ni la habrá sin decisión de Rodrigo (02-editorial §3 y §4).
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Apertura ===== -->
+  <section class="apertura wrap" aria-labelledby="rot-apertura">
+    <p class="rotulo" id="rot-apertura">La pieza de apertura · borrador real, de una ejecución del canal</p>
+
+    <div class="apertura-grid">
+      <article>
+        <p class="tipo tipo--analisis">
+          <span class="glifo" aria-hidden="true"></span>
+          <span class="sr-only">Tipo de pieza:</span>Análisis
+        </p>
+
+        <h2 class="titulo">
+          <a href="noticia.html">La OCDE y la Comisión Europea cerraron un marco común de alfabetización en IA para primaria y secundaria</a>
+        </h2>
+
+        <p class="lede" style="margin-top:.9rem">
+          El marco AILit se lanzó el 18 de junio de 2026 tras una consulta con más de 2000
+          personas de más de 100 países, y alimenta el dominio innovador de PISA 2029.
+        </p>
+
+        <p class="ui small" style="margin-top:var(--s-2);max-width:60ch">
+          <strong>Lo que esto no establece:</strong> que ningún sistema educativo lo haya
+          adoptado — lanzar un marco no es adoptarlo — ni ningún efecto sobre el
+          aprendizaje. Cuatro puntos declarados en total.
+        </p>
+
+        <p style="margin-top:var(--s-2)">
+          <a class="link-quiet" href="noticia.html">Leer la pieza completa, con sus cinco bloques y su procedencia →</a>
+        </p>
+      </article>
+
+      <div class="apertura-ficha">
+        <div class="ficha">
+          <div>
+            <p class="et">Estado del registro</p>
+            <p class="val"><strong>Borrador</strong> · no publicado · sin marca de simulación</p>
+          </div>
+          <div>
+            <p class="et">Qué ocurrió y cuándo</p>
+            <p class="val">Lanzamiento de la versión final del marco AILit, en el evento «Collaborate for Impact» — <strong>18 de junio de 2026</strong></p>
+          </div>
+          <div>
+            <p class="et">Qué fuentes lo sostienen</p>
+            <p class="val"><span class="cifra">3</span> fuentes · primaria: <em>Empowering Learners for the Age of AI</em>, AILit Framework (OCDE y Comisión Europea)</p>
+          </div>
+          <div>
+            <p class="et">Qué cambia para quien lee</p>
+            <p class="val">Hay un referente común contra el cual contrastar un programa propio de formación en IA, en vez de inventarlo desde cero.</p>
+          </div>
+          <div>
+            <p class="et">Aplicación en México</p>
+            <p class="val">
+              <span class="mex mex--noverif">
+                <span class="m-glifo" aria-hidden="true">?</span>
+                No verificado
+              </span><br>
+              <span style="display:inline-block;margin-top:.35rem">No se comprobó si México adopta el marco: la página que lo detallaría respondió con un bloqueo automático. Es un estado publicable, no un hueco.</span>
+            </p>
+          </div>
+          <div>
+            <p class="et">Qué sigue incierto</p>
+            <p class="val"><span class="cifra">4</span> puntos declarados en <em>Lo que esto no establece</em></p>
+          </div>
+          <div>
+            <p class="et">Procedencia</p>
+            <p class="val">Detectado por agente (feed del Observatorio del Tec) · redactado por IA (<code>claude-opus-5[1m]</code>) · <strong>verificado: pendiente</strong> · publicado: pendiente</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Cuerpo secundario ===== -->
+  <section class="cuerpo wrap" aria-labelledby="rot-cuerpo">
+    <p class="rotulo" id="rot-cuerpo">Piezas ilustrativas · ninguna salió de una ejecución</p>
+    <p class="ui small muted" style="margin-top:var(--s-2);max-width:70ch">
+      Las cuatro que siguen existen para probar el diseño de lo que el registro todavía no
+      contiene: los tres tipos de pieza y los cuatro estados del campo México. Llevan la
+      marca amarilla y no se deben leer como cobertura.
+    </p>
+
+    <div class="cuerpo-grid">
+
+      <article class="pieza-med">
+        <p class="tipo tipo--noticia">
+          <span class="glifo" aria-hidden="true"></span>
+          <span class="sr-only">Tipo de pieza:</span>Noticia
+        </p>
+        <h3 class="titulo"><a href="noticia.html">La plantilla del resumen de datos de entrenamiento ya es pública y fija qué debe declarar un proveedor</a></h3>
+        <p class="ui small">
+          El documento define secciones obligatorias y un nivel de detalle mínimo. Cambia
+          qué se puede exigir en una revisión de proveedor; no cambia qué se puede
+          comprobar de forma independiente.
+        </p>
+        <p class="ui small" style="border-left:2px solid var(--rule-strong);padding-left:.8rem">
+          <strong>No establece:</strong> que la plantilla llenada sea verificable por un tercero.
+        </p>
+        <p class="meta-linea">
+          <span class="mex mex--sin"><span class="m-glifo" aria-hidden="true"></span>Aplica · sin datos locales</span>
+        </p>
+        <p class="meta-linea">
+          <span>Ocurrió el 24 de julio de 2025</span>
+          <span aria-hidden="true">·</span>
+          <span><span class="cifra" style="font-size:var(--t--2)">2</span> fuentes</span>
+          <span aria-hidden="true">·</span>
+          <span>Verificado: pendiente</span>
+        </p>
+        <p class="meta-linea"><span class="simulado">Simulado</span> <strong style="color:var(--ink-2)">Borrador · no publicado</strong></p>
+      </article>
+
+      <article class="pieza-med">
+        <p class="tipo tipo--analisis">
+          <span class="glifo" aria-hidden="true"></span>
+          <span class="sr-only">Tipo de pieza:</span>Análisis
+        </p>
+        <h3 class="titulo"><a href="noticia.html">Cuánta gente se forma en tecnologías de la información en México, según el único dato que se puede citar</a></h3>
+        <p class="ui small">
+          Hay una cifra oficial y hay una industria que afirma escasez de talento. No son
+          la misma medición y no responden a la misma pregunta.
+        </p>
+        <p class="ui small" style="border-left:2px solid var(--rule-strong);padding-left:.8rem">
+          <strong>No establece:</strong> que la matrícula prediga cuánta gente llega a
+          ejercer, ni con qué nivel.
+        </p>
+        <p class="meta-linea">
+          <span class="mex mex--con"><span class="m-glifo" aria-hidden="true"></span>Aplica · con datos locales</span>
+        </p>
+        <p class="meta-linea">
+          <span>Ocurrió el 12 de agosto de 2026</span>
+          <span aria-hidden="true">·</span>
+          <span><span class="cifra" style="font-size:var(--t--2)">2</span> fuentes</span>
+          <span aria-hidden="true">·</span>
+          <span>Verificado: pendiente</span>
+        </p>
+        <p class="meta-linea"><span class="simulado">Simulado</span> <strong style="color:var(--ink-2)">Borrador · no publicado</strong></p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ===== Breves: densidad minima ===== -->
+  <section class="breves wrap" aria-labelledby="rot-breves">
+    <p class="rotulo" id="rot-breves">Breves · una fila por pieza</p>
+
+    <div class="breves-lista">
+
+      <article class="fila breve">
+        <p class="tipo tipo--noticia">
+          <span class="glifo" aria-hidden="true"></span>
+          <span class="sr-only">Tipo de pieza:</span>Noticia
+        </p>
+        <div>
+          <h3 class="titulo"><a href="noticia.html">Una ley estatal de Estados Unidos obliga a etiquetar contenido sintético, y su alcance termina en la frontera del estado</a></h3>
+          <p class="ui small muted" style="margin-top:.3rem">
+            <strong style="color:var(--ink-2)">No establece:</strong> que la práctica se
+            vuelva estándar de industria fuera de ese estado.
+          </p>
+        </div>
+        <div>
+          <p class="mex mex--no"><span class="m-glifo" aria-hidden="true">—</span>No aplica en México</p>
+          <p class="xs muted" style="margin-top:.3rem">Ocurrió el 1 de enero de 2026 · <span class="cifra" style="font-size:var(--t--2)">2</span> fuentes</p>
+          <p class="xs" style="margin-top:.3rem"><span class="simulado">Simulado</span></p>
+        </div>
+      </article>
+
+      <article class="fila breve es-opinion">
+        <div>
+          <p class="tipo tipo--opinion">
+            <span class="glifo" aria-hidden="true"></span>
+            <span class="sr-only">Tipo de pieza:</span>Opinión
+          </p>
+          <p class="firma-linea" style="margin-top:.45rem">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span>Firmada por Rodrigo Bermejo</span>
+          </p>
+        </div>
+        <div>
+          <h3 class="titulo"><a href="noticia.html">Enseñar a programar cuando el editor ya escribe el código</a></h3>
+          <p class="ui small muted" style="margin-top:.3rem">
+            <strong style="color:var(--ink-2)">Relación declarada:</strong> Rodrigo es CTO
+            de Inadaptados y la pieza habla del diseño de su currícula. No es postura de la
+            institución.
+          </p>
+          <p class="ui small muted" style="margin-top:.3rem">
+            <strong style="color:var(--ink-2)">No establece:</strong> que el cambio de
+            currícula mejore la empleabilidad de quien egresa.
+          </p>
+        </div>
+        <div>
+          <p class="mex mex--sin"><span class="m-glifo" aria-hidden="true"></span>Aplica · sin datos locales</p>
+          <p class="xs muted" style="margin-top:.3rem">Redactada el 10 de septiembre de 2026 · <span class="cifra" style="font-size:var(--t--2)">2</span> fuentes</p>
+          <p class="xs" style="margin-top:.3rem"><span class="simulado">Simulado</span></p>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="hueco" style="margin-top:var(--s-3)">
+      <strong>El registro real contiene una sola pieza, y no es un error de carga.</strong>
+      <code>piezas.json</code> trae un borrador: el de la apertura. El canal se diseñó para
+      pocas piezas verificadas, no para volumen (02-editorial §7). Si en una semana no hay
+      nada que resista las cinco preguntas, esa semana no se publica nada. Un contador de
+      piezas por semana convertiría el volumen en métrica, y el volumen no es el producto.
+    </div>
+  </section>
+
+  <!-- ===== Leyenda: los cuatro estados del campo Mexico ===== -->
+  <section class="leyenda wrap" aria-labelledby="rot-leyenda">
+    <p class="rotulo" id="rot-leyenda">El campo México tiene cuatro estados, y los cuatro se publican</p>
+
+    <p class="ui" style="margin-top:var(--s-2)">
+      Sin un estado explícito, «en México» se vuelve relleno retórico en cuanto no hay
+      dato local. Por eso el campo lleva estado obligatorio, y por eso
+      <strong>no_verificado se renderiza con la misma tinta que los otros tres</strong>:
+      apagarlo sería tratarlo como un defecto, y es una respuesta.
+    </p>
+
+    <div class="leyenda-lista">
+
+      <div class="fila ley-fila">
+        <p class="mex mex--con"><span class="m-glifo" aria-hidden="true"></span>Aplica · con datos locales</p>
+        <p class="ui">Hay evidencia mexicana concreta y se cita en la pieza, con su fuente y su fecha.</p>
+      </div>
+
+      <div class="fila ley-fila">
+        <p class="mex mex--sin"><span class="m-glifo" aria-hidden="true"></span>Aplica · sin datos locales</p>
+        <p class="ui">El hecho aplica aquí por su naturaleza, pero nadie lo ha medido en México. Se dice así, sin estimarlo.</p>
+      </div>
+
+      <div class="fila ley-fila">
+        <p class="mex mex--no"><span class="m-glifo" aria-hidden="true">—</span>No aplica en México</p>
+        <p class="ui">El hecho no tiene efecto aquí, y la pieza explica por qué. No es silencio: es una respuesta con razón.</p>
+      </div>
+
+      <div class="fila ley-fila">
+        <p class="mex mex--noverif"><span class="m-glifo" aria-hidden="true">?</span>No verificado</p>
+        <p class="ui">
+          <strong>No se ha comprobado, y se publica diciéndolo.</strong> La pieza declara
+          qué falta comprobar y qué haría falta para comprobarlo. Sin este estado, la única
+          salida honesta sería omitir la pregunta — y la pregunta es medio producto.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="hueco" style="margin-top:var(--s-3)">
+      <strong>Para lo regulatorio mexicano no hay automatización confiable hoy.</strong>
+      El DOF sirve un certificado TLS inválido y la API de <code>datos.gob.mx</code> da
+      timeout, medido el 13 de septiembre de 2026. Esa vía es revisión manual, y el canal
+      lo dice en vez de fingir cobertura. Es la razón por la que <em>no verificado</em>
+      aparece tanto como aparece.
+    </div>
+  </section>
+
+  <footer class="pie wrap">
+    <p class="small muted">
+      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
+      nada de esto está publicado.
+    </p>
+    <p class="small muted" style="margin-top:.4rem">
+      Esquema de la pieza: <code>docs/plataforma/02-editorial.md</code> §3 ·
+      Registro: <code>docs/plataforma/prototipo/datos/piezas.json</code> · 1 pieza real, 4 ilustrativas
+    </p>
+  </footer>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+<script src="menu-movil.js" defer></script>
+</body>
+</html>

@@ -33,10 +33,12 @@ los dos lados son los archivos que van a producción, no fixtures:
   OK   evidence.json
 
   fuga de identificadores que no deben salir:
-    limpio   docencia-isc-upa      limpio   TerracotaFloreria
-    limpio   pos-terracota          limpio   proof-engine
-    limpio   ISC-UPA                limpio   indptdos-lms
-    limpio   camila-torres
+    limpio   [identificador 1]     limpio   [identificador 5]
+    limpio   [identificador 2]     limpio   [identificador 6]
+    limpio   [identificador 3]     limpio   [identificador 7]
+    limpio   [identificador 4]
+    (7 de 7 limpios. Los identificadores se sustituyen por su posicion:
+     reproducirlos aqui seria la fuga que este mismo gate detecta.)
 
   meta.counts cuadra: true
   G2 sobre el artefacto (referencias colgantes): 0
@@ -106,10 +108,11 @@ $ python mutar-fuga.py romper
   MUTACION APLICADA: la proyeccion arrastra sources[].ref
 $ npm run feed:build
   No se escribe nada: 43 valor(es) del artefacto no se derivan del Registry.
-    [projects] "rodrigoBermejo/heygen-project"
-    [projects] "Inadaptados/curricula-software-developer"
-    [projects] "rodrigoBermejo/camila-torres-project"
+    [projects] "<org>/<repositorio privado 1>"
+    [projects] "<org>/<repositorio privado 2>"
+    [projects] "<org>/<repositorio privado 3>"
     ...
+    (los valores reales se retiran: son nombres de repositorios no publicos)
 EXIT=1
 $ python mutar-fuga.py restaurar
 $ npm run feed:build   EXIT=0
@@ -121,9 +124,14 @@ así que un campo filtrado valida perfecto.
 
 Por qué no una denylist, y son tres razones **independientes**:
 
-1. **La lista *es* el secreto.** Commitear `TerracotaFloreria`, `ISC-UPA`,
-   `indptdos-lms` en el repositorio **público** del sitio publica la lista de clientes en
-   texto plano, más legible que el propio feed.
+1. **La lista *es* el secreto.** Commitear los identificadores de cliente y de
+   repositorio privado en el repositorio **público** del sitio publica la lista en texto
+   plano, más legible que el propio feed.
+
+   > **Corregido el 2026-09-14.** Este hallazgo se documentó originalmente reproduciendo
+   > los identificadores que decía proteger: el párrafo se refutaba a sí mismo, y llevaba
+   > publicado desde agosto. Se retiran de la versión actual. **El historial de git los
+   > conserva**, y esa es una superficie aparte que esta edición no cierra.
 2. **Pasa vacuamente** cuando no hay artefacto — justo en el primer publish.
 3. **No cubre el vector real**, por lo del `additionalProperties`.
 
@@ -139,8 +147,8 @@ EXIT=1
 $ python mutar.py restaurar     EXIT=0
 ```
 
-Y en el artefacto generado: `docencia-isc-upa` y `pos-terracota` **no aparecen en ninguna
-forma**, ni siquiera como texto. `ensino-y-mentoreo` sobrevive recortado a
+Y en el artefacto generado: los dos proyectos de contexto cliente **no aparecen en
+ninguna forma**, ni siquiera como texto. `ensino-y-mentoreo` sobrevive recortado a
 `curricula-inadaptados` — sin marca, sin conteo, sin rastro del recorte, porque un
 «2 proyectos ocultos» sería un dato atribuible en cuanto el conjunto fuera pequeño.
 

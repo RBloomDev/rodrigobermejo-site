@@ -107,16 +107,19 @@ Leído de `raw.githubusercontent.com/rodrigoBermejo/rodrigoBermejo/main/README.m
 
 ### 0.5 Los seis «Featured Projects» del README están rotos — los seis
 
-Medido el 2026-09-12 contra la API pública de GitHub (34 repos públicos listados):
+Medido el 2026-09-12 contra la lista pública de repositorios de la API de GitHub:
 
-| Enlace en el README | Estado |
+| Posición en «Featured Projects» | Estado |
 |---|---|
-| `rodrigoBermejo/influencer-ai-platform` | **404** |
-| `rodrigoBermejo/diplomado-ia-automatizacion` | **404** |
-| `rodrigoBermejo/nova-assistant` | **404** |
-| `rodrigoBermejo/POS-Terracota` | **404** |
-| `rodrigoBermejo/ecommerce-react` | **404** |
-| `rodrigoBermejo/ecommerce-angular` | **404** |
+| 1 | **404** |
+| 2 | **404** |
+| 3 | **404** |
+| 4 | **404** |
+| 5 | **404** |
+| 6 | **404** |
+
+**Los seis se identifican por su posición y no por su nombre.** Este documento se publica
+en un repositorio público, y solo nombra repositorios que ya lo son.
 
 Ninguno de los seis aparece en la lista de repos públicos, y una consulta directa a cada
 uno devuelve 404. **La sección más visible del README es una lista de seis enlaces
@@ -157,7 +160,7 @@ aquí.
 | Fragmento | Fuente |
 |---|---|
 | «CTO en Inadaptados» | README del perfil de GitHub. **Autodeclaración** (§0.6) |
-| «una escuela donde se aprende construyendo» | `academy.inadaptados.mx`: *«Aprende construyendo, no memorizando»*, vía `03-copy-deck.md` |
+| «una escuela donde se aprende construyendo» | Página pública de la academia de Inadaptados: *«Aprende construyendo, no memorizando»*, vía `03-copy-deck.md` |
 | «la plataforma que sostiene su operación educativa —LMS, web, certificados y contenido—» | `projects.json`, `plataforma-inadaptados`, tesis literal |
 | «construyo y opero sistemas de software, IA y automatización» | `claims.json`, `construyo-sistemas` + tesis de `infra-interna`, `contenido-ia`, `ssp` |
 | «y doy clase» | `claims.json`, `ensino-y-mentoreo`, literal |
@@ -178,12 +181,12 @@ en la última columna. El conteo es de **puntos de código Unicode**, medido con
 | Plataforma | Campo | Conteo | Límite | Uso | Fuente del límite |
 |---|---|---|---|---|---|
 | LinkedIn | Titular | **135** | 220 | 61 % | [LinkedIn Character Limits 2026](https://howmanywords.app/blog/linkedin-character-limits) · [AuthoredUp](https://authoredup.com/blog/linkedin-character-limit) |
-| LinkedIn | Acerca de | **1 464** | 2 600 | 56 % | mismas fuentes |
-| X | Bio | **143** | 160 | 89 % | [Bundle.social 2026](https://bundle.social/blog/twitter-character-counter-guide) · [TypeCount](https://typecount.com/blog/twitter-character-limit) |
-| Instagram | Bio | **111** | 150 | 74 % | [Character Limits 2026](https://wordscountertool.com/character-limits-2026-list-for-instagram-x-twitter-and-linkedin/) |
-| Threads | Bio | **108** | 150 | 72 % | [Limitora 2026](https://www.limitora.com/blog/social-media-character-limits-2026.html) |
-| YouTube | Descripción del canal | **669** | 1 000 | 67 % | [Influencer Marketing Hub](https://influencermarketinghub.com/youtube-character-limits/) · [CharCount 2026](https://charcount.tools/platforms/youtube-description-length) |
-| GitHub | Bio del perfil | **115** | 160 | 72 % | [github-limits](https://github.com/dead-claudia/github-limits) — *«Max length: 160 characters»* |
+| LinkedIn | Acerca de | **1 439** | 2 600 | 55 % | mismas fuentes |
+| X | Bio | **119** | 160 | 74 % | [Bundle.social 2026](https://bundle.social/blog/twitter-character-counter-guide) · [TypeCount](https://typecount.com/blog/twitter-character-limit) |
+| Instagram | Bio | **88** | 150 | 59 % | [Character Limits 2026](https://wordscountertool.com/character-limits-2026-list-for-instagram-x-twitter-and-linkedin/) |
+| Threads | Bio | **85** | 150 | 57 % | [Limitora 2026](https://www.limitora.com/blog/social-media-character-limits-2026.html) |
+| YouTube | Descripción del canal | **644** | 1 000 | 64 % | [Influencer Marketing Hub](https://influencermarketinghub.com/youtube-character-limits/) · [CharCount 2026](https://charcount.tools/platforms/youtube-description-length) |
+| GitHub | Bio del perfil | **91** | 160 | 57 % | [github-limits](https://github.com/dead-claudia/github-limits) — *«Max length: 160 characters»* |
 
 **Ninguna bio pasa del 90 % de su límite.** Es deliberado: los contadores de las
 plataformas no siempre cuentan igual que Node —emoji, caracteres compuestos y saltos de
@@ -206,7 +209,7 @@ CTO en Inadaptados · Construyo y opero sistemas de software,
 Es decir: el rol y el verbo entran completos en el corte. Eso es lo que el orden de las
 frases está optimizando, y es la razón de no abrir con «Doy clase».
 
-### 2.2 LinkedIn — Acerca de · 1 464/2 600
+### 2.2 LinkedIn — Acerca de · 1 439/2 600
 
 Texto completo en §3.
 
@@ -242,7 +245,7 @@ Idéntica a la de Instagram salvo la segunda línea, acortada porque Threads dis
 menos ancho visible antes del corte. **Que las dos sean casi idénticas es intencional**:
 son la misma persona y comparten lector.
 
-### 2.6 YouTube — descripción del canal · 669/1 000
+### 2.6 YouTube — descripción del canal · 644/1 000
 
 ```
 Soy Rodrigo Bermejo. CTO en Inadaptados, una escuela donde se aprende construyendo.
@@ -312,7 +315,7 @@ CTO en Inadaptados. Construyo y opero sistemas de software, IA y automatización
 CTO en Inadaptados · Construyo y opero sistemas de software, IA y automatización · Doy clase de ingeniería de software y bases de datos
 ```
 
-### 3.2 «Acerca de» — 1 464/2 600
+### 3.2 «Acerca de» — 1 439/2 600
 
 **Solo los primeros ~300 caracteres se ven antes del «ver más».** Este texto está
 construido para que ese corte caiga después de la frase que más importa: el párrafo de
@@ -390,7 +393,7 @@ lo que se cambia y por qué:
 <details open>
 <summary><strong>Español</strong></summary>
 
-Soy CTO en [Inadaptados](https://inadaptados.mx), una escuela donde se aprende
+Soy CTO en **Inadaptados**, una escuela donde se aprende
 construyendo. Dirijo la plataforma que sostiene su operación educativa —LMS, web,
 certificados y contenido—, construyo y opero sistemas de software, IA y automatización,
 y doy clase.
@@ -400,7 +403,7 @@ cuando algo falla el que responde soy yo.
 
 Inadaptados es un equipo. Lo que aquí se describe es mi parte.
 
-- **CTO** en [**Inadaptados**](https://inadaptados.mx)
+- **CTO** en **Inadaptados**
 - **Fundador** de **rbloom dev** — estudio de producto digital
 - **Docente** — ingeniería de software y bases de datos a nivel universitario, desde 2024
 - [**rodrigobermejo.com**](https://rodrigobermejo.com)
@@ -410,7 +413,7 @@ Inadaptados es un equipo. Lo que aquí se describe es mi parte.
 <details open>
 <summary><strong>English</strong></summary>
 
-I'm CTO at [Inadaptados](https://inadaptados.mx), a school where you learn by building.
+I'm CTO at **Inadaptados**, a school where you learn by building.
 I lead the platform that runs its education operation — LMS, web, certificates and
 content — I build and operate software, AI and automation systems, and I teach.
 
@@ -419,7 +422,7 @@ when something breaks I'm the one who answers.
 
 Inadaptados is a team. What's described here is my part.
 
-- **CTO** at [**Inadaptados**](https://inadaptados.mx)
+- **CTO** at **Inadaptados**
 - **Founder** of **rbloom dev** — digital product studio
 - **Lecturer** — software engineering and databases at university level, since 2024
 - [**rodrigobermejo.com**](https://rodrigobermejo.com)
@@ -482,6 +485,9 @@ La lista completa, con su estado real, está en
 - Instagram — [@rodrigolbermejo](https://www.instagram.com/rodrigolbermejo)
 - Threads — [@rodrigolbermejo](https://www.threads.com/@rodrigolbermejo)
 ````
+
+**Nota sobre los enlaces:** donde el README dice **Inadaptados** en negrita va enlazado el
+sitio público de la escuela; la URL se completa al pegar.
 
 **Nota sobre las tablas de proyectos:** los cinco proyectos y sus tesis son **literales**
 de `public/proof/v1/projects.json`. Los tres marcados «privado» tienen

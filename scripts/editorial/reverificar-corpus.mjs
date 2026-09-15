@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+/**
+ * Vuelve a pasar TODO el corpus por el verificador actual y reescribe el sello.
+ *
+ * Por que hace falta: las piezas se sellaron con el criterio anterior, que solo
+ * tenia dos casillas y mandaba a «OK» cualquier cosa que no fuera una
+ * contradiccion explicita. Una pieza con once fuentes citadas y una leida salio
+ * marcada como verificada. Ese sello reclama algo que la pieza no se gano, y
+ * dejarlo puesto seria peor que no haber verificado nunca: un sello falso se
+ * cree, un hueco no.
+ *
+ * Esto no republica nada ni cambia el contenido: solo actualiza
+ * `procedencia.verificado` con el veredicto real y sus pendientes.
+ *
+ * Uso: node scripts/editorial/reverificar-corpus.mjs [--seco]
+ *   --seco  solo informa, no escribe.
+ */
+
+import { readFileSync, writeFileSync } from "node:fs";
+import { RUTA_PIEZAS } from "./comun.mjs";
+import { verificarPieza, sellarVerificacion } from "./verificar.mjs";
+
+const seco = process.argv.includes("--seco");
+const piezas = JSON.parse(readFileSync(RUTA_PIEZAS, "utf8"));
+
+console.log(`Reverificando ${piezas.length} pieza(s) con el criterio vigente.\n`);
+
+const selladas = [];
+const resumen = { verificada: 0, parcial: 0, no_verificada: 0 };
+
+for (const p of piezas) {
+  const anterior = p.procedencia?.verificado?.veredicto ?? "(sin veredicto: sello antiguo)";
+  const inf = await verificarPieza(p);
+  resumen[inf.veredicto] = (resumen[inf.veredicto] ?? 0) + 1;
+
+  const c = inf.corroboracion;
+  console.log(`${p.id}`);
+  console.log(`  antes:      ${anterior}`);
+  console.log(`  ahora:      ${inf.veredicto.toUpperCase()}`);
+  console.log(`  fuentes:    ${c.citadas} citadas · ${c.leidas} leidas · `
+    + `${c.no_consultadas} no consultadas · ${c.no_existen} inexistentes`);
+  console.log(`  corrobora:  ${c.corroborantes} de ${c.minimo} necesarias `
+    + `${c.cumple_minimo ? "(cumple)" : "(NO cumple)"}`);
+  console.log(`  pendientes: ${inf.pendientes.length}`);
+  for (const q of inf.pendientes.slice(0, 3)) {
+    console.log(`     - ${q.motivo}: «${String(q.texto).slice(0, 70)}…»`);
+  }
+  console.log();
+
+  selladas.push(sellarVerificacion(p, inf));
+}
+
+console.log("resumen: " + JSON.stringify(resumen));
+
+if (seco) {
+  console.log("\n--seco: no se escribio nada.");
+} else {
+  writeFileSync(RUTA_PIEZAS, JSON.stringify(selladas, null, 2) + "\n");
+  console.log(`\nSellos actualizados en ${RUTA_PIEZAS}.`);
+  console.log("Ninguna pieza cambia de contenido y ninguna se publica: solo dice la verdad sobre su verificacion.");
+}
