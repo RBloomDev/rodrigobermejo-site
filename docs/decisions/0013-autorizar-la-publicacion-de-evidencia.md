@@ -1,8 +1,29 @@
 # ADR 0013 — Autorizar la publicación de evidencia
 
-- **Estado:** **PROPUESTA.** No autoriza nada. Redactada por un agente para que Rodrigo decida.
+- **Estado:** **ACEPTADA el 2026-09-15.** Aprobada tal como estaba redactada, con su alcance.
 - **Fecha de redacción:** 2026-09-11
 - **Decide:** Rodrigo. `03-privacy-and-publication-policy.md` reserva sus cambios a él, y esto cambia qué se vuelve público.
+
+## La decisión, y qué autoriza exactamente
+
+Rodrigo aprobó el mecanismo y el alcance, sin cambios. Los cuatro puntos que la
+propuesta dejaba abiertos quedan cerrados así:
+
+- El mecanismo es el campo nuevo `publish_evidence`, no un cuarto valor de `publish`
+  ni una reinterpretación de `aggregate`.
+- La comprobación de privacidad es **por fuente**, no por proyecto.
+- El alcance de la primera entrega es el enumerado abajo, sin ampliarlo.
+- **`docencia-universitaria` queda fuera**, confirmado explícitamente. Su `release`
+  firmado no se reinterpreta: se firmó para publicar su registro con alias, no su
+  evidencia.
+
+**Esto autoriza el mecanismo, no una publicación.** Ningún proyecto del Registry
+declara hoy `publish_evidence: true`, y escribirlo sigue siendo una edición del
+Registry, proyecto por proyecto, y una decisión de Rodrigo.
+
+Aplicado en `03-privacy-and-publication-policy.md` §2 el 2026-09-15. Lo que queda es
+la implementación en el motor: sustituir el aborto de `buildFeed` por la omisión que
+describe el §5 de abajo, contra los criterios de aceptación de esta ADR.
 
 ## El hueco
 
@@ -151,13 +172,19 @@ Con el Registry de hoy eso deja **dos** proyectos candidatos, `habit-tracker` y
 
 ## Lo que esta ADR NO hace
 
-- No cambia `03`. El texto de arriba es la propuesta; aplicarlo es una decisión
-  de Rodrigo y un commit suyo o autorizado por él.
+> Escrito mientras era propuesta. La aprobación del 2026-09-15 levanta el primer
+> punto; los otros tres siguen ciertos.
+
+- ~~No cambia `03`.~~ **Aplicado el 2026-09-15**, con la aprobación: `03` §2 recoge
+  `publish_evidence` y la regla por fuente con el texto de arriba.
 - No toca ningún `release` ni ningún `publish` del Registry.
 - No cambia `public/proof/v1/**`.
 - No implementa nada en el motor. `buildFeed` sigue abortando.
 
-## Criterios de aceptación, si se aprueba
+## Criterios de aceptación
+
+> **Vinculantes desde el 2026-09-15.** Dejan de ser condicionales: son lo que la
+> implementación en el motor tiene que cumplir para cerrar el hueco.
 
 1. `publish_evidence` ausente o `false` ⇒ ninguna evidencia **de ese proyecto** en
    el artefacto. **El recorte es por proyecto, no por claim:** un claim que
