@@ -486,7 +486,12 @@ export async function verificarPieza(pieza, {
     const respaldan = [];
     const contradicen = [];
     for (const f of leidas) {
-      const juicio = juzgar(af, { id: f.url, url: f.url, texto: f.texto });
+      // `await` aunque el juez por defecto sea sincrono: asi el mismo punto de llamada
+      // admite el juez asistido por modelo (`revisarAfirmacion`, asincrono), que es el
+      // unico capaz de juzgar una afirmacion en espanol contra una fuente en ingles.
+      // El lexico no cruza idiomas, y sin esto toda pieza sobre una fuente extranjera
+      // quedaba «sin respaldo legible» por una limitacion del juez, no de la evidencia.
+      const juicio = await juzgar(af, { id: f.url, url: f.url, texto: f.texto });
       if (juicio.veredicto === 'respaldada') {
         respaldan.push(f.url);
         porUrl.get(f.url)?.respalda.push(af.id);

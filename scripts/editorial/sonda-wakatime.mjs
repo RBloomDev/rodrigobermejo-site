@@ -51,35 +51,32 @@ const auth = "Basic " + Buffer.from(clave).toString("base64");
 const BASE = "https://wakatime.com/api/v1";
 
 /**
- * Se usa curl y no `fetch`: el undici que trae Node 24 revienta con un
- * ERR_ASSERTION en la respuesta de este host concreto. La clave viaja por
- * stdin del proceso hijo, nunca por la linea de comandos, para que no aparezca
- * en la lista de procesos.
+ * Pasa por la misma guarda que todo lo que el canal descarga
+ * (`red-segura.mjs`), aunque el host sea fijo y de primera parte. La razon no
+ * es que se espere un ataque por aqui: es que «todos los clientes de descarga»
+ * signifique todos, sin una excepcion que luego nadie recuerde.
+ *
+ * **`maxSaltos: 0` es obligatorio aqui.** Esta peticion lleva credencial, y
+ * seguir una redireccion reenviaria la cabecera `Authorization` a un destino
+ * que elige quien controle la respuesta. La version con `curl` no seguia
+ * redirecciones porque no se le pasaba `-L`; aqui se declara explicito para
+ * que no se pierda la proxima vez que alguien toque esto.
+ *
+ * La clave nunca viaja por la linea de comandos --- ya no hay proceso hijo,
+ * que era la razon de usar `curl` --- ni se imprime en ningun camino.
  */
 async function pedir(ruta) {
-  const { execFileSync } = await import("node:child_process");
-  let cuerpo;
-  try {
-    cuerpo = execFileSync(
-      "curl",
-      ["-sS", "--fail-with-body", "-w", "\n%{http_code}", "-H", "@-", BASE + ruta],
-      { input: `Authorization: ${auth}\n`, encoding: "utf8", maxBuffer: 32 * 1024 * 1024 },
-    );
-  } catch (err) {
-    const salida = String(err.stdout ?? "");
-    const cod = salida.trim().split("\n").pop();
-    const e = new Error(`HTTP ${cod || "sin respuesta"}`);
-    e.codigo = Number(cod) || 0;
+  const { seguirConGuarda } = await import("./red-segura.mjs");
+  const r = await seguirConGuarda(BASE + ruta, {
+    cabeceras: { Authorization: auth, accept: "application/json" },
+    maxSaltos: 0,
+  });
+  if (!r.ok) {
+    const e = new Error(`HTTP ${r.codigo}`);
+    e.codigo = Number(r.codigo) || 0;
     throw e;
   }
-  const lineas = cuerpo.split("\n");
-  const codigo = Number(lineas.pop().trim());
-  if (codigo < 200 || codigo >= 300) {
-    const e = new Error(`HTTP ${codigo}`);
-    e.codigo = codigo;
-    throw e;
-  }
-  return JSON.parse(lineas.join("\n"));
+  return JSON.parse(r.texto);
 }
 
 /** Nombre de proyecto -> identificador estable no reversible a simple vista. */

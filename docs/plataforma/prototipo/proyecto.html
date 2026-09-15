@@ -31,70 +31,23 @@
   .miga { padding-top: var(--s-3); }
   .cab { padding-block: var(--s-2) var(--s-3); }
   .cab .h1 { margin-top: var(--s-1); }
-  .proy-meta { font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); margin-top: var(--s-2); }
-  .proposito { margin-top: var(--s-2); }
-  .proposito .et { font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); display: block; }
+  .cab .lede { margin-top: var(--s-2); }
+  .sellos { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: var(--s-3); }
+
+  .bloque { padding-block: var(--s-3) var(--s-4); }
+  .bloque > * + * { margin-top: var(--s-3); }
+  .bloque .rotulo + * { margin-top: var(--s-3); }
 
   .dos { display: grid; gap: var(--s-3); }
   .dos > * { min-width: 0; }
-  @media (min-width: 860px) { .dos { grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--s-4); } }
+  @media (min-width: 860px) { .dos { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-4); } }
 
-  /* ---- Capturas ---- */
-  .capturas { display: grid; gap: var(--s-3); margin-top: var(--s-2); }
-  @media (min-width: 860px) { .capturas { grid-template-columns: repeat(2, minmax(0,1fr)); gap: var(--s-3); } }
-  .captura img { width: 100%; border: 1px solid var(--rule-mid); border-radius: var(--radius); }
-  .captura figcaption { margin-top: .55rem; border-left: 2px solid var(--accent); padding-left: .7rem; }
-
-  /* ---- Actividad ---- */
-  .cifra-linea { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem .5rem; min-width: 0; }
-  .cobertura { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); }
-  /* Los comandos son cadenas largas sin espacios: sin esto, el min-content de
-     una celda de grid empuja la pagina a scroll horizontal. */
+  /* Las rutas y los nombres de archivo son cadenas largas sin espacios: sin
+     esto, el min-content de una celda de grid empuja la pagina a scroll
+     horizontal a 375px. */
   code { overflow-wrap: anywhere; }
   .detalle code { font-size: .92em; }
   .procedencia dd { overflow-wrap: anywhere; }
-
-  /* ---- Tira de barras: HTML/CSS puro, sin libreria y sin animacion ---- */
-  /* Ancho acotado a proposito: a pagina completa la barra mas alta se convierte
-     en un titular, y eso es la presentacion-como-logro que la regla prohibe. */
-  .tira { display: flex; align-items: flex-end; gap: 4px; margin-top: var(--s-2); padding-top: var(--s-1); border-bottom: 1px solid var(--rule-strong); max-width: 40rem; }
-  .tira-lectura, .leyenda { max-width: 40rem; }
-  .tira-col { flex: 1 1 0; min-width: 0; display: flex; }
-  .barra { display: block; width: 100%; min-width: 0; padding: 0; border: 0; background: transparent; cursor: pointer; text-align: center; }
-  .barra-caja { height: 120px; display: flex; align-items: flex-end; }
-  .barra-fill { width: 100%; background: var(--ink-title); border-radius: 1px 1px 0 0; }
-  .barra[data-estado="cero"] .barra-fill { height: 3px; background: var(--ink-muted); }
-  .barra[data-estado="sindato"] .barra-caja { align-items: stretch; }
-  .barra[data-estado="sindato"] .barra-fill {
-    height: 100%;
-    background: repeating-linear-gradient(135deg, transparent 0 4px, var(--rule-mid) 4px 5px);
-    border: 1px dashed var(--rule-strong); border-bottom: 0;
-  }
-  .barra:hover .barra-fill, .barra:focus-visible .barra-fill { background-color: var(--dark-title); }
-  .barra[data-estado="sindato"]:hover .barra-fill,
-  .barra[data-estado="sindato"]:focus-visible .barra-fill { border-color: var(--ink-muted); }
-  .barra-et { display: block; font-family: var(--ff-ui); font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--ink-muted); padding-top: .35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tira-lectura { font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2); margin-top: .6rem; min-height: 3em; }
-  .tira-lectura .cifra { font-size: var(--t--1); }
-  .leyenda { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .4rem; }
-  .leyenda span { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); display: inline-flex; align-items: center; gap: .4rem; }
-  .swatch { width: 14px; height: 10px; flex: none; display: inline-block; }
-  .swatch-val { background: var(--ink-title); }
-  .swatch-cero { background: var(--ink-muted); height: 3px; }
-  .swatch-sin { background: repeating-linear-gradient(135deg, transparent 0 4px, var(--rule-mid) 4px 5px); border: 1px dashed var(--rule-strong); }
-
-  /* ---- Afirmaciones. Contrato de presentacion de /evidencia, sin cambios:
-         el par como UNA oracion al pie, los dos valores con el mismo peso y el
-         mismo color, sin iconos y sin color de estado. ---- */
-  .afirm { border-top: 1px solid var(--rule); padding-block: var(--s-3); }
-  .afirm-eje { font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-title); }
-  .afirm-txt { font-family: var(--ff-read); font-size: var(--t-1); line-height: 1.5; color: var(--ink); margin-top: .5rem; max-width: 46ch; }
-  .afirm-par {
-    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-muted);
-    margin-top: var(--s-2); padding-top: .7rem; border-top: 1px solid var(--rule);
-    max-width: 60ch;
-  }
-  .afirm-par b { font-weight: 400; color: var(--ink-2); }
 
   .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); margin-top: var(--s-4); }
 </style>
@@ -121,381 +74,229 @@
 
 <main>
 
-  <!-- ===== Cabecera del proyecto ===== -->
+  <!-- ===== Cabecera del proyecto: qué es, en tres líneas ===== -->
   <section class="wrap">
     <p class="miga small"><a class="link-quiet" href="proyectos.html">← Proyectos y actividad</a></p>
 
     <div class="cab">
       <p class="rotulo">Proyecto</p>
       <h1 class="h1">Proof of Work</h1>
-      <p class="proy-meta">Herramienta · en alfa · desde 2026-08-19</p>
+      <p class="lede">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
 
-      <div class="proposito">
-        <span class="et">Propósito declarado</span>
-        <p class="lede">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
-      </div>
+      <p class="sellos">
+        <span class="sello">Tipo <span>herramienta</span></span>
+        <span class="sello">Ciclo de vida <span>en alfa</span></span>
+        <span class="sello">Visibilidad <span>pública</span></span>
+        <span class="sello">Desde <span>2026-08-19</span></span>
+      </p>
 
-      <div class="dos" style="margin-top:var(--s-3)">
-        <div>
-          <p class="ui small" style="font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted)">Fuentes públicas</p>
-          <p class="ui" style="margin-top:.4rem"><a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">github.com/RBloomDev/rodrigobermejo-site</a></p>
-          <p class="ui small muted" style="margin-top:.6rem">
-            Es el único de los doce proyectos cuyo trabajo se puede enseñar entero: el
-            repositorio es público y con él se pueden comprobar las cifras de abajo una por
-            una.
+      <p class="aviso aviso--verif" style="margin-top:var(--s-3)">
+        <span>
+          <b>Cero evidencia recolectada.</b> Las tres afirmaciones públicas del sistema
+          están en <code>declared</code> / <code>unverifiable</code>: las sostiene Rodrigo y
+          hoy <b>nadie de fuera puede comprobarlas</b>. Es el estado real del proyecto en
+          alfa, no una omisión de esta pantalla.
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== El trabajo, delante: las dos pantallas publicadas ===== -->
+  <section class="wrap bloque" aria-labelledby="h-obra">
+    <h2 class="rotulo" id="h-obra">Lo que está publicado</h2>
+
+    <div class="obras">
+      <article class="obra">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-evidencia.png"
+               alt="Captura de la página /evidencia publicada: el título «Cómo respaldo lo que afirmo», un párrafo que sostiene que una afirmación cuenta igual si puedes comprobarla o si entiendes exactamente por qué no, otro sobre el trabajo bajo acuerdo de confidencialidad que no aparece en ninguna forma, y bajo «Las afirmaciones» la primera ficha, CONSTRUIR, con el par «Procedencia: lo afirmo yo · Verificabilidad: no puedes comprobarlo sin confiar en mí» al pie.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">/evidencia</h3>
+          <p class="obra-tesis">
+            El índice canónico de las afirmaciones. Cada una lleva al pie, como una sola
+            oración y con el mismo peso, de dónde viene y hasta dónde se puede comprobar.
           </p>
         </div>
-        <div>
-          <p class="ui small">
-            Parte del trabajo de este proyecto vive en repositorios privados —el motor de
-            evidencia entre ellos—. Se publica el hecho, nunca la identidad de esos
-            repositorios, y nada de lo que hay en ellos entra en las cifras de esta página.
+      </article>
+
+      <article class="obra">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-proyectos.png"
+               alt="Captura de la página /proyectos publicada: el título «Proyectos», la definición de proyecto como unidad de trabajo con dueño e intención frente al repositorio como artefacto suyo, y bajo «En producción» las tres primeras fichas —Currícula y docencia Inadaptados, Docencia universitaria, Infraestructura y automatización interna— cada una con su propósito declarado, su tipo y, donde aplica, la nota «parte del trabajo no es público».">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">/proyectos</h3>
+          <p class="obra-tesis">
+            El índice de los proyectos que sostienen esas afirmaciones, cada uno con su
+            propósito declarado y la nota de qué parte de su trabajo no es pública.
           </p>
         </div>
-      </div>
+      </article>
     </div>
+
+    <p class="aviso">
+      <span>
+        <b>Capturas del sitio en producción, tomadas a mano el 2026-09-15.</b> No son
+        maquetas. Tampoco se actualizan solas: <b>nada las regenera automáticamente</b>, así
+        que si el sitio cambia estas imágenes quedan desfasadas y ningún proceso lo detecta.
+      </span>
+    </p>
   </section>
 
-  <!-- ===== Capturas del producto ===== -->
-  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-cap">
-    <h2 class="rotulo" id="h-cap">El producto, en su estado actual</h2>
+  <!-- ===== Quién lo hizo y qué se entregó ===== -->
+  <section class="wrap bloque" aria-labelledby="h-autoria">
+    <h2 class="rotulo" id="h-autoria">Autoría y entregas</h2>
 
-    <p class="ui small" style="margin-top:var(--s-2)">
-      Las dos capturas son del sitio publicado, tomadas el 2026-09-13 en
-      <code>rodrigobermejo.com</code> a 1280&nbsp;×&nbsp;900. No son maquetas ni
-      composiciones: es lo que devuelve el servidor hoy, con el feed real de doce proyectos
-      y tres afirmaciones.
-    </p>
-
-    <div class="capturas">
-      <figure class="captura">
-        <img src="_capturas/evidencia-1280.png"
-             alt="Captura de la página /evidencia publicada: el título «Cómo respaldo lo que afirmo», y la primera afirmación con su par de procedencia y verificabilidad al pie.">
-        <figcaption class="small muted">
-          <code>/evidencia</code> — el índice canónico. Abajo de cada afirmación, el par
-          procedencia + verificabilidad como una sola oración.
-        </figcaption>
-      </figure>
-      <figure class="captura">
-        <img src="_capturas/proyecto-proof-of-work-1280.png"
-             alt="Captura de la página publicada del proyecto Proof of Work: tipo, ciclo de vida, fecha de inicio, propósito declarado, fuentes públicas y las afirmaciones que sostiene.">
-        <figcaption class="small muted">
-          <code>/proyectos/proof-of-work</code> — la pantalla que este prototipo propone
-          reemplazar. Hoy no muestra ninguna actividad registrada.
-        </figcaption>
-      </figure>
-    </div>
-
-    <div class="hueco" style="margin-top:var(--s-3)">
-      <strong>No existe ninguna captura de producto en el repositorio.</strong>
-      Fuera del feed de evidencia, <code>public/</code> contiene seis archivos —un icono
-      SVG, dos PNG de icono, un <em>placeholder</em>, un retrato y un <code>llms.txt</code>—
-      y ninguno documenta una pantalla. Las dos de arriba las
-      generó el agente contra el sitio publicado y las guardó en
-      <code>docs/plataforma/prototipo/_capturas/</code> para este prototipo. Si mañana
-      cambia el sitio, estas imágenes quedan desfasadas y nada lo detecta: no hay proceso
-      que las regenere.
-    </div>
-  </section>
-
-  <!-- ===== Actividad del proyecto ===== -->
-  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-act">
-    <h2 class="rotulo" id="h-act">Actividad registrada de este proyecto</h2>
-
-    <p class="ui" style="margin-top:var(--s-2)">
-      Volumen de trabajo registrado en la fuente pública de este proyecto, en un periodo
-      declarado. <strong>No es una medida de competencia, de calidad ni de seniority</strong>,
-      y no se compara con ningún otro proyecto ni con ningún otro periodo.
-    </p>
-    <p class="ui small" style="margin-top:var(--s-2);max-width:66ch">
-      Y hay que decir el tamaño de lo que se está mirando: este es
-      <strong>uno de 218 repositorios</strong> repartidos en cuatro contextos de trabajo,
-      163 de ellos privados. Sus 24 pull requests son 24 de los 1459 que el agregado cuenta
-      en 2026. <strong>Esta página no es el retrato de su actividad; es la parte que se
-      puede enseñar entera.</strong> El agregado, con su cobertura y su nota de privacidad,
-      está en <a class="link" href="proyectos.html">proyectos y actividad</a>.
-    </p>
-
-    <div class="dos" style="margin-top:var(--s-2)">
+    <div class="dos">
       <div>
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">47</span>
-              <span class="ui">commits que llegaron a <code>main</code></span>
-              <span class="cobertura">— cobertura: el repositorio público · 2026-01-01 a 2026-09-11</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd>API de GitHub, registrada, no inferida:<br>
-                <code>gh api --paginate "repos/RBloomDev/rodrigobermejo-site/commits?sha=main&amp;since=2026-01-01T00:00:00Z&amp;until=2026-09-11T23:59:59Z"</code><br>
-                Leída el 2026-09-13.</dd>
-              <dt>Periodo</dt>
-              <dd>2026-01-01 a 2026-09-11. El repositorio existe desde el 2026-01-01; el proyecto se declara desde el 2026-08-19, así que la fuente es más vieja que el proyecto.</dd>
-              <dt>Unidad</dt>
-              <dd>Commits alcanzables desde <code>main</code>. Conteo de eventos, no duración ni volumen de código.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por SHA. 47 devueltos, 47 SHA únicos; 19 son merges y 28 no.</dd>
-              <dt>Cobertura</dt>
-              <dd>Solo el repositorio público, uno de 218. El motor de evidencia de este mismo proyecto vive en un repositorio privado y <strong>no aporta ni un commit a esta cifra</strong>, así que el trabajo real del proyecto es mayor que lo que aquí se cuenta. Los 47 commits sí son todos suyos: se comprobó autor por autor y los 47 llevan el mismo nombre. <strong>Eso no se puede dar por hecho en un repositorio compartido</strong>, y por eso esta cifra no se extrapola a ningún otro.</dd>
-            </dl>
-          </div>
-        </details>
-
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">24</span>
-              <span class="ui">pull requests abiertos</span>
-              <span class="cobertura">— cobertura: el repositorio público · 2026-08-26 a 2026-09-12</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd><code>gh api --paginate "repos/RBloomDev/rodrigobermejo-site/pulls?state=all"</code>, leída el 2026-09-13.</dd>
-              <dt>Periodo</dt>
-              <dd>Todos los PR del repositorio, sin recorte. Primero el 2026-08-26, último el 2026-09-12.</dd>
-              <dt>Unidad</dt>
-              <dd>Pull requests, en cualquier estado: 18 mergeados, 3 cerrados sin mergear, 3 abiertos.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por número de PR, único por repositorio.</dd>
-              <dt>Cobertura</dt>
-              <dd>Solo desde que el repositorio trabaja con PR. Los commits de enero no pasaron por PR.</dd>
-            </dl>
-          </div>
-        </details>
-
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">23</span>
-              <span class="ui">commits declaran co-autoría de un asistente</span>
-              <span class="cobertura">— cobertura: los 28 commits sin merge del periodo</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <p class="ui small" style="margin-bottom:var(--s-2)">
-              Es <strong>procedencia declarada, no productividad</strong>: dice que hubo
-              asistencia, <strong>no qué parte del trabajo hizo la IA</strong>. De este dato
-              no sale ningún porcentaje de «trabajo hecho por IA» ni de «horas ahorradas».
-            </p>
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd>El trailer <code>Co-Authored-By</code> del mensaje de cada commit, en la misma respuesta de la API.</dd>
-              <dt>Periodo</dt>
-              <dd>2026-01-01 a 2026-09-11: 21 commits de agosto y 2 de septiembre.</dd>
-              <dt>Unidad</dt>
-              <dd>Commits con al menos un trailer, contados una sola vez. No son sesiones ni ejecuciones; tokens, prompts y tool calls no se publican.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por SHA y por commit.</dd>
-              <dt>Cobertura</dt>
-              <dd>Los 28 commits sin merge. Los 5 restantes son de enero, anteriores a la convención: <strong>su ausencia no dice que no hubiera asistencia, dice que no se declaró</strong>.</dd>
-            </dl>
-          </div>
-        </details>
-
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">0</span>
-              <span class="ui">revisiones humanas en este repositorio</span>
-              <span class="cobertura">— cobertura: los 24 pull requests · cero medido, no hueco</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <p class="ui small" style="margin-bottom:var(--s-2)">
-              Este cero está medido y por eso se escribe como cero. Las
-              <strong>7 revisiones</strong> que sí existen en el repositorio son todas del
-              bot <code>copilot-pull-request-reviewer</code>, todas en estado comentado y
-              <strong>ninguna es una aprobación</strong>. No se suman a las humanas: son
-              clases distintas de cosa, y mezclarlas convertiría una revisión automática en
-              el aval de una persona.
-            </p>
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd><code>gh api graphql</code> sobre <code>repository.pullRequests.reviews</code>, con autor y estado de cada revisión; contrastado con <code>gh api "repos/RBloomDev/rodrigobermejo-site/pulls/comments"</code>. Leído el 2026-09-13.</dd>
-              <dt>Periodo</dt>
-              <dd>Todos los pull requests del repositorio, del 2026-08-26 al 2026-09-12.</dd>
-              <dt>Unidad</dt>
-              <dd>Revisiones de pull request, separadas por tipo de autor. Bot y persona se cuentan aparte y nunca en el mismo total.</dd>
-              <dt>Deduplicación</dt>
-              <dd>Por identificador de revisión. Un PR con tres revisiones aporta tres.</dd>
-              <dt>Cobertura</dt>
-              <dd>Solo este repositorio. En todo 2026 constan <strong>12</strong> pull requests revisados por él en otros repositorios; que aquí no haya ninguna revisión humana <strong>no dice que no revise</strong>, dice que en este repositorio trabajó como autor único.</dd>
-            </dl>
-          </div>
-        </details>
-
-        <details class="detalle">
-          <summary>
-            <span class="cifra-linea">
-              <span class="cifra">0</span>
-              <span class="ui">registros de evidencia recolectados</span>
-              <span class="cobertura">— cobertura: el feed completo, leído el 2026-08-28</span>
-            </span>
-          </summary>
-          <div class="detalle-cuerpo">
-            <p class="ui small" style="margin-bottom:var(--s-2)">
-              Este cero <strong>sí está medido</strong>, y por eso se escribe como cero y no
-              como hueco: el feed existe, se leyó y contiene cero registros. Es lo contrario
-              de los tres huecos de abajo, donde no hay nada que leer.
-            </p>
-            <dl class="procedencia">
-              <dt>Fuente</dt>
-              <dd><code>public/proof/v1/meta.json</code>, campo <code>counts.evidence</code>, generado por el motor el <code>2026-08-28T23:28:38Z</code>.</dd>
-              <dt>Periodo</dt>
-              <dd>Desde el origen del feed hasta su última generación, el 2026-08-28.</dd>
-              <dt>Unidad</dt>
-              <dd>Registros de <code>Evidence</code> publicados. Las dos afirmaciones de este proyecto tienen <code>evidence_ids: []</code>.</dd>
-              <dt>Deduplicación</dt>
-              <dd>No aplica: no hay registros que deduplicar.</dd>
-              <dt>Cobertura</dt>
-              <dd>El feed entero, no solo este proyecto. Además, publicar registros individuales de evidencia todavía no está autorizado: lo decide un ADR que sigue en propuesta.</dd>
-            </dl>
-          </div>
-        </details>
-      </div>
-
-      <div>
-        <h3 class="h3">Cuándo se registró</h3>
-        <p class="ui small" style="margin-top:.5rem">
-          Commits que llegaron a <code>main</code> <strong>en este repositorio</strong>, mes
-          a mes. Sin orden, sin comparación contra el mes anterior y sin tendencia:
-          <strong>un mes alto no es un mes mejor</strong>. Los ceros de febrero a julio son
-          ceros <em>de este repositorio</em>: en esos mismos seis meses el agregado cuenta
-          956 pull requests suyos en otros. Leer esta tira como su curva de actividad sería
-          leerla al revés.
+        <h3 class="h3">Qué hizo Rodrigo</h3>
+        <dl class="aporte" style="margin-top:var(--s-2)">
+          <dt>Rol</dt>
+          <dd>Autor. Concibió el sistema, escribió su especificación y construyó lo que hoy está publicado.</dd>
+          <dt>Dimensiones</dt>
+          <dd>Construyo · Dirijo</dd>
+          <dt>Contexto</dt>
+          <dd>rbloomdev</dd>
+          <dt>Repositorio público</dt>
+          <dd><a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">github.com/RBloomDev/rodrigobermejo-site</a></dd>
+        </dl>
+        <p class="credito small" style="margin-top:var(--s-2)">
+          Trabajo individual. No hay equipo, colaboradores ni encargo externo que acreditar
+          en este proyecto.
         </p>
-
-        <ul class="tira" id="tira">
-          <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="septiembre de 2025" data-val="sin dato" aria-label="Septiembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">09·25</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="octubre de 2025" data-val="sin dato" aria-label="Octubre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">10·25</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="noviembre de 2025" data-val="sin dato" aria-label="Noviembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">11·25</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="diciembre de 2025" data-val="sin dato" aria-label="Diciembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">12·25</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="enero de 2026" data-val="5 commits" aria-label="Enero de 2026: 5 commits."><span class="barra-caja"><span class="barra-fill" style="height:17px"></span></span><span class="barra-et" aria-hidden="true">01·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="febrero de 2026" data-val="0 commits, medido" aria-label="Febrero de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">02·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="marzo de 2026" data-val="0 commits, medido" aria-label="Marzo de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">03·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="abril de 2026" data-val="0 commits, medido" aria-label="Abril de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">04·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="mayo de 2026" data-val="0 commits, medido" aria-label="Mayo de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">05·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="junio de 2026" data-val="0 commits, medido" aria-label="Junio de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">06·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="julio de 2026" data-val="0 commits, medido" aria-label="Julio de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">07·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="agosto de 2026" data-val="36 commits" aria-label="Agosto de 2026: 36 commits."><span class="barra-caja"><span class="barra-fill" style="height:120px"></span></span><span class="barra-et" aria-hidden="true">08·26</span></button></li>
-          <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="septiembre de 2026" data-val="6 commits, mes incompleto" aria-label="Septiembre de 2026: 6 commits, mes incompleto, con corte el 11 de septiembre."><span class="barra-caja"><span class="barra-fill" style="height:20px"></span></span><span class="barra-et" aria-hidden="true">09·26</span></button></li>
-        </ul>
-
-        <p class="tira-lectura" id="lectura" aria-hidden="true">Enfoca o señala un mes para ver su dato.</p>
-
-        <ul class="leyenda" aria-hidden="true">
-          <li><span><i class="swatch swatch-val"></i> commits medidos</span></li>
-          <li><span><i class="swatch swatch-cero"></i> cero medido</span></li>
-          <li><span><i class="swatch swatch-sin"></i> sin dato</span></li>
-        </ul>
-
-        <div class="hueco" style="margin-top:var(--s-3)">
-          <strong>Tiempo humano y ejecuciones de agentes: no existe la fuente.</strong>
-          Ni para este proyecto ni para ningún otro. Deducir horas de los commits de arriba
-          sería inventarlas, y si algún día hay registro nunca se sumará con la duración de
-          las ejecuciones: son unidades distintas de cosas distintas.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Afirmaciones que sostiene ===== -->
-  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-afirm">
-    <h2 class="rotulo" id="h-afirm">Afirmaciones que sostiene</h2>
-    <p class="ui small" style="margin-top:var(--s-2)">
-      Dos de las tres del Registry, en su orden. Las cifras de arriba no las respaldan:
-      describen el método y el volumen, no lo que este proyecto demuestra sobre nadie.
-    </p>
-
-    <div class="dos" style="margin-top:var(--s-2)">
-      <div>
-        <article class="afirm">
-          <p class="afirm-eje">Construir</p>
-          <p class="afirm-txt">«No solo escribo software: lo opero. Los sistemas que construyo están en producción, y cuando algo falla el que responde soy yo.»</p>
-          <p class="afirm-par">Procedencia: <b>lo afirmo yo</b> · Verificabilidad: <b>no puedes comprobarlo sin confiar en mí</b>.</p>
-        </article>
-
-        <article class="afirm">
-          <p class="afirm-eje">Decidir</p>
-          <p class="afirm-txt">«Diseño la arquitectura de los sistemas que construyo.»</p>
-          <p class="afirm-par">Procedencia: <b>lo afirmo yo</b> · Verificabilidad: <b>no puedes comprobarlo sin confiar en mí</b>.</p>
-        </article>
       </div>
 
       <div>
-        <p class="ui">
-          Las dos están sin evidencia recolectada, y el par al pie de cada una lo dice sin
-          adornos: los dos valores van con el mismo peso y el mismo color, sin icono y sin
-          color de estado, porque «no comprobable» no es un error que haya que señalar en
-          rojo. Es el estado honesto de casi todo el portafolio hoy.
-        </p>
+        <h3 class="h3">Qué se entregó</h3>
+        <ul class="entregas" style="margin-top:var(--s-2)">
+          <li>Especificación canónica en <code>docs/</code></li>
+          <li>Feed público <code>public/proof/v1/</code></li>
+          <li><code>claims.json</code></li>
+          <li><code>projects.json</code></li>
+          <li><code>evidence.json</code></li>
+          <li><code>meta.json</code></li>
+          <li>Ruta publicada <code>/evidencia</code></li>
+          <li>Ruta publicada <code>/proyectos</code></li>
+        </ul>
         <p class="ui small muted" style="margin-top:var(--s-2)">
-          La tercera afirmación del Registry, la de formación, no aparece aquí porque este
-          proyecto no la sostiene. El índice completo, con las tres en el orden del Registry
-          y sin filtros, está en <a class="link" href="#">/evidencia</a>.
+          Todo lo anterior existe y se puede abrir hoy. Lo que todavía no existe está
+          dicho en las cifras de abajo, no escondido aquí.
         </p>
-        <p style="margin-top:var(--s-3)"><a class="btn" href="#">Ir a /evidencia</a></p>
       </div>
     </div>
+  </section>
+
+  <!-- ===== Estado del sistema ===== -->
+  <section class="wrap bloque" aria-labelledby="h-estado">
+    <h2 class="rotulo" id="h-estado">Estado del sistema</h2>
+
+    <div class="datos">
+      <div class="dato">
+        <p class="dato-cifra">12</p>
+        <p class="dato-que">proyectos declarados</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. Declarados, no verificados.</p>
+      </div>
+
+      <div class="dato">
+        <p class="dato-cifra">3</p>
+        <p class="dato-que">afirmaciones públicas</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. Las tres en <code>declared</code> / <code>unverifiable</code>.</p>
+      </div>
+
+      <div class="dato">
+        <p class="dato-cifra">0</p>
+        <p class="dato-que">registros de evidencia recolectados</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. <b>Cero medido, no hueco</b>: el feed existe, se leyó y no contiene ninguno.</p>
+      </div>
+    </div>
+
+    <p class="aviso aviso--verif">
+      <span>
+        <b>Ninguna de las tres afirmaciones está respaldada todavía.</b> Con cero registros
+        recolectados, el par que acompaña a cada una dice lo mismo en las tres: la sostiene
+        quien la escribe. La herramienta para publicar evidencia está entregada; la
+        evidencia, no.
+      </span>
+    </p>
+
+    <p class="aviso">
+      <span>
+        <b>Estas cifras cubren solo el feed público.</b> El motor que las genera vive en un
+        repositorio privado y <b>no aporta ni un dato a ellas</b>: el trabajo real del
+        proyecto es mayor que lo que aquí se puede contar.
+      </span>
+    </p>
+  </section>
+
+  <!-- ===== Metodología: lo único que se pliega ===== -->
+  <section class="wrap bloque" aria-labelledby="h-metodo">
+    <h2 class="rotulo" id="h-metodo">Metodología</h2>
+
+    <details class="detalle">
+      <summary><span class="ui">Cómo funciona por dentro, y por qué el motor no es público</span></summary>
+      <div class="detalle-cuerpo">
+        <blockquote class="pasaje">
+          Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con
+          narrativa.
+          <cite>Propósito declarado del proyecto</cite>
+        </blockquote>
+        <p class="ui small">
+          El sistema está partido en dos a propósito. El motor de evidencia vive en un
+          repositorio privado y es el único que escribe; el sitio público <strong>solo lee y
+          renderiza</strong> lo que encuentra en <code>public/proof/v1/</code>. Esa
+          separación no es una limitación pendiente de resolver: es la decisión de diseño
+          que permite que el sitio sea estático y que nada de lo que no está autorizado
+          llegue a publicarse por descuido.
+        </p>
+        <p class="ui small" style="margin-top:var(--s-2)">
+          De ahí que las cifras de arriba solo puedan hablar del feed. Lo que el motor sabe
+          y no publica no aparece en esta pantalla en ninguna forma, ni contado.
+        </p>
+      </div>
+    </details>
+
+    <details class="detalle">
+      <summary><span class="ui">Qué significan <code>declared</code> y <code>unverifiable</code></span></summary>
+      <div class="detalle-cuerpo">
+        <dl class="procedencia">
+          <dt>Procedencia — declared</dt>
+          <dd>La afirmación la sostiene Rodrigo. No hay un tercero detrás de ella.</dd>
+          <dt>Verificabilidad — unverifiable</dt>
+          <dd>No puedes comprobarla sin confiar en quien la escribe. Es un estado que se lee, no un error que haya que señalar en rojo.</dd>
+          <dt>Por qué van juntas</dt>
+          <dd>Separadas se leen como una cualidad; juntas describen exactamente cuánto vale la afirmación hoy. Por eso viajan como una sola oración y con el mismo peso, y por eso no se pliegan en la pantalla pública.</dd>
+        </dl>
+      </div>
+    </details>
+
+    <details class="detalle">
+      <summary><span class="ui">Qué se puede comprobar por tu cuenta</span></summary>
+      <div class="detalle-cuerpo">
+        <dl class="procedencia">
+          <dt>Especificación</dt>
+          <dd><code>docs/</code> en el repositorio público. Es la autoridad del sistema: si el código y la spec divergen, el que está mal es el código.</dd>
+          <dt>Feed</dt>
+          <dd><code>public/proof/v1/</code> — <code>claims.json</code>, <code>projects.json</code>, <code>evidence.json</code> y <code>meta.json</code>. Las tres cifras de esta pantalla salen de ahí y se pueden contar a mano.</dd>
+          <dt>Rutas publicadas</dt>
+          <dd><code>/evidencia</code> y <code>/proyectos</code>, en producción. Las dos capturas de arriba son de ellas.</dd>
+        </dl>
+      </div>
+    </details>
+
+    <p style="margin-top:var(--s-3)"><a class="btn" href="#">Ir a /evidencia</a></p>
   </section>
 
   <footer class="pie wrap">
     <p class="small muted">
-      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
-      nada de esto está publicado. Cifras medidas el 2026-09-13 contra la API de GitHub;
-      capturas tomadas el mismo día del sitio publicado.
+      Prototipo de la plataforma · nada de esto está publicado. Estado del sistema leído del
+      feed público; capturas tomadas a mano del sitio en producción el 2026-09-15.
     </p>
   </footer>
 </main>
 
 <span class="proto">Prototipo · Redacción</span>
 
-<script>
-(function () {
-  "use strict";
-
-  // Tira de barras: el dato se lee al enfocar o al señalar.
-  // Sin animacion de entrada y sin contador que sube: el valor ya esta en el DOM.
-  var lectura = document.getElementById("lectura");
-  var barras = Array.prototype.slice.call(document.querySelectorAll(".barra"));
-
-  function leer(b) {
-    var mes = b.getAttribute("data-mes");
-    var val = b.getAttribute("data-val");
-    lectura.textContent = "";
-    var etiqueta = document.createElement("span");
-    etiqueta.textContent = mes.charAt(0).toUpperCase() + mes.slice(1) + ": ";
-    var valor = document.createElement("span");
-    valor.className = b.getAttribute("data-estado") === "sindato" ? "cifra cifra-vacia" : "cifra";
-    valor.textContent = val;
-    lectura.appendChild(etiqueta);
-    lectura.appendChild(valor);
-    if (b.getAttribute("data-estado") === "sindato") {
-      var nota = document.createElement("span");
-      nota.className = "xs muted";
-      nota.textContent = " — el repositorio no existía; no es cero.";
-      lectura.appendChild(nota);
-    }
-  }
-
-  function limpiar() {
-    lectura.textContent = "Enfoca o señala un mes para ver su dato.";
-  }
-
-  barras.forEach(function (b) {
-    b.addEventListener("focus", function () { leer(b); });
-    b.addEventListener("mouseenter", function () { leer(b); });
-    b.addEventListener("click", function () { leer(b); });
-    b.addEventListener("blur", limpiar);
-    b.addEventListener("mouseleave", limpiar);
-  });
-})();
-</script>
 <script src="menu-movil.js" defer></script>
 </body>
 </html>
