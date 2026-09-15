@@ -262,6 +262,8 @@ El **Registry es el único dueño del mapeo**. Nada se adivina.
 project.sources[] = [
   { type: "github_repo", ref: "owner/name",       role: "primary",   public: true  },
   { type: "github_repo", ref: "owner/shared-lib", role: "component", public: false, period: {...} },
+  { type: "github_repo", ref: "owner/mono",       role: "component", public: false,
+    paths: ["apps/web/**"] },          // opcional: solo para monorepos, ver abajo
   { type: "deployment_target", ref: "vercel:project-id", role: "infra", public: false }
 ]
 ```
@@ -293,9 +295,211 @@ obligar a que alguien lo escriba, en lugar de que un algoritmo lo adivine.
 Orden estricto de precedencia. El primero que aplica gana:
 
 1. **Trailer explícito** `Project-Id: <slug>` en el mensaje del commit o en el cuerpo del PR.
-2. **Glob de paths** declarado en el Registry (para monorepos: `apps/web/**` a proyecto A).
+2. **Glob de paths** declarado en `sources[].paths` (para monorepos: `apps/web/**` a proyecto A). Forma, sintaxis y conflictos en el apartado propio, abajo.
 3. **Repo por defecto** (`sources[].role == "primary"` y el evento cae dentro de `period`).
 4. **`unassigned`**.
+
+### `sources[].paths` — los globs del nivel 2
+
+> **Propuesto el 2026-09-11.** El nivel 2 estaba nombrado en una línea y sin forma:
+> ni dónde vivía el campo, ni su sintaxis, ni qué pasaba con `period`. El
+> correlacionador lo dejó **abortando** a propósito antes que adivinar el contrato
+> (`proof-engine#17`). Esto es ese contrato.
+
+**Dónde vive: en la fuente, no en el proyecto.** Dos razones concretas, y la segunda
+es la que decide:
+
+1. **Un glob no significa nada sin un repositorio.** `apps/web/**` es una ruta
+   *dentro de* algo. `sources[]` es donde viven los repositorios; declarar los globs
+   en `project` obligaría a repetir a qué repo se refiere cada uno.
+2. **`period` ya vive en la fuente, y los globs lo necesitan.** El caso real de un
+   monorepo es que una carpeta cambia de dueño: `apps/web/**` fue del proyecto A
+   hasta marzo y es del B desde entonces. Con los globs en la fuente eso son dos
+   fuentes del mismo repo con `period` disjuntos, y **el mecanismo ya existe**. Con
+   los globs en el proyecto habría que reinventar el acotamiento temporal.
+
+#### Sintaxis
+
+```
+paths?: string[]        # opcional. Ausente = esta fuente no acota por ruta.
+```
+
+Cada patrón es una ruta **relativa a la raíz del repositorio**, con `/` como
+separador siempre, y dos únicos comodines:
+
+| | Significa |
+|---|---|
+| `*` | cualquier cosa dentro de **un** segmento; no cruza `/` |
+| `**` | cero o más segmentos completos |
+
+Nada más. **No** hay `?`, ni clases `[abc]`, ni alternancia `{a,b}`, ni negación.
+Cada uno de esos añade una forma de escribir un patrón cuyo significado no es obvio
+a la vista, y este archivo lo escribe un humano a mano: el coste de un patrón mal
+entendido es evidencia atribuida al proyecto equivocado, que es justo lo que §3
+existe para impedir.
+
+Sensible a mayúsculas, porque las rutas de GitHub lo son.
+
+#### Cómo casa un evento
+
+Un evento toca un **conjunto** de rutas: un commit tiene varios archivos. La regla
+es **cualquiera**: si al menos una ruta tocada casa con un patrón de la fuente, el
+evento casa con ese proyecto.
+
+Un commit que toca `apps/web/page.tsx` y `README.md` casa con el proyecto de
+`apps/web/**` aunque `README.md` no case con nada. Exigir que **todas** las rutas
+casaran dejaría sin asignar casi cualquier commit real, porque los commits tocan
+archivos de raíz.
+
+#### Tres estados de las rutas, no dos
+
+La primera versión de esta sección decía: «el nivel 2 solo aplica si el evento trae
+rutas; si no las trae, se cae al nivel 3, y la ausencia nunca detiene la corrida».
+**Era un defecto**, y del tipo que esta sección entera existe para evitar: confundía
+*no tener rutas* con *no haber podido leerlas*.
+
+Un `release` no tiene archivos, y caer al nivel 3 es correcto. Pero una consulta que
+devolvió `403`, que agotó el rate limit, que se quedó a medias en la paginación o
+que vino **truncada** —la API de GitHub recorta la lista de archivos de un commit
+grande— también «no trae rutas», y ahí caer al nivel 3 es **atribuir en silencio
+evidencia que quizá pertenecía a otro proyecto**. El evento se asignaría al dueño
+del repo por defecto sin que nada indicara que la regla que debía decidirlo nunca
+se pudo evaluar.
+
+Así que el evento no lleva una lista opcional: lleva un **estado explícito**, con la
+misma forma que `lib/proof/feed.ts` usa para el feed.
+
+```
+rutas:
+  | { estado: "sin-rutas" }                      // el kind no tiene archivos
+  | { estado: "conocidas", rutas: string[] }     // lista COMPLETA
+  | { estado: "desconocidas", motivo: string }   // no se pudo determinar
+```
+
+| Estado | Nivel 2 | Efecto |
+|---|---|---|
+| `sin-rutas` | no casa | cae al nivel 3. Legítimo |
+| `conocidas` | casa o no casa | resuelve, o cae al nivel 3 |
+| `desconocidas` | **no se puede evaluar** | ver abajo |
+
+**`desconocidas` detiene la corrida — pero solo cuando importa.** Abortar siempre
+rompería toda ingestión de repos sin globs por un fallo que no cambia nada ahí. La
+regla es:
+
+> Si alguna fuente **de ese repositorio** declara `paths`, un evento con rutas
+> `desconocidas` **aborta la corrida**, nombrando el evento y el motivo. Si ninguna
+> los declara, el nivel 2 no podía aplicar de todos modos y el evento sigue al nivel
+> 3 con normalidad.
+
+Y `motivo` es obligatorio y se propaga al mensaje: «no se pudo determinar» sin decir
+si fue un 403, un límite de tasa o un truncamiento manda a diagnosticar a ciegas.
+
+**Corolario para la ingestión:** `conocidas` significa **completa**. Un ingestor que
+recibe una respuesta truncada o una paginación a medias tiene que emitir
+`desconocidas`, no una lista parcial. Una lista parcial es peor que ninguna: casa con
+los globs que alcance y falla silenciosamente con los que no, y el resultado se ve
+igual que una atribución correcta.
+
+#### Relación con `period`
+
+Un glob **solo se considera si el evento cae dentro del `period` de su fuente**,
+con la misma regla inclusiva por día completo que el nivel 3. Una fuente sin
+`period` cubre todo el tiempo.
+
+Es lo que hace expresable el traspaso de una carpeta:
+
+```yaml
+# proyecto-a.yaml
+sources:
+  - type: github_repo
+    ref: owner/mono
+    role: component
+    public: false
+    period: { start: 2025-01-01, end: 2026-03-31 }
+    paths: ["apps/web/**"]
+
+# proyecto-b.yaml
+sources:
+  - type: github_repo
+    ref: owner/mono
+    role: component
+    public: false
+    period: { start: 2026-04-01 }
+    paths: ["apps/web/**"]
+```
+
+Un commit en `apps/web/` de febrero de 2026 va al proyecto A; uno de mayo, al B. No
+hay conflicto porque los `period` no se solapan.
+
+#### Precedencia: el trailer sigue ganando
+
+El nivel 1 es absoluto. Un `Project-Id:` explícito gana **aunque las rutas del
+evento casen con los globs de otro proyecto**, y no se reporta como conflicto: es
+una declaración humana sobre un evento concreto, y existe precisamente para los
+casos que la regla general clasifica mal.
+
+#### Qué rol de fuente puede llevar globs
+
+**Cualquiera.** Y esto difiere del nivel 3 a propósito: el nivel 3 solo mira
+`role: primary`, mientras el nivel 2 mira toda fuente con `paths`.
+
+La razón es el caso real: en un monorepo cuyo dueño principal es el proyecto A, una
+carpeta puede pertenecer al proyecto B sin que B sea el dueño del repositorio. B lo
+declara como `component` con sus globs. Un evento en esa carpeta resuelve a B por el
+nivel 2; uno en cualquier otra, a A por el nivel 3. Sin esta diferencia, el caso que
+el nivel 2 existe para cubrir no se podría declarar.
+
+#### Validación
+
+El validador rechaza:
+
+1. `paths` presente y vacío. La ausencia se declara **omitiendo** el campo, no
+   declarándolo vacío — misma regla que `evidence_scope` en §1.
+2. Un patrón vacío, o que no sea una cadena.
+3. Un patrón con `\`, con `..` como segmento, o que empiece por `/`. Los tres
+   significan que quien lo escribió creía estar en otro sistema de rutas.
+4. Un patrón con cualquier comodín que no sea `*` o `**`.
+5. `paths` en una fuente cuyo `type` no sea `github_repo`. Un `deployment_target` no
+   tiene árbol de archivos.
+
+Dos globs **del mismo proyecto** que casen con el mismo evento no son un conflicto.
+
+#### `paths` NUNCA se publica
+
+Es verdad declarada de uso interno, como `sources[].ref`. No está en
+`05-feed-contract.md` y no debe entrar.
+
+La razón es la misma por la que `03-privacy-and-publication-policy.md` §2 prohíbe
+los nombres de rama: **un glob codifica estructura interna y puede codificar el
+nombre de un cliente** — `apps/acme-corp/**` es exactamente el caso
+`feat/acme-corp-billing` que esa sección ya nombra. El guard de allowlist de mundo
+cerrado lo caza por construcción, porque un patrón no está entre los valores
+derivables del artefacto; esta línea existe para que nadie lo añada a mano.
+
+#### Criterios de aceptación
+
+1. Un evento con rutas que casan con los globs de **un** proyecto resuelve a ese
+   proyecto, incluso si otro lo declara `primary`.
+2. Un evento con rutas que casan con los globs de **dos** proyectos distintos
+   **detiene la corrida**, nombrando el evento y los dos proyectos.
+3. Un evento cuyas rutas no casan con ningún glob cae al nivel 3.
+4. Un evento con rutas `sin-rutas` —un `release`, un `tag`— cae al nivel 3, sin
+   conflicto.
+4b. Un evento con rutas **`desconocidas`** y alguna fuente de ese repo con `paths`
+   **detiene la corrida**, y el mensaje nombra el motivo (403, rate limit,
+   paginación incompleta, truncamiento). **No** cae al nivel 3.
+4c. Un evento con rutas `desconocidas` y **ninguna** fuente de ese repo con `paths`
+   sigue al nivel 3 con normalidad: el nivel 2 no podía aplicar.
+4d. Una respuesta truncada o paginada a medias produce `desconocidas`, **nunca** una
+   lista parcial marcada como `conocidas`. Test: un fixture con la lista de archivos
+   recortada debe abortar, no casar con los globs que alcance.
+5. Un `Project-Id:` explícito gana sobre cualquier glob, sin reportar conflicto.
+6. Un glob cuya fuente tiene `period` que no cubre el evento **no casa**.
+7. `*` no cruza `/`: `apps/*` no casa con `apps/web/page.tsx`.
+8. `**` casa con cero segmentos: `apps/**` casa con `apps/page.tsx`.
+9. Cada regla de validación tiene su fixture inválida, y hay una válida que **debe**
+   pasar.
+10. `paths` no aparece en ningún archivo de `public/proof/v1/`.
 
 ### Conflictos: cuándo la corrida se detiene
 
