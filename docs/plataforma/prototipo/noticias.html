@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noticias y análisis — Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma (identica a portada.html) ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* Rutas largas: sin esto, `docs/plataforma/prototipo/datos/piezas.json`
+     desborda a lo ancho por debajo de 400px. Medido a 320px. */
+  code { font-family: var(--ff-num); font-size: .92em; overflow-wrap: anywhere; }
+
+  /* ---- Salto al contenido ---- */
+  .saltar {
+    position: absolute; left: 12px; top: 12px; z-index: 60;
+    transform: translateY(-200%);
+    background: var(--ink-title); color: var(--white);
+    font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--1);
+    padding: .6rem 1rem; border-radius: var(--radius); text-decoration: none;
+  }
+  .saltar:focus { transform: none; }
+
+  /* ============================================================
+     SOLO RITMO Y ESTADOS DE ENLACE.
+     Todo lo demas viene de sistema.css. La version anterior de este bloque
+     redefinia `.aviso` como caja con borde, lo que ANULABA el componente de
+     sistema.css --- el <style> local carga despues de la hoja. Eliminado: los
+     avisos tienen que verse como el sistema los diseno, no como los redibuje
+     una pantalla suelta.
+     ============================================================ */
+  .portadilla { padding-block: var(--s-4) var(--s-3); }
+  .portadilla .h1 { margin-top: var(--s-2); }
+  .portadilla .lede { margin-top: var(--s-2); }
+
+  .seccion { padding-block: var(--s-3) var(--s-4); }
+  .avisos { display: grid; gap: .55rem; margin-top: var(--s-3); }
+
+  /* Titulares: el subrayado aparece al pasar el raton, no de serie. */
+  .ed-titular a, .ed-sec-titular a { text-decoration: none; }
+  .ed-titular a:hover, .ed-titular a:focus-visible {
+    text-decoration: underline; text-decoration-color: var(--accent);
+    text-underline-offset: 4px; text-decoration-thickness: 3px;
+  }
+  .ed-sec-titular a:hover, .ed-sec-titular a:focus-visible {
+    text-decoration: underline; text-decoration-color: var(--accent);
+    text-underline-offset: 3px; text-decoration-thickness: 2px;
+  }
+
+  .ed-principal .lede { margin-top: .2rem; }
+  .ed-principal .sello { margin-top: var(--s-2); }
+  .ed-principal .avisos { margin-top: .8rem; }
+  .ed-secundarias .avisos { margin-top: .5rem; gap: .4rem; }
+
+  /* La tira de categorias no finge ser un filtro: en el prototipo no hay
+     estado que filtrar, asi que son rotulos, no controles. */
+  .categorias { align-items: baseline; }
+  .categorias .filtro-grupo { gap: .6rem .9rem; }
+  /* Sin esto el rotulo del grupo y la categoria salen del mismo gris y no se
+     distingue la etiqueta del valor: medido en pantalla, «TIPO ANALISIS TEMAS
+     EDUCACION E IA» se lee como una sola tira indiferenciada. */
+  .categorias .categoria { color: var(--ink-2); }
+
+  /* Regla y columna: la secundaria se separa con filete, no solo con aire. */
+  @media (min-width: 60rem) {
+    .ed-portada > :last-child { border-left: 1px solid var(--rule); padding-left: var(--s-3); }
+  }
+
+  .fecha-hecho {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-muted);
+    margin-top: .5rem;
+  }
+
+  .metodo { padding-block: var(--s-3) var(--s-5); }
+  .metodo-lista { margin-top: var(--s-2); }
+  .metodo-fila { grid-template-columns: 1fr; }
+  @media (min-width: 780px) { .metodo-fila { grid-template-columns: 17.5rem minmax(0,1fr); } }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); }
+</style>
+</head>
+<body>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html">Inicio</a>
+      <a href="noticias.html" aria-current="page">Noticias</a>
+      <a href="proyectos.html">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="contenido">
+
+  <!-- ===== Portadilla ===== -->
+  <section class="portadilla wrap">
+    <p class="rotulo">Canal editorial · IA, software y educación</p>
+    <h1 class="h1">Noticias y análisis</h1>
+    <p class="lede">
+      Piezas con la fecha del hecho, las fuentes que las sostienen y el veredicto
+      de verificación impreso encima. Ninguna está publicada todavía.
+    </p>
+
+    <div class="avisos">
+      <p class="aviso">
+        <b>Cobertura</b>
+        <span>El corpus tiene <strong>tres piezas</strong> y esta portada las muestra todas. No hay archivo detrás ni secciones vacías: el canal se diseñó para pocas piezas verificadas, no para volumen.</span>
+      </p>
+      <p class="aviso aviso--sim">
+        <b>Simulación</b>
+        <span>Solo la pieza principal salió de una ejecución real. Las dos secundarias son texto real del corpus <strong>sin ejecución de verificación detrás</strong>, y van marcadas como <span class="simulado">Simulado</span>.</span>
+      </p>
+      <p class="aviso aviso--verif">
+        <b>Verificación</b>
+        <span>Las tres están en <strong>borrador</strong> y ninguna tiene revisión humana. Publicar exige una decisión de Rodrigo; no hay autopublicación.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== Tira de categorias: derivada de las tres piezas del corpus ===== -->
+  <nav class="wrap filtros categorias" aria-label="Categorías del corpus">
+    <div class="filtro-grupo">
+      <span class="filtro-et">Tipo</span>
+      <span class="categoria">Análisis</span>
+    </div>
+    <div class="filtro-grupo">
+      <span class="filtro-et">Temas</span>
+      <span class="categoria">Educación e IA</span>
+      <span class="categoria">Investigación</span>
+      <span class="categoria">Educación superior</span>
+    </div>
+  </nav>
+
+  <!-- ===== Portada editorial: una principal + dos secundarias ===== -->
+  <section class="seccion wrap" aria-labelledby="rot-portada">
+    <p class="rotulo" id="rot-portada">La portada de hoy</p>
+
+    <div class="ed-portada" style="margin-top:var(--s-3)">
+
+      <article class="ed-principal">
+        <p class="categoria">Análisis · Educación e IA</p>
+
+        <h2 class="ed-titular">
+          <a href="noticia.html">La Comisión Europea y la OCDE presentaron un marco común de alfabetización en IA para primaria y secundaria</a>
+        </h2>
+
+        <p class="lede">
+          El marco AILit se presentó el 18 de junio de 2026 en Bruselas. Organiza la
+          alfabetización en IA en cuatro dominios y la Comisión Europea lo declara
+          complementario de la evaluación PISA 2029 de alfabetización mediática y en IA.
+        </p>
+
+        <p class="fecha-hecho">Ocurrió el 18 de junio de 2026</p>
+
+        <p class="sello">Verificación <span>veredicto: parcial</span></p>
+
+        <div class="avisos">
+          <p class="aviso aviso--verif">
+            <b>Fuentes</b>
+            <span>5 citadas — 4 leídas, <strong>1 no consultada</strong>. 2 de 2 corroborantes.</span>
+          </p>
+          <p class="aviso aviso--verif">
+            <b>Afirmaciones</b>
+            <span>3 con respaldo legible, <strong>1 pendiente</strong>: ninguna de las 4 fuentes leídas respalda todavía la fecha y el lugar de la presentación.</span>
+          </p>
+          <p class="aviso aviso--verif">
+            <b>Revisión</b>
+            <span>Humana <strong>pendiente</strong>. Nadie ha contrastado esta pieza todavía.</span>
+          </p>
+          <p class="aviso">
+            <b>Estado</b>
+            <span><strong>Borrador, sin publicar.</strong></span>
+          </p>
+        </div>
+
+        <p style="margin-top:var(--s-2)">
+          <a class="link-quiet" href="noticia.html">Leer la pieza completa, con sus fuentes y su procedencia →</a>
+        </p>
+      </article>
+
+      <div>
+        <h2 class="cintillo">También en el corpus</h2>
+
+        <ul class="ed-secundarias" style="margin-top:var(--s-2)">
+
+          <li>
+            <p class="categoria">Análisis · Investigación</p>
+            <h3 class="ed-sec-titular">
+              <a href="noticia.html">Las pantallas por sí solas no explican el retraso del lenguaje, según la evidencia que revisa el estudio</a>
+            </h3>
+            <div class="avisos">
+              <p class="aviso aviso--sim">
+                <span class="simulado">Simulado</span>
+                <span>Texto real del corpus, sin ejecución de verificación detrás. No la leas como cobertura.</span>
+              </p>
+              <p class="aviso">
+                <b>Estado</b>
+                <span>Borrador, sin publicar. Sin revisión humana.</span>
+              </p>
+            </div>
+          </li>
+
+          <li>
+            <p class="categoria">Análisis · Educación superior</p>
+            <h3 class="ed-sec-titular">
+              <a href="noticia.html">La UAM profesionaliza su divulgación y prepara a la IA como apoyo, no como sustituto</a>
+            </h3>
+            <div class="avisos">
+              <p class="aviso aviso--sim">
+                <span class="simulado">Simulado</span>
+                <span>Texto real del corpus, sin ejecución de verificación detrás. No la leas como cobertura.</span>
+              </p>
+              <p class="aviso">
+                <b>Estado</b>
+                <span>Borrador, sin publicar. Sin revisión humana.</span>
+              </p>
+            </div>
+          </li>
+
+        </ul>
+
+        <details class="detalle" style="margin-top:var(--s-3)">
+          <summary>
+            <span class="cintillo">Por qué solo hay tres piezas</span>
+          </summary>
+          <div class="detalle-cuerpo">
+            <p class="ui small">
+              El canal no persigue volumen. Si en una semana no hay nada que resista las
+              preguntas de la plantilla editorial —qué ocurrió y cuándo, qué fuentes lo
+              sostienen, qué cambia para quien lee, qué sigue incierto—, esa semana no sale
+              nada. Un contador de piezas por semana convertiría el volumen en métrica, y el
+              volumen no es el producto.
+            </p>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== Metodologia: al final, nunca encima del contenido ===== -->
+  <section class="metodo wrap" aria-labelledby="rot-metodo">
+    <p class="rotulo" id="rot-metodo">Cómo se lee esta portada</p>
+
+    <div class="metodo-lista">
+
+      <div class="fila metodo-fila">
+        <p class="sello">Verificación <span>veredicto: verificada</span></p>
+        <p class="ui">Las fuentes leídas respaldan las afirmaciones y hay corroboración suficiente. No es un premio ni lleva insignia: es el resultado de una comprobación.</p>
+      </div>
+
+      <div class="fila metodo-fila">
+        <p class="sello">Verificación <span>veredicto: parcial</span></p>
+        <p class="ui">Parte de lo comprobable quedó comprobado y parte no. La pieza se publica diciendo exactamente cuánto, no redondeando hacia arriba.</p>
+      </div>
+
+      <div class="fila metodo-fila">
+        <p class="sello">Verificación <span>veredicto: no verificada</span></p>
+        <p class="ui">No se pudo comprobar. Se imprime con la misma tinta y el mismo peso que los otros dos: apagarlo lo trataría como defecto, y es una respuesta.</p>
+      </div>
+
+      <div class="fila metodo-fila">
+        <p><span class="simulado">Simulado</span></p>
+        <p class="ui">La pieza no salió de una ejecución del canal. La marca viaja con ella siempre y no se pliega: si molesta, está haciendo su trabajo.</p>
+      </div>
+
+    </div>
+
+    <details class="detalle" style="margin-top:var(--s-3)">
+      <summary>
+        <span class="cintillo">De dónde sale el corpus y qué falta</span>
+      </summary>
+      <div class="detalle-cuerpo">
+        <p class="ui small">
+          Las piezas viven en <code>docs/plataforma/prototipo/datos/piezas.json</code> y el
+          esquema que deben cumplir está en <code>docs/plataforma/02-editorial.md</code> §3.
+          La detección la hace un agente sobre feeds; la redacción, un modelo; la
+          verificación cuenta fuentes citadas, leídas y corroborantes. Lo que ningún paso
+          automático hace es aprobar: <strong>publicar es una decisión humana</strong> y hoy
+          no está tomada para ninguna de las tres piezas.
+        </p>
+        <p class="ui small" style="margin-top:.9rem">
+          Para lo regulatorio mexicano no hay automatización confiable: el DOF sirve un
+          certificado TLS inválido y la API de <code>datos.gob.mx</code> da timeout, medido el
+          13 de septiembre de 2026. Esa vía es revisión manual, y el canal lo dice en vez de
+          fingir cobertura.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <footer class="pie wrap">
+    <p class="small muted">
+      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
+      nada de esto está publicado.
+    </p>
+    <p class="small muted" style="margin-top:.4rem">
+      Esquema de la pieza: <code>docs/plataforma/02-editorial.md</code> §3 ·
+      Registro: <code>docs/plataforma/prototipo/datos/piezas.json</code> · 3 piezas: 1 con
+      ejecución real, 2 simuladas
+    </p>
+  </footer>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+<script src="menu-movil.js" defer></script>
+</body>
+</html>

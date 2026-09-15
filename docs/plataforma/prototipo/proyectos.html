@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proyectos y actividad registrada — Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma (identica a portada.html) ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* ---- CORRECCION. `.fila` y `.obra` declaran display en una hoja de autor, y
+     eso gana SIEMPRE sobre la regla `[hidden]{display:none}` del navegador, que
+     es de origen UA. Sin esto los filtros marcaban las filas como ocultas y
+     seguian viendose: el conteo decia una cosa y la pantalla otra. ---- */
+  [hidden] { display: none !important; }
+
+  /* ---- Apertura de la seccion ---- */
+  .cab { padding-block: var(--s-4) var(--s-2); }
+  .cab .h1 { margin-top: var(--s-2); }
+  .cab .lede { margin-top: var(--s-2); }
+
+  /* ---- Seleccion de trabajos ----
+     Proof of Work tiene DOS capturas autorizadas, asi que su lienzo lleva dos
+     imagenes; a partir de 60rem su tarjeta ocupa la columna ancha. No es
+     jerarquia de merito: es que hay el doble de artefacto que ensenar. */
+  @media (min-width: 60rem) {
+    .obras { grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); align-items: start; }
+  }
+  #obra-pow .obra-lienzo {
+    aspect-ratio: auto; display: grid; grid-template-columns: 1fr;
+    gap: 1px; background: var(--rule-mid);
+  }
+  @media (min-width: 34rem) { #obra-pow .obra-lienzo { grid-template-columns: 1fr 1fr; } }
+  #obra-pow .obra-lienzo img { aspect-ratio: 16 / 10; height: auto; }
+  .obra .aviso { margin-top: .2rem; }
+  .obra-pie { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); }
+
+  /* ---- Controles ---- */
+  .sel {
+    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2);
+    background: var(--bg-page); border: 1px solid var(--rule-mid);
+    border-radius: var(--radius); padding: .3rem .55rem; max-width: 100%;
+  }
+  .sel:hover { border-color: var(--ink-muted); }
+  .conteo { padding-block: var(--s-2); }
+
+  /* ---- Filas de proyecto ---- */
+  .proy { grid-template-columns: 1fr; }
+  @media (min-width: 820px) { .proy { grid-template-columns: minmax(0, 18rem) minmax(0, 1fr); } }
+  .proy-meta { font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); }
+  .proy-tesis { font-family: var(--ff-read); font-size: var(--t--1); line-height: 1.65; color: var(--ink-2); max-width: 56ch; }
+  .proy-dims { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); margin-top: .35rem; }
+  .grupo-rot { margin-top: var(--s-4); }
+
+  /* ---- Bloque de actividad ---- */
+  .act { padding-block: var(--s-4) var(--s-3); }
+  .cifra-linea { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem .5rem; min-width: 0; }
+  .cobertura { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); }
+  /* Los comandos son cadenas largas sin espacios: sin esto, el min-content de
+     una celda de grid empuja la pagina a scroll horizontal. */
+  code { overflow-wrap: anywhere; }
+  .detalle code { font-size: .92em; }
+  .procedencia dd { overflow-wrap: anywhere; }
+
+  /* ---- Tira de barras mensuales: HTML/CSS puro, sin libreria y sin animacion ---- */
+  /* Ancho acotado a proposito: a pagina completa la barra mas alta se convierte
+     en un titular, y eso es la presentacion-como-logro que la regla prohibe. */
+  .tira {
+    display: flex; align-items: flex-end; gap: 4px;
+    margin-top: var(--s-2); padding-top: var(--s-1);
+    border-bottom: 1px solid var(--rule-strong);
+    max-width: 40rem;
+  }
+  .tira-lectura, .leyenda { max-width: 40rem; }
+  .tira-col { flex: 1 1 0; min-width: 0; display: flex; }
+  .barra {
+    display: block; width: 100%; min-width: 0; padding: 0; border: 0;
+    background: transparent; cursor: pointer; text-align: center;
+  }
+  .barra-caja { height: 132px; display: flex; align-items: flex-end; }
+  .barra-fill { width: 100%; background: var(--ink-title); border-radius: 1px 1px 0 0; }
+  /* Cero MEDIDO: existe la fuente y el valor es cero. Marca de base, no barra vacia. */
+  .barra[data-estado="cero"] .barra-fill { height: 3px; background: var(--ink-muted); }
+  /* SIN DATO: la fuente no cubre ese mes. NO se dibuja como cero. */
+  .barra[data-estado="sindato"] .barra-caja { align-items: stretch; }
+  .barra[data-estado="sindato"] .barra-fill {
+    height: 100%;
+    background: repeating-linear-gradient(135deg, transparent 0 4px, var(--rule-mid) 4px 5px);
+    border: 1px dashed var(--rule-strong); border-bottom: 0;
+  }
+  .barra:hover .barra-fill, .barra:focus-visible .barra-fill { background-color: var(--dark-title); }
+  .barra[data-estado="sindato"]:hover .barra-fill,
+  .barra[data-estado="sindato"]:focus-visible .barra-fill { border-color: var(--ink-muted); }
+  .barra-et {
+    display: block; font-family: var(--ff-ui); font-size: 10px; font-weight: 700;
+    letter-spacing: .02em; text-transform: uppercase; color: var(--ink-muted);
+    padding-top: .35rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tira-lectura {
+    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2);
+    margin-top: .6rem; min-height: 3em;
+  }
+  .tira-lectura .cifra { font-size: var(--t--1); }
+  .leyenda { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-top: .4rem; }
+  .leyenda span { font-family: var(--ff-ui); font-size: var(--t--2); color: var(--ink-muted); display: inline-flex; align-items: center; gap: .4rem; }
+  .swatch { width: 14px; height: 10px; flex: none; display: inline-block; }
+  .swatch-val { background: var(--ink-title); }
+  .swatch-cero { background: var(--ink-muted); height: 3px; }
+  .swatch-sin { background: repeating-linear-gradient(135deg, transparent 0 4px, var(--rule-mid) 4px 5px); border: 1px dashed var(--rule-strong); }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); margin-top: var(--s-4); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html">Inicio</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="proyectos.html" aria-current="page">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== Cabecera de la seccion ===== -->
+  <section class="cab wrap">
+    <p class="rotulo">Proyectos y actividad</p>
+    <h1 class="h1">El trabajo primero: dos piezas que se pueden abrir, diez que sólo se pueden declarar.</h1>
+    <p class="lede">
+      Doce proyectos en el Registry. De dos hay un artefacto autorizado que enseñar, y
+      están arriba con su captura. De los otros diez queda lo declarado, y se dice así.
+    </p>
+    <div class="aviso aviso--sim" style="margin-top:var(--s-2)">
+      <p><b>Prototipo.</b> Esta pantalla todavía no está publicada. Las capturas y las
+      cifras sí son reales: nada de lo que aparece aquí está simulado ni rellenado.</p>
+    </div>
+  </section>
+
+  <!-- ===== 1. Seleccion de trabajos ===== -->
+  <section class="wrap" aria-labelledby="h-obras" style="padding-block:var(--s-3) var(--s-2)">
+    <h2 class="rotulo" id="h-obras">Trabajo seleccionado</h2>
+
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Cobertura de esta selección: dos de doce.</b> Sólo tres proyectos del Registry
+      son públicos, y sólo dos tienen hoy un artefacto autorizado que enseñar. Que un
+      proyecto no aparezca aquí con captura no dice nada sobre su tamaño ni sobre su
+      dificultad: publicar la pantalla de un proyecto privado sería abrir superficie
+      pública sin autorización, y por eso no se hace.</p>
+    </div>
+
+    <div class="obras" id="obras-grid" style="margin-top:var(--s-3)">
+
+      <!-- ---- Proof of Work: dos capturas autorizadas ---- -->
+      <article class="obra proy" id="obra-pow" data-proj="proof-of-work" data-dim="build lead" data-start="2026-08">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-evidencia.png" width="1603" height="915"
+               alt="Captura de la pantalla «Cómo respaldo lo que afirmo»: un texto de apertura y, debajo, la primera afirmación con la etiqueta CONSTRUIR, su enunciado y una línea que declara procedencia y verificabilidad.">
+          <img src="_activos/pow-proyectos.png" width="1603" height="915"
+               alt="Captura de la pantalla «Proyectos»: la lista agrupada por estado, con el propósito declarado de cada proyecto y su tipo debajo del título.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo"><a class="link" href="proyecto.html">Proof of Work</a></h3>
+          <p class="obra-tesis">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
+
+          <dl class="aporte">
+            <dt>Contribución de Rodrigo</dt>
+            <dd>Rol declarado en el feed: <b>autor</b>. Sostiene las dimensiones
+              <b>Construyo</b> y <b>Dirijo</b>.</dd>
+            <dt>Crédito</dt>
+            <dd class="credito">El feed guarda dos cosas sobre la participación —el rol y el
+              contexto del trabajo—, y ninguna persona. Aquí no hay nombres porque no hay
+              dato de personas, no porque no los haya habido.</dd>
+            <dt>Periodo</dt>
+            <dd>Herramienta · en alfa · desde 2026-08-19.</dd>
+          </dl>
+
+          <ul class="entregas">
+            <li>Pantalla «Cómo respaldo lo que afirmo»</li>
+            <li>Índice público de proyectos</li>
+            <li>Especificación canónica en <code>docs/</code></li>
+            <li><a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">Repositorio público</a></li>
+          </ul>
+
+          <div class="aviso aviso--verif">
+            <p><b>Qué muestran las capturas.</b> Son las dos pantallas del sistema tal como
+            existen hoy en el repositorio público, no un render de diseño. Lo que cuentan
+            de sí mismas se puede comprobar abriendo ese repositorio.</p>
+          </div>
+
+          <p class="obra-pie"><a class="link-quiet" href="proyecto.html">Ver el detalle del proyecto →</a></p>
+        </div>
+      </article>
+
+      <!-- ---- Habit Tracker ---- -->
+      <article class="obra proy" data-proj="habit-tracker" data-dim="build" data-start="2026-06">
+        <div class="obra-lienzo">
+          <img src="_activos/habit-tracker.png" width="1603" height="915"
+               alt="Captura de la página del repositorio público habit-tracker en GitHub: la rama main, la lista de carpetas y archivos con el mensaje de su último commit, y el panel «About» que describe la app.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">Habit Tracker</h3>
+          <p class="obra-tesis">«Registrar y dar seguimiento a hábitos personales.»</p>
+
+          <dl class="aporte">
+            <dt>Contribución de Rodrigo</dt>
+            <dd>Rol declarado en el feed: <b>autor</b>. Sostiene la dimensión <b>Construyo</b>.</dd>
+            <dt>Crédito</dt>
+            <dd class="credito">Mismo límite que arriba: el feed registra rol y contexto, no
+              personas. Nadie queda nombrado aquí, y eso incluye no atribuirle a él en
+              exclusiva lo que haya sido de más manos.</dd>
+            <dt>Periodo</dt>
+            <dd>Producto · en beta · desde 2026-06-01.</dd>
+          </dl>
+
+          <ul class="entregas">
+            <li>Producto en beta</li>
+            <li><a class="link" href="https://github.com/rodrigoBermejo/habit-tracker">Repositorio público</a></li>
+          </ul>
+
+          <div class="aviso aviso--verif">
+            <p><b>La captura es del repositorio, no del producto.</b> Muestra el código
+            público y su historial, no la interfaz de la app. De la interfaz no hay
+            captura autorizada todavía, así que no se enseña ninguna.</p>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="aviso aviso--verif" id="obras-vacio" hidden style="margin-top:var(--s-3)">
+      <p><b>Los filtros dejan fuera los dos trabajos con captura autorizada.</b> No es que
+      no haya trabajo en el resto: es que del resto no hay artefacto que se pueda publicar.
+      Quita el filtro para volver a verlos.</p>
+    </div>
+  </section>
+
+  <!-- ===== Filtros ===== -->
+  <section class="wrap" aria-labelledby="h-filtros">
+    <h2 class="sr-only" id="h-filtros">Filtros</h2>
+    <div class="filete-fuerte"></div>
+    <div class="filtros">
+
+      <div class="filtro-grupo" role="group" aria-labelledby="et-dim">
+        <span class="filtro-et" id="et-dim">Dimensión</span>
+        <button class="chip" type="button" data-dim="all"   aria-pressed="true">Todas</button>
+        <button class="chip" type="button" data-dim="lead"  aria-pressed="false">Dirijo</button>
+        <button class="chip" type="button" data-dim="build" aria-pressed="false">Construyo</button>
+        <button class="chip" type="button" data-dim="teach" aria-pressed="false">Formo</button>
+      </div>
+
+      <div class="filtro-grupo">
+        <label class="filtro-et" for="f-proy">Proyecto</label>
+        <select class="sel" id="f-proy">
+          <option value="all" selected>Todos</option>
+          <option value="contenido-ia">Producción de contenido con IA</option>
+          <option value="curricula-inadaptados">Currícula y docencia Inadaptados</option>
+          <option value="docencia-universitaria">Docencia universitaria</option>
+          <option value="exploraciones">Exploraciones y material de práctica</option>
+          <option value="habit-tracker">Habit Tracker</option>
+          <option value="infra-interna">Infraestructura y automatización interna</option>
+          <option value="mathgym">MathGym</option>
+          <option value="plataforma-inadaptados">Plataforma Inadaptados</option>
+          <option value="proof-of-work">Proof of Work</option>
+          <option value="punto-de-venta">Punto de venta</option>
+          <option value="sitio-rbloom">Sitio RBloomDev</option>
+          <option value="ssp">SSP</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label class="filtro-et" for="f-per">Inicio declarado en</label>
+        <select class="sel" id="f-per">
+          <option value="all" selected>Todo el rango (2024-08 a 2026-08)</option>
+          <option value="p1">2024-08 a 2025-12</option>
+          <option value="p2">2026-01 a 2026-04</option>
+          <option value="p3">2026-05 a 2026-08</option>
+        </select>
+      </div>
+
+      <button class="btn-linea" type="button" id="f-reset">Quitar filtros</button>
+    </div>
+
+    <p class="ui small conteo" id="conteo" role="status">
+      Mostrando los 12 proyectos del Registry.
+    </p>
+  </section>
+
+  <!-- ===== Indice de los otros diez ===== -->
+  <section class="wrap" aria-labelledby="h-lista">
+    <h2 class="rotulo" id="h-lista">Los otros diez proyectos del Registry</h2>
+
+    <div class="aviso" style="margin-top:var(--s-2)">
+      <p><b>Sin captura, y por una razón concreta.</b> De estos diez no hay artefacto
+      autorizado: parte del trabajo vive en repositorios que no son públicos, y de ahí se
+      publica el hecho, nunca su identidad. Lo que queda es lo declarado —tesis, tipo,
+      estado y periodo—, y no se completa con nada más.</p>
+    </div>
+
+    <div class="aviso" style="margin-top:var(--s-2)">
+      <p><b>Crédito.</b> Varios de estos proyectos son trabajo colectivo de Inadaptados. El
+      feed guarda el contexto del trabajo, no a las personas, así que aquí no aparece
+      ningún nombre —tampoco el suyo— como si el mérito fuera de uno solo.</p>
+    </div>
+
+    <div id="grupo-con" style="margin-top:var(--s-3)">
+      <h3 class="rotulo">Proyectos que sostienen una afirmación</h3>
+
+      <article class="fila proy" data-proj="contenido-ia" data-dim="build" data-start="2026-03">
+        <div>
+          <h4 class="h3">Producción de contenido con IA</h4>
+          <p class="proy-meta">Producto · en alfa · desde 2026-03-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Producir video y contenido con avatares e IA de forma repetible.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="curricula-inadaptados" data-dim="teach" data-start="2026-01">
+        <div>
+          <h4 class="h3">Currícula y docencia Inadaptados</h4>
+          <p class="proy-meta">Docencia · en producción · desde 2026-01-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Formo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Diseñar la currícula y los materiales con los que se forma a desarrolladores en Inadaptados.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="docencia-universitaria" data-dim="teach" data-start="2024-08">
+        <div>
+          <h4 class="h3">Docencia universitaria</h4>
+          <p class="proy-meta">Docencia · en producción · desde 2024-08-01</p>
+          <p class="proy-dims">Sostiene: Formo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Impartir asignaturas de ingeniería de software y bases de datos a nivel universitario.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="infra-interna" data-dim="build lead" data-start="2026-03">
+        <div>
+          <h4 class="h3">Infraestructura y automatización interna</h4>
+          <p class="proy-meta">Herramienta · en producción · desde 2026-03-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Operar VPS, contenedores y asistentes internos sin depender de terceros.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="mathgym" data-dim="build" data-start="2026-07">
+        <div>
+          <h4 class="h3">MathGym</h4>
+          <p class="proy-meta">Producto · en alfa · desde 2026-07-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Practicar matemáticas con ejercicios y seguimiento de progreso.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="plataforma-inadaptados" data-dim="build lead" data-start="2026-02">
+        <div>
+          <h4 class="h3">Plataforma Inadaptados</h4>
+          <p class="proy-meta">Producto · en producción · desde 2026-02-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Sostener la operación educativa de Inadaptados: LMS, web, certificados y contenido.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="punto-de-venta" data-dim="build" data-start="2026-02">
+        <div>
+          <h4 class="h3">Punto de venta</h4>
+          <p class="proy-meta">Producto · prototipo · desde 2026-02-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Construir un punto de venta reutilizable para comercios pequeños.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="ssp" data-dim="build lead" data-start="2026-08">
+        <div>
+          <h4 class="h3">SSP</h4>
+          <p class="proy-meta">Producto · en producción · desde 2026-08-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sostiene: Construyo, Dirijo</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Automatizar la captación y el seguimiento comercial de Inadaptados.»</p>
+        </div>
+      </article>
+    </div>
+
+    <div id="grupo-sin">
+      <h3 class="rotulo grupo-rot">Proyectos que no sostienen ninguna afirmación</h3>
+      <div class="aviso" style="margin-block:var(--s-2)">
+        <p><b>Existen y se muestran.</b> Lo que no hacen es respaldar ninguna afirmación
+        pública, así que no tienen dimensión asignada y desaparecen de la lista en cuanto
+        se filtra por una. No es un defecto de los proyectos: es dónde están hoy.</p>
+      </div>
+
+      <article class="fila proy" data-proj="exploraciones" data-dim="" data-start="2025-05">
+        <div>
+          <h4 class="h3">Exploraciones y material de práctica</h4>
+          <p class="proy-meta">Laboratorio · prototipo · desde 2025-05-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sin afirmación asociada</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Probar tecnologías y producir material de práctica, sin usuarios.»</p>
+        </div>
+      </article>
+
+      <article class="fila proy" data-proj="sitio-rbloom" data-dim="" data-start="2026-03">
+        <div>
+          <h4 class="h3">Sitio RBloomDev</h4>
+          <p class="proy-meta">Producto · en mantenimiento · desde 2026-03-01 · parte en repositorios privados</p>
+          <p class="proy-dims">Sin afirmación asociada</p>
+        </div>
+        <div>
+          <p class="proy-tesis">«Presencia web de RBloomDev, separada del sitio personal.»</p>
+        </div>
+      </article>
+    </div>
+
+    <p class="ui small muted" id="vacio" hidden style="padding-block:var(--s-3)">
+      Ningún proyecto del Registry cumple esa combinación de filtros. No hay nada oculto
+      detrás: la lista completa son doce.
+    </p>
+
+    <p class="xs muted" style="margin-top:var(--s-2)">
+      Orden del Registry, alfabético por identificador. No hay orden por volumen, ni
+      ranking, ni destacados: ordenar por cantidad convertiría el registro en marcador.
+    </p>
+  </section>
+
+  <!-- ===== 2. Actividad registrada ===== -->
+  <section class="act wrap" aria-labelledby="h-act">
+    <h2 class="rotulo" id="h-act">Actividad registrada</h2>
+
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Qué describe cada cifra, y qué no.</b> Volumen de trabajo registrado en una
+      fuente concreta, dentro de un periodo concreto. No describe competencia, ni calidad,
+      ni dificultad. Periodo y cobertura van pegados a la cifra porque son parte del dato;
+      lo que no tiene fuente aparece como hueco, nunca como cero.</p>
+    </div>
+
+    <!-- ---- Tiempo, y los dos huecos que le corresponden ---- -->
+    <div class="datos" style="margin-top:var(--s-4)">
+
+      <div class="dato">
+        <p class="dato-cifra">515.9</p>
+        <p class="dato-que">horas de actividad en editor</p>
+        <p class="dato-marco">
+          <b>Ventana de 90 días hasta 2026-09-14.</b><br>
+          Cobertura: 82 de 91 días con dato. Agregada, nunca por proyecto.
+        </p>
+        <details class="detalle">
+          <summary><span class="ui small">Qué no mide, fuente y unidad</span></summary>
+          <div class="detalle-cuerpo">
+            <p class="ui small" style="margin-bottom:var(--s-2)">
+              <strong>Qué no mide.</strong> Reuniones, diseño, lectura, docencia presencial,
+              ni trabajo en una máquina sin el plugin instalado. Tampoco el tiempo en que un
+              agente trabaja sin actividad humana. No es una hoja de horas y no se comporta
+              como tal.
+            </p>
+            <dl class="procedencia">
+              <dt>Fuente</dt>
+              <dd>API de WakaTime, registrada por instrumentación y no inferida:<br>
+                <code>node scripts/editorial/sonda-wakatime.mjs --dias 90</code><br>
+                Leído el 2026-09-14. La sonda no imprime la credencial y seudonimiza los
+                nombres de proyecto.</dd>
+              <dt>Periodo</dt>
+              <dd>Ventana de 90 días, agregada. El grano nativo es diario; aquí se publica
+                sumado porque el diario es un corte más fino de lo que la política admite
+                para fuentes que tocan trabajo privado.</dd>
+              <dt>Unidad</dt>
+              <dd>Horas de <strong>actividad</strong>, con timeout de inactividad. Es
+                duración acumulada de actividad, <strong>no tiempo transcurrido</strong>, y
+                las dos cosas no se comparan entre sí.</dd>
+              <dt>Deduplicación</dt>
+              <dd>La hace WakaTime por heartbeats: dos editores abiertos sobre el mismo
+                archivo no cuentan doble.</dd>
+              <dt>Cobertura</dt>
+              <dd><strong>Temporal: alta</strong> — 82 de 91 días tienen dato.
+                <strong>Del trabajo: desconocida</strong>. Qué fracción de su trabajo real
+                ocurre dentro de un editor no se puede derivar de aquí, y no se estima.
+                Un número sin esa aclaración mentiría por omisión.</dd>
+              <dt>Por qué se puede publicar</dt>
+              <dd>Ningún proyecto llega al 16 % del total en esta ventana, así que el
+                agregado no es un proxy de ningún sujeto.</dd>
+              <dt>Por qué no se filtra</dt>
+              <dd>Los filtros de arriba no la tocan: se publica sólo agregada y no tiene
+                desglose por proyecto que se pueda publicar.</dd>
+            </dl>
+          </div>
+        </details>
+      </div>
+
+      <div class="dato dato--hueco">
+        <p class="dato-cifra">Sin fuente</p>
+        <p class="dato-que">tiempo humano total</p>
+        <p class="dato-marco">
+          <b>No existe la fuente.</b><br>
+          Reuniones, clases, diseño y lectura no los anota ningún sistema. Deducirlos de los
+          commits sería inventarlos, así que esto se queda vacío.
+        </p>
+      </div>
+
+      <div class="dato dato--hueco">
+        <p class="dato-cifra">Sin fuente</p>
+        <p class="dato-que">ejecuciones de agentes</p>
+        <p class="dato-marco">
+          <b>No existe la fuente: el ledger del motor está vacío.</b><br>
+          Si llegara a haber dato, sería duración acumulada de ejecuciones —que no es tiempo
+          transcurrido— y jamás sumada al tiempo humano.
+        </p>
+      </div>
+    </div>
+
+    <!-- ---- La rebanada publica y comprobable ---- -->
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">La rebanada que cualquiera puede comprobar</h3>
+      <p class="ui small" style="margin-top:.5rem">
+        Son las cifras del repositorio público del proyecto <em>Proof of Work</em>:
+        reproducibles sin credenciales, con el comando que va en cada detalle. De los
+        repositorios que no son públicos no se publica ni el nombre, ni el conteo, ni
+        cuántos son.
+      </p>
+
+      <!-- Estado cuando el filtro deja fuera el proyecto de la fuente publica -->
+      <div class="aviso aviso--verif" id="act-hueco" hidden style="margin-top:var(--s-2)">
+        <p><b>El filtro deja fuera el único proyecto con fuente pública.</b> La mayoría de
+        los proyectos del Registry viven en repositorios que no son públicos, y de esos no
+        se publica un conteo por proyecto. No es cero trabajo: es trabajo del que no se
+        puede publicar la cuenta.</p>
+      </div>
+
+      <div class="datos" id="act-cuerpo" style="margin-top:var(--s-3)">
+
+        <div class="dato">
+          <p class="dato-cifra">47</p>
+          <p class="dato-que">commits que llegaron a <code>main</code></p>
+          <p class="dato-marco">
+            <b>2026-01-01 a 2026-09-11.</b><br>
+            Cobertura: un repositorio, el público.
+          </p>
+          <details class="detalle">
+            <summary><span class="ui small">Fuente, unidad y cobertura</span></summary>
+            <div class="detalle-cuerpo">
+              <dl class="procedencia">
+                <dt>Fuente</dt>
+                <dd>API de GitHub. Registrada, no inferida:<br>
+                  <code>gh api --paginate "repos/RBloomDev/rodrigobermejo-site/commits?sha=main&amp;since=2026-01-01T00:00:00Z&amp;until=2026-09-11T23:59:59Z"</code><br>
+                  Leída el 2026-09-13.</dd>
+                <dt>Periodo</dt>
+                <dd>2026-01-01 a 2026-09-11. Fechas absolutas; esta pantalla nunca dice «hace tres días».</dd>
+                <dt>Unidad</dt>
+                <dd>Commits alcanzables desde <code>main</code>. Es un conteo de eventos: no es una duración, no es volumen de código y no se convierte en tiempo.</dd>
+                <dt>Deduplicación</dt>
+                <dd>Por SHA. 47 devueltos, 47 SHA únicos. De ellos, 19 son commits de merge y 28 no lo son; los merges se cuentan aquí porque la unidad declarada es «commits que llegaron a main», no «trabajo nuevo».</dd>
+                <dt>Cobertura</dt>
+                <dd>Un solo repositorio, el del proyecto Proof of Work. <strong>No es el total de su trabajo ni se le aproxima</strong>: trabaja en bastantes más, y ninguno de esos otros aparece aquí ni como nombre ni como cifra. Los 47 commits sí son todos suyos —se comprobó autor por autor, y los 47 llevan el mismo nombre—, pero eso <strong>no se puede dar por hecho en un repositorio compartido</strong>: donde hay más de un autor, atribuir el repositorio entero a una persona es mentir, y por eso esta cifra no se extrapola a ningún otro.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+
+        <div class="dato">
+          <p class="dato-cifra">24</p>
+          <p class="dato-que">pull requests abiertos</p>
+          <p class="dato-marco">
+            <b>Sin recorte de periodo.</b><br>
+            Cobertura: ese mismo repositorio público, todos sus PR.
+          </p>
+          <details class="detalle">
+            <summary><span class="ui small">Fuente, unidad y cobertura</span></summary>
+            <div class="detalle-cuerpo">
+              <dl class="procedencia">
+                <dt>Fuente</dt>
+                <dd><code>gh api --paginate "repos/RBloomDev/rodrigobermejo-site/pulls?state=all"</code>, leída el 2026-09-13.</dd>
+                <dt>Periodo</dt>
+                <dd>Sin recorte: son todos los PR que existen en el repositorio. El primero se abrió el 2026-08-26 y el último el 2026-09-12.</dd>
+                <dt>Unidad</dt>
+                <dd>Pull requests abiertos, en cualquier estado. De los 24: 18 mergeados, 3 cerrados sin mergear, 3 todavía abiertos.</dd>
+                <dt>Deduplicación</dt>
+                <dd>Por número de PR, único por repositorio. No hay duplicados posibles.</dd>
+                <dt>Cobertura</dt>
+                <dd>Un repositorio de doce proyectos, y sólo desde que ese repositorio trabaja con PR. El trabajo de enero no pasó por PR y por eso no aparece aquí; eso no lo convierte en menos trabajo.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+
+        <div class="dato">
+          <p class="dato-cifra">23</p>
+          <p class="dato-que">commits declaran co-autoría de un asistente</p>
+          <p class="dato-marco">
+            <b>2026-01-01 a 2026-09-11.</b><br>
+            Cobertura: los 28 commits sin merge del periodo. Es procedencia declarada, no
+            productividad.
+          </p>
+          <details class="detalle">
+            <summary><span class="ui small">Qué no dice, fuente y cobertura</span></summary>
+            <div class="detalle-cuerpo">
+              <p class="ui small" style="margin-bottom:var(--s-2)">
+                El trailer dice que hubo asistencia en ese commit. <strong>No dice qué parte
+                del trabajo hizo la IA</strong>, y de este dato no se deriva ningún porcentaje
+                de «trabajo hecho por IA» ni de «horas ahorradas»: no hay denominador honesto
+                para esa fracción, y construirlo sería exactamente el indicador que el
+                producto prohíbe.
+              </p>
+              <dl class="procedencia">
+                <dt>Fuente</dt>
+                <dd>El trailer <code>Co-Authored-By</code> del mensaje de cada commit, leído en la misma respuesta de la API:<br>
+                  <code>gh api --paginate "…/commits?sha=main&amp;since=…&amp;until=…" --jq '.[].commit.message' | grep -c "Co-Authored-By"</code></dd>
+                <dt>Periodo</dt>
+                <dd>2026-01-01 a 2026-09-11. Los 23 se reparten en 21 commits de agosto y 2 de septiembre.</dd>
+                <dt>Unidad</dt>
+                <dd>Commits con al menos un trailer, contados una sola vez aunque traigan varios. No son sesiones, ni ejecuciones, ni tool calls, ni tokens: nada de eso se publica en ninguna clase.</dd>
+                <dt>Deduplicación</dt>
+                <dd>Por SHA, y por commit: un commit con dos trailers sigue siendo uno.</dd>
+                <dt>Cobertura</dt>
+                <dd>Los 28 commits sin merge del periodo. Los 5 que no lo traen son todos de enero, anteriores a que existiera la convención: <strong>su ausencia no significa que no hubiera asistencia, significa que no se declaró</strong>. Un trailer ausente es desconocido, no un cero.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- ---- Evolucion temporal: del repositorio publico, no del agregado ---- -->
+    <div id="act-tira" style="margin-top:var(--s-4)">
+      <div class="filete"></div>
+      <div style="margin-top:var(--s-2)">
+        <h3 class="h3">Cuándo se registró, en el repositorio público</h3>
+          <p class="ui small" style="margin-top:.5rem;max-width:62ch">
+            Commits que llegaron a <code>main</code> en ese repositorio, mes a mes. La tira
+            no ordena, no compara contra el mes anterior y no marca tendencia:
+            <strong>un mes alto no es un mes mejor</strong>, sólo un mes con más registro en
+            esta fuente. <strong>No es la serie de toda su actividad</strong>.
+          </p>
+
+          <ul class="tira" id="tira">
+            <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="septiembre de 2025" data-val="sin dato" aria-label="Septiembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">09·25</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="octubre de 2025" data-val="sin dato" aria-label="Octubre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">10·25</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="noviembre de 2025" data-val="sin dato" aria-label="Noviembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">11·25</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="sindato" data-mes="diciembre de 2025" data-val="sin dato" aria-label="Diciembre de 2025: sin dato, el repositorio no existía todavía."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">12·25</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="enero de 2026" data-val="5 commits" aria-label="Enero de 2026: 5 commits."><span class="barra-caja"><span class="barra-fill" style="height:18px"></span></span><span class="barra-et" aria-hidden="true">01·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="febrero de 2026" data-val="0 commits, medido" aria-label="Febrero de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">02·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="marzo de 2026" data-val="0 commits, medido" aria-label="Marzo de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">03·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="abril de 2026" data-val="0 commits, medido" aria-label="Abril de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">04·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="mayo de 2026" data-val="0 commits, medido" aria-label="Mayo de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">05·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="junio de 2026" data-val="0 commits, medido" aria-label="Junio de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">06·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="cero" data-mes="julio de 2026" data-val="0 commits, medido" aria-label="Julio de 2026: cero commits. Es un cero medido, no un hueco."><span class="barra-caja"><span class="barra-fill"></span></span><span class="barra-et" aria-hidden="true">07·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="agosto de 2026" data-val="36 commits" aria-label="Agosto de 2026: 36 commits."><span class="barra-caja"><span class="barra-fill" style="height:132px"></span></span><span class="barra-et" aria-hidden="true">08·26</span></button></li>
+            <li class="tira-col"><button class="barra" type="button" data-estado="valor" data-mes="septiembre de 2026" data-val="6 commits, mes incompleto" aria-label="Septiembre de 2026: 6 commits, mes incompleto, con corte el 11 de septiembre."><span class="barra-caja"><span class="barra-fill" style="height:22px"></span></span><span class="barra-et" aria-hidden="true">09·26</span></button></li>
+          </ul>
+
+          <p class="tira-lectura" id="lectura" aria-hidden="true">
+            Enfoca o señala un mes para ver su dato.
+          </p>
+
+          <ul class="leyenda" aria-hidden="true">
+            <li><span><i class="swatch swatch-val"></i> commits medidos</span></li>
+            <li><span><i class="swatch swatch-cero"></i> cero medido</span></li>
+            <li><span><i class="swatch swatch-sin"></i> sin dato</span></li>
+          </ul>
+
+          <details class="detalle" style="margin-top:var(--s-2)">
+            <summary>
+              <span class="cifra-linea">
+                <span class="ui">Trece meses, de los cuales <span class="cifra">9</span> tienen fuente</span>
+                <span class="cobertura">— cobertura: 2026-01 a 2026-09; antes de eso, nada</span>
+              </span>
+            </summary>
+            <div class="detalle-cuerpo">
+              <dl class="procedencia">
+                <dt>Fuente</dt>
+                <dd>La misma consulta de commits, agrupada por mes de <code>commit.author.date</code>. Los meses sin barra se comprobaron aparte:<br>
+                  <code>gh api "repos/RBloomDev/rodrigobermejo-site/commits?sha=main&amp;since=2026-02-01T00:00:00Z&amp;until=2026-07-31T23:59:59Z" --jq 'length'</code> devuelve <code>0</code>.</dd>
+                <dt>Periodo</dt>
+                <dd>2025-09 a 2026-09. El primer commit del repositorio es del 2026-01-01; septiembre de 2026 está cortado al día 11 y por eso se rotula como mes incompleto.</dd>
+                <dt>Unidad</dt>
+                <dd>Commits por mes calendario, en UTC. Conteo de eventos: <strong>de aquí no se deduce ninguna duración ni ningún tiempo de trabajo</strong>.</dd>
+                <dt>Deduplicación</dt>
+                <dd>Por SHA, dentro de cada mes y entre meses. La suma de los meses da 47, igual que el total declarado arriba.</dd>
+                <dt>Cobertura</dt>
+                <dd><strong>Los ceros de esta tira son ceros de este repositorio, no de su trabajo.</strong> De febrero a julio de 2026 este repositorio no registró nada, y eso está medido; en esos mismos seis meses trabajó en otros repositorios, <strong>y cuánto no se publica</strong> —ni el total ni su reparto por mes—, porque esa serie describe trabajo que no está publicado. Los cuatro meses de 2025 no tienen barra porque la fuente todavía no existía. Leer esta tira como una curva de actividad personal sería leerla al revés.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+      </div>
+  </section>
+
+  <!-- ===== 3. Metodologia y limites, al final y plegada ===== -->
+  <section class="wrap" style="padding-block:var(--s-2) var(--s-4)" aria-labelledby="h-metodo">
+    <h2 class="rotulo" id="h-metodo">Metodología y límites de publicación</h2>
+
+    <p class="ui small" style="margin-top:var(--s-2);max-width:66ch">
+      Hay dos razones distintas para que falte un número, y no se parecen en nada: que
+      <strong>no exista la fuente</strong>, o que la fuente exista, el dato esté medido y
+      <strong>aun así no se publique</strong> porque publicarlo señalaría a un tercero. Los
+      huecos de arriba son de la primera clase; lo que sigue explica la segunda.
+    </p>
+
+    <div class="aviso aviso--verif" style="margin-top:var(--s-2)">
+      <p><b>Ninguna de estas cifras se agrega en un número global.</b> Ni las medidas ni las
+      ausentes. No existe un número que resuma a una persona, y esta pantalla no lo
+      construye por la puerta de atrás.</p>
+    </div>
+
+    <div style="margin-top:var(--s-3)">
+      <details class="detalle">
+        <summary><span class="ui">Medido, y deliberadamente no publicado</span></summary>
+        <div class="detalle-cuerpo">
+          <div class="hueco">
+            <strong>El agregado de pull requests está medido y no se publica, ni siquiera
+            como total.</strong> Una versión anterior de esta página lo publicaba diciendo que
+            un agregado que combina organizaciones ya cumple la regla de los <strong>dos
+            sujetos independientes</strong>. <strong>Eso era insuficiente.</strong> Combinar
+            sujetos es necesario, no suficiente: si uno solo aporta la mayor parte del total,
+            el total lo describe a él. Aquí pasa eso, así que el total tampoco sale. Y esta
+            nota no dice cuánto es, ni cuál es el renglón grande: decirlo sería publicar en
+            prosa lo que se declara no publicar.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Tampoco se publica su serie mensual.</strong> Los meses están medidos, pero
+            un bucket mensual es un corte mucho más fino que el anual y acabaría describiendo
+            la cadencia de desarrollo de una organización identificable. La tira de barras de
+            arriba se queda por eso en el repositorio público, donde no hay ningún tercero que
+            proteger y cualquiera puede reproducir cada cifra.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Y no se publican dos cortes que se resten entre sí.</strong> Si esta página
+            mostrara un total y además el renglón de una organización, el resto quedaría
+            despejado por diferencia. Ese cruce está prohibido explícitamente, y no basta con
+            no enseñarlo: hay que no poder derivarlo desde lo que sí se enseña. Por la misma
+            razón no aparece cuántos repositorios hay, ni cuántos de ellos no son públicos.
+          </div>
+          <div class="hueco" style="margin-top:var(--s-2)">
+            <strong>Esto no es prudencia: es la regla escrita.</strong> Y conviene decir lo que
+            cuesta. Lo que queda publicable de GitHub es lo que sale de repositorios públicos,
+            que es una esquina pequeña y poco impresionante del trabajo real. Esa es
+            exactamente la incomodidad correcta: el producto prefiere una cifra comprobable y
+            modesta antes que una persuasiva que señale a un tercero.
+          </div>
+        </div>
+      </details>
+
+      <details class="detalle">
+        <summary><span class="ui">Sin fuente, que no es lo mismo</span></summary>
+        <div class="detalle-cuerpo">
+          <p class="ui small" style="margin-bottom:var(--s-2)">
+            Los dos huecos que se piden más a menudo —tiempo humano total y ejecuciones de
+            agentes— están arriba, a la vista y con el mismo espacio que las cifras medidas.
+            Queda un tercero.
+          </p>
+          <div class="hueco">
+            <strong>Participación de IA más allá del trailer del commit: no existe la fuente.</strong>
+            Lo único medible hoy es si un commit declara co-autoría. Cuánto del contenido
+            produjo el asistente no está registrado en ninguna parte, y no se va a estimar.
+            Tokens, prompts y tool calls siguen prohibidos en cualquier clase: un prompt es
+            contenido, y los tokens no son resultados.
+          </div>
+        </div>
+      </details>
+
+      <details class="detalle">
+        <summary><span class="ui">Por qué esta pantalla se puede filtrar y el índice de evidencia no</span></summary>
+        <div class="detalle-cuerpo">
+          <p class="ui small">
+            El índice canónico del sistema de evidencia no es esta pantalla: es
+            <a class="link" href="#">/evidencia</a>, que lista las afirmaciones en el orden del
+            Registry y sin filtros. Aquí se puede filtrar porque aquí no se afirma nada sobre
+            nadie. Y el bloque de tiempo no responde a los filtros porque se publica sólo
+            agregado: no tiene desglose por proyecto que se pueda publicar.
+          </p>
+        </div>
+      </details>
+    </div>
+
+    <p style="margin-top:var(--s-3)"><a class="link-quiet" href="#">Cómo respaldo lo que afirmo →</a></p>
+  </section>
+
+  <footer class="pie wrap">
+    <p class="small muted">
+      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
+      nada de esto está publicado. Cifras medidas el 2026-09-13 contra la API de GitHub.
+    </p>
+  </footer>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+
+<script>
+(function () {
+  "use strict";
+
+  var estado = { dim: "all", proy: "all", per: "all" };
+
+  var chips    = Array.prototype.slice.call(document.querySelectorAll(".chip[data-dim]"));
+  var selProy  = document.getElementById("f-proy");
+  var selPer   = document.getElementById("f-per");
+  var reset    = document.getElementById("f-reset");
+  var conteo   = document.getElementById("conteo");
+  var vacio    = document.getElementById("vacio");
+  var grupoCon = document.getElementById("grupo-con");
+  var grupoSin = document.getElementById("grupo-sin");
+  var obrasGrid  = document.getElementById("obras-grid");
+  var obrasVacio = document.getElementById("obras-vacio");
+  var actCuerpo = document.getElementById("act-cuerpo");
+  var actHueco  = document.getElementById("act-hueco");
+  var actTira   = document.getElementById("act-tira");
+  var filas = Array.prototype.slice.call(document.querySelectorAll(".proy"));
+
+  // Rangos de periodo: meses reales del feed, sobre el inicio declarado del proyecto.
+  var RANGOS = {
+    p1: ["2024-08", "2025-12"],
+    p2: ["2026-01", "2026-04"],
+    p3: ["2026-05", "2026-08"]
+  };
+
+  function pasaFila(fila) {
+    var dims = (fila.getAttribute("data-dim") || "").split(/\s+/).filter(Boolean);
+    if (estado.dim !== "all" && dims.indexOf(estado.dim) === -1) return false;
+    if (estado.proy !== "all" && fila.getAttribute("data-proj") !== estado.proy) return false;
+    if (estado.per !== "all") {
+      var r = RANGOS[estado.per];
+      var s = fila.getAttribute("data-start");
+      if (!r || s < r[0] || s > r[1]) return false;
+    }
+    return true;
+  }
+
+  function visiblesEn(contenedor) {
+    if (!contenedor) return 0;
+    return Array.prototype.slice.call(contenedor.querySelectorAll(".proy"))
+      .filter(function (f) { return !f.hidden; }).length;
+  }
+
+  function aplicar() {
+    var n = 0;
+    filas.forEach(function (fila) {
+      var ok = pasaFila(fila);
+      fila.hidden = !ok;
+      if (ok) n++;
+    });
+
+    // Los encabezados de grupo se ocultan cuando su grupo se queda sin filas.
+    grupoCon.hidden = visiblesEn(grupoCon) === 0;
+    grupoSin.hidden = visiblesEn(grupoSin) === 0;
+    vacio.hidden = n !== 0;
+
+    // La seleccion de trabajos participa del filtro como cualquier proyecto. Si el
+    // filtro la vacia, se dice por que: no es que no haya trabajo, es que del resto
+    // no hay artefacto publicable.
+    var obrasVis = visiblesEn(obrasGrid);
+    obrasGrid.hidden = obrasVis === 0;
+    obrasVacio.hidden = obrasVis !== 0;
+
+    // Recuento de resultados. El control nunca muestra conteos por opcion.
+    if (n === 0) {
+      conteo.textContent = "Ningún proyecto cumple estos filtros. El Registry tiene 12 en total.";
+    } else if (n === filas.length) {
+      conteo.textContent = "Mostrando los 12 proyectos del Registry.";
+    } else {
+      conteo.textContent = "Mostrando " + n + " de 12 proyectos del Registry.";
+    }
+
+    // La rebanada comprobable procede de UN repositorio publico: el del proyecto
+    // Proof of Work. Si el filtro lo deja fuera, no hay fuente publica -> hueco
+    // declarado, nunca cero. El bloque de tiempo NO se filtra: se publica solo
+    // agregado y no tiene desglose por proyecto que se pueda publicar.
+    var pow = document.querySelector('.proy[data-proj="proof-of-work"]');
+    var hayFuente = !!pow && !pow.hidden;
+    actCuerpo.hidden = !hayFuente;
+    actTira.hidden = !hayFuente;
+    actHueco.hidden = hayFuente;
+  }
+
+  function marcarChip(valor) {
+    chips.forEach(function (c) {
+      c.setAttribute("aria-pressed", c.getAttribute("data-dim") === valor ? "true" : "false");
+    });
+  }
+
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      estado.dim = chip.getAttribute("data-dim");
+      marcarChip(estado.dim);
+      aplicar();
+    });
+  });
+
+  selProy.addEventListener("change", function () { estado.proy = selProy.value; aplicar(); });
+  selPer.addEventListener("change",  function () { estado.per  = selPer.value;  aplicar(); });
+
+  reset.addEventListener("click", function () {
+    estado = { dim: "all", proy: "all", per: "all" };
+    marcarChip("all");
+    selProy.value = "all";
+    selPer.value = "all";
+    aplicar();
+  });
+
+  // Entrada desde la portada: proyectos.html?dim=build
+  var q = new URLSearchParams(window.location.search).get("dim");
+  if (q && ["lead", "build", "teach"].indexOf(q) !== -1) {
+    estado.dim = q;
+    marcarChip(q);
+  }
+
+  // Tira de barras: el dato se lee al enfocar o al señalar.
+  // Sin animacion de entrada y sin contador que sube: el valor ya esta en el DOM.
+  var lectura = document.getElementById("lectura");
+  var barras = Array.prototype.slice.call(document.querySelectorAll(".barra"));
+
+  function leer(b) {
+    var mes = b.getAttribute("data-mes");
+    var val = b.getAttribute("data-val");
+    lectura.textContent = "";
+    var etiqueta = document.createElement("span");
+    etiqueta.textContent = mes.charAt(0).toUpperCase() + mes.slice(1) + ": ";
+    var valor = document.createElement("span");
+    valor.className = b.getAttribute("data-estado") === "sindato" ? "cifra cifra-vacia" : "cifra";
+    valor.textContent = val;
+    lectura.appendChild(etiqueta);
+    lectura.appendChild(valor);
+    if (b.getAttribute("data-estado") === "sindato") {
+      var nota = document.createElement("span");
+      nota.className = "xs muted";
+      nota.textContent = " — el repositorio no existía; no es cero.";
+      lectura.appendChild(nota);
+    }
+  }
+
+  function limpiar() {
+    lectura.textContent = "Enfoca o señala un mes para ver su dato.";
+  }
+
+  barras.forEach(function (b) {
+    b.addEventListener("focus", function () { leer(b); });
+    b.addEventListener("mouseenter", function () { leer(b); });
+    b.addEventListener("click", function () { leer(b); });
+    b.addEventListener("blur", limpiar);
+    b.addEventListener("mouseleave", limpiar);
+  });
+
+  aplicar();
+})();
+</script>
+<script src="menu-movil.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit social — Carrusel · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototipos/base.css">
+<link rel="stylesheet" href="../prototipos/a-expediente/tokens.css">
+<style>
+  body { padding-block: var(--space-4); }
+  .nota { max-width: 70ch; }
+
+  .lienzo-wrap { margin-bottom: var(--space-5); }
+  .lienzo-marco { overflow: hidden; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+  .lienzo { transform-origin: top left; }
+
+  .meta-pieza {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem;
+  }
+  .meta-pieza .px { color: var(--ink-title); font-variant-numeric: tabular-nums; }
+  .pie-pieza { font-size: var(--step--1); color: var(--ink-muted); max-width: 68ch; margin-top: .75rem; }
+
+  .barra {
+    position: sticky; top: 0; z-index: 50; background: var(--bg-page);
+    border-bottom: 1px solid var(--rule); padding-block: .75rem;
+    margin-bottom: var(--space-4);
+    display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; align-items: center;
+  }
+  .barra label {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-default);
+    display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; min-height: 44px;
+  }
+  .barra .hint { font-size: var(--step--1); color: var(--ink-muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+  /* ---------- Lámina 1080 x 1350 ---------- */
+  .lam {
+    width: 1080px; height: 1350px; background: var(--white);
+    display: flex; flex-direction: column; padding: 88px 80px;
+  }
+  .lam-rot {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 600;
+    letter-spacing: .24em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .lam-rot::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .lam-num { color: var(--blue); font-variant-numeric: tabular-nums; }
+
+  .lam-tit {
+    font-family: var(--font-heading); font-weight: 700; font-size: 78px; line-height: 1.04;
+    letter-spacing: -.03em; color: var(--blue); margin-top: 40px; text-wrap: balance;
+  }
+  .lam-tit.chico { font-size: 62px; }
+  .lam-lede {
+    font-family: var(--font-lede); font-size: 30px; line-height: 1.55;
+    color: var(--dark-alt); margin-top: 40px;
+  }
+  .lam-cuerpo {
+    font-family: var(--font-body); font-size: 26px; line-height: 1.6;
+    color: var(--ink-default); margin-top: 32px;
+  }
+  .lam-cuerpo + .lam-cuerpo { margin-top: 24px; }
+  .lam-regla { height: 1px; background: var(--gray-border); margin-top: 48px; border: 0; }
+
+  /* El par de etiquetas: UNA SOLA ORACION, mismo peso y mismo color en los dos
+     valores. Sin iconos, sin check, sin color de estado. Contrato de
+     docs/05-feed-contract.md, y aplica tambien fuera del sitio. */
+  .lam-par {
+    font-family: var(--font-body); font-size: 23px; line-height: 1.5;
+    color: var(--gray-medium); margin-top: 28px;
+  }
+  .lam-par b { font-weight: 600; color: var(--gray-medium); }
+
+  .lam-pie { margin-top: auto; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+  .lam-pie .firma { font-size: 64px; color: var(--teal); }
+  .lam-pie .dom {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .lam-paso {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 600;
+    letter-spacing: .2em; color: var(--ink-muted); font-variant-numeric: tabular-nums;
+  }
+
+  /* Cita normativa: se marca con regla lateral, no con caja ni con color. */
+  .lam-cita {
+    font-family: var(--font-lede); font-size: 27px; line-height: 1.5;
+    color: var(--dark-alt); margin-top: 36px;
+    border-left: 3px solid var(--teal); padding-left: 32px;
+  }
+
+  /* Listas de eje: los cuatro valores con peso, tamaño y color idénticos. */
+  .eje { margin-top: 36px; }
+  .eje-nombre {
+    font-family: var(--font-heading); font-size: 24px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .eje-valores { margin-top: 18px; border-top: 1px solid var(--rule); }
+  .eje-valores li {
+    font-family: var(--font-body); font-size: 25px; line-height: 1.4; font-weight: 400;
+    color: var(--ink-default); padding: 16px 0; border-bottom: 1px solid var(--rule);
+  }
+
+  .lam-lista { margin-top: 36px; }
+  .lam-lista li {
+    font-family: var(--font-body); font-size: 26px; line-height: 1.45;
+    color: var(--ink-default); padding: 20px 0; border-bottom: 1px solid var(--rule);
+    display: flex; gap: 22px; align-items: baseline;
+  }
+  .lam-lista li:first-child { border-top: 1px solid var(--rule); }
+  .lam-lista .n { color: var(--blue); font-variant-numeric: tabular-nums; font-weight: 600; flex: none; }
+
+  .lam-dato {
+    font-family: var(--font-heading); font-weight: 700; font-size: 120px; line-height: 1;
+    letter-spacing: -.03em; color: var(--blue); margin-top: 40px;
+  }
+  .lam-dato-pie {
+    font-family: var(--font-body); font-size: 26px; line-height: 1.5;
+    color: var(--ink-muted); margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="rotulo" style="margin-bottom:var(--space-2)"><span class="num">02</span> Kit social · Carrusel</p>
+  <h1 class="display" style="font-size:var(--step-3)">Seis láminas: el método, con material real</h1>
+  <p class="nota lede" style="margin-top:var(--space-3)">
+    Formato <strong>1080 × 1350</strong>, que sirve a la vez para el carrusel de LinkedIn
+    —como documento PDF de seis páginas— y para el carrusel de Instagram. Cada lámina vive
+    en su propio lienzo para poder exportarla por separado.
+  </p>
+  <p class="nota body" style="margin-top:var(--space-3); color:var(--ink-muted)">
+    Todo el contenido sale de <code>public/proof/v1/claims.json</code>,
+    <code>projects.json</code> y del copy normativo de <code>/evidencia</code>. No hay una
+    sola cifra ni una sola afirmación que no venga de ahí.
+  </p>
+
+  <div class="barra">
+    <label><input type="checkbox" id="modo-exportar"> Modo exportación</label>
+    <span class="hint">Aquí no hay guías que ocultar: las seis láminas ya son la pieza final.</span>
+  </div>
+
+  <!-- ============ Lámina 1 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 1 de 6 · Portada</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">01</span>&nbsp; Método</p>
+        <p class="lam-tit">Puedes comprobar lo que afirmo, o ver por qué no puedes.</p>
+        <p class="lam-lede">
+          Publico mis afirmaciones con su procedencia y su verificabilidad. Hoy casi todo
+          es material declarado: lo afirmo yo, y no hay forma de que un tercero lo
+          compruebe. Eso también está dicho.
+        </p>
+        <hr class="lam-regla">
+        <p class="lam-cuerpo">Seis láminas sobre cómo funciona, y sobre lo que deliberadamente no hace.</p>
+        <div class="lam-pie">
+          <span class="firma" aria-hidden="true">rb</span>
+          <span class="dom">rodrigobermejo.com/evidencia</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Lámina 2 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 2 de 6 · El problema</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">02</span>&nbsp; El problema</p>
+        <p class="lam-tit">Un portafolio afirma. Nadie comprueba.</p>
+        <p class="lam-cuerpo">
+          Todo perfil profesional dice lo mismo: que dirige, que construye, que enseña. El
+          lector no tiene forma de distinguir al que lo hace del que lo escribe bien.
+        </p>
+        <p class="lam-cuerpo">
+          La respuesta habitual es el sello: un badge de verificado, una insignia, un
+          número. Todos son atajos que trasladan la confianza a otro sitio sin resolverla.
+        </p>
+        <hr class="lam-regla">
+        <p class="lam-cuerpo">
+          Este sistema hace lo contrario: por cada afirmación dice de dónde sale y qué
+          puedes hacer tú para comprobarla. Cuando no puedes, lo dice con esas palabras.
+        </p>
+        <div class="lam-pie">
+          <span class="lam-paso">02 / 06</span>
+          <span class="dom">rodrigobermejo.com</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Lámina 3 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 3 de 6 · Una afirmación, entera</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">03</span>&nbsp; Una afirmación, entera</p>
+        <p class="lam-tit chico">No solo escribo software: lo opero.</p>
+        <p class="lam-lede">
+          Los sistemas que construyo están en producción, y cuando algo falla el que
+          responde soy yo.
+        </p>
+        <hr class="lam-regla">
+        <p class="lam-par">
+          Procedencia: <b>lo afirmo yo</b> · Verificabilidad:
+          <b>no puedes comprobarlo sin confiar en mí</b>
+        </p>
+        <p class="lam-cuerpo">
+          Ocho proyectos la respaldan. Seis viven en repositorios privados, así que no
+          puedes abrirlos. Eso no se esconde: es la mitad de la afirmación.
+        </p>
+        <div class="lam-pie">
+          <span class="lam-paso">03 / 06</span>
+          <span class="dom">rodrigobermejo.com</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Lámina 4 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 4 de 6 · Los dos ejes</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">04</span>&nbsp; Dos ejes, ocho valores</p>
+        <p class="lam-tit chico">Procedencia y verificabilidad. No son un puntaje.</p>
+        <div class="eje">
+          <p class="eje-nombre">Procedencia — de dónde sale</p>
+          <ul class="eje-valores">
+            <li>lo afirmo yo</li>
+            <li>leído de la fuente</li>
+            <li>calculado a partir de lo leído</li>
+            <li>unido entre fuentes</li>
+          </ul>
+        </div>
+        <div class="eje">
+          <p class="eje-nombre">Verificabilidad — qué puedes hacer tú</p>
+          <ul class="eje-valores">
+            <li>no puedes comprobarlo sin confiar en mí</li>
+            <li>enlaza a algo que alojo yo</li>
+            <li>cualquiera puede abrirlo y comprobarlo</li>
+            <li>comprobable sin confiar en nadie</li>
+          </ul>
+        </div>
+        <div class="lam-pie">
+          <span class="lam-paso">04 / 06</span>
+          <span class="dom">rodrigobermejo.com</span>
+        </div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      Los ocho valores se componen con <strong>el mismo peso, el mismo tamaño y el mismo
+      color</strong>. Sin rampa cromática, sin orden implícito, sin iconos. Una escala de
+      color <em>es</em> un puntaje aunque nadie la llame así, y estos ejes no son un
+      puntaje. La forma no cambia el día que aparezca un valor «cualquiera puede abrirlo».
+    </p>
+  </div>
+
+  <!-- ============ Lámina 5 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 5 de 6 · Lo que no hace</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">05</span>&nbsp; Lo que no hace</p>
+        <p class="lam-tit chico">Tres cosas que este sistema se prohíbe.</p>
+        <ul class="lam-lista">
+          <li><span class="n">01</span><span>No hay sello de verificado. Ni palomita, ni insignia, ni color de estado.</span></li>
+          <li><span class="n">02</span><span>No hay puntaje. Ni porcentaje de completitud, ni nivel, ni barra de progreso.</span></li>
+          <li><span class="n">03</span><span>No hay contador de proyectos ocultos.</span></li>
+        </ul>
+        <p class="lam-cita">
+          Hay trabajo bajo acuerdo de confidencialidad que no aparece aquí en ninguna
+          forma, ni siquiera contado. No hay un número de proyectos ocultos porque ese
+          número también diría algo sobre quién los encargó.
+        </p>
+        <div class="lam-pie">
+          <span class="lam-paso">05 / 06</span>
+          <span class="dom">rodrigobermejo.com/evidencia</span>
+        </div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      La cita es copy normativo del sitio (<code>app/evidencia/page.tsx:51-54</code>). No se
+      acorta ni se reescribe: es el sustituto declarado del contador de proyectos ocultos.
+    </p>
+  </div>
+
+  <!-- ============ Lámina 6 ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza"><span>Lámina 6 de 6 · Cierre</span><span class="px">1080 × 1350 px</span></p>
+    <div class="lienzo-marco" data-w="1080" data-h="1350">
+      <div class="lienzo lam">
+        <p class="lam-rot"><span class="lam-num">06</span>&nbsp; Dónde mirarlo</p>
+        <p class="lam-dato">12</p>
+        <p class="lam-dato-pie">proyectos publicados, con lo que cada uno se propone.</p>
+        <p class="lam-dato">3</p>
+        <p class="lam-dato-pie">afirmaciones, cada una con su procedencia y su verificabilidad.</p>
+        <hr class="lam-regla">
+        <p class="lam-cuerpo">
+          Un proyecto es una unidad de trabajo con dueño e intención; un repositorio es un
+          artefacto suyo, no el proyecto. Buena parte del mío vive en repos privados y por
+          eso no aparece entero.
+        </p>
+        <div class="lam-pie">
+          <span class="firma" aria-hidden="true">rb</span>
+          <span class="dom">rodrigobermejo.com/evidencia</span>
+        </div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      <strong>12 y 3 son conteos medidos</strong>, no redondeos: son los registros de
+      <code>projects.json</code> y <code>claims.json</code> del feed publicado, leídos el
+      2026-09-12. Si el feed cambia, la lámina cambia.
+    </p>
+  </div>
+
+</div>
+
+<span class="proto-tag">Kit social · Borrador</span>
+
+<script>
+  function escalar() {
+    document.querySelectorAll('.lienzo-marco').forEach(function (marco) {
+      var w = +marco.dataset.w, h = +marco.dataset.h;
+      var s = Math.min(1, marco.clientWidth / w);
+      var lienzo = marco.querySelector('.lienzo');
+      lienzo.style.transform = 'scale(' + s + ')';
+      marco.style.height = Math.round(h * s) + 'px';
+    });
+  }
+  escalar();
+  addEventListener('resize', escalar);
+  document.fonts && document.fonts.ready.then(escalar);
+
+  var sw = document.getElementById('modo-exportar');
+  sw && sw.addEventListener('change', function () {
+    document.body.classList.toggle('exportar', sw.checked);
+  });
+</script>
+</body>
+</html>

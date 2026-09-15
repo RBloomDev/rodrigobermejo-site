@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marco AILit de alfabetización en IA — Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma (identica a portada.html) ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* Rutas y URLs largas: sin esto desbordan a lo ancho por debajo de 400px.
+     Medido a 320px. */
+  code { font-family: var(--ff-num); font-size: .92em; overflow-wrap: anywhere; }
+
+  .saltar {
+    position: absolute; left: 12px; top: 12px; z-index: 60;
+    transform: translateY(-200%);
+    background: var(--ink-title); color: var(--white);
+    font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--1);
+    padding: .6rem 1rem; border-radius: var(--radius); text-decoration: none;
+  }
+  .saltar:focus { transform: none; }
+
+  /* ---- Tipo de pieza: mismo sistema que la portada editorial.
+     Se distinguen por FORMA y RELLENO, no solo por color. ---- */
+  .tipo {
+    display: inline-flex; align-items: center; gap: .45rem;
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .16em; text-transform: uppercase;
+    padding: .2rem 0; color: var(--ink-title);
+    /* Como item de rejilla, inline-flex se blockifica a flex y el rotulo se
+       estira a toda la columna. justify-self lo devuelve a su contenido. */
+    justify-self: start; align-self: start; width: fit-content;
+  }
+  .tipo .glifo { flex: none; width: .62rem; height: .62rem; }
+  .tipo--noticia .glifo { background: var(--ink-title); }
+  .tipo--noticia { border-bottom: 2px solid var(--ink-title); }
+  .tipo--analisis {
+    background: var(--bg-inset); color: var(--ink-title);
+    border-left: 4px solid var(--ink-title);
+    padding: .25rem .6rem .25rem .55rem;
+  }
+  .tipo--analisis .glifo {
+    background: linear-gradient(to bottom, var(--ink-title) 0 34%, transparent 34% 66%, var(--ink-title) 66% 100%);
+  }
+  .tipo--opinion {
+    background: var(--accent); color: var(--dark-title);
+    padding: .25rem .6rem; border-radius: var(--radius);
+  }
+  .tipo--opinion .glifo { background: var(--dark-title); border-radius: 50%; }
+
+  /* ---- Estado del campo MEXICO ---- */
+  .mex {
+    display: inline-flex; align-items: center; gap: .5rem;
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+    justify-self: start; width: fit-content;
+  }
+  .mex .m-glifo {
+    flex: none; width: 1.05rem; height: 1.05rem; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: .62rem; font-weight: 700; letter-spacing: 0; line-height: 1;
+    color: var(--white); font-family: var(--ff-ui);
+  }
+  .mex--con    .m-glifo { background: var(--ink-title); border: 2px solid var(--ink-title); }
+  .mex--sin    .m-glifo { background: linear-gradient(to right, var(--ink-title) 0 50%, var(--white) 50% 100%); border: 2px solid var(--ink-title); }
+  .mex--no     .m-glifo { background: var(--white); border: 2px solid var(--ink-muted); color: var(--ink-2); }
+  .mex--noverif .m-glifo { background: var(--white); border: 2px dashed var(--ink-title); color: var(--ink-title); }
+  /* no_verificado NO se apaga: misma tinta y mismo peso que los otros tres. */
+  .mex--noverif { color: var(--ink); }
+
+  /* ---- Cabecera de la pieza ---- */
+  .pieza-cab { padding-block: var(--s-4) var(--s-2); }
+  .pieza-cab .h1 { margin-top: .8rem; }
+  .pieza-cab .lede { margin-top: var(--s-2); }
+  .sellos { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-top: var(--s-2); }
+  .sello-borrador {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    border: 2px solid var(--ink-title); color: var(--ink-title);
+    padding: .15rem .55rem; border-radius: var(--radius);
+  }
+  .fechas {
+    margin-top: var(--s-2); display: grid; gap: .35rem var(--s-3);
+    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2);
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding-block: var(--s-2);
+  }
+  @media (min-width: 700px) { .fechas { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .fechas .et {
+    font-size: var(--t--2); font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-muted); display: block;
+  }
+
+  /* `.aviso` vivia aqui con OTRA definicion y pisaba la del sistema por venir
+     despues del <link>. Dos definiciones del mismo nombre de clase es la deuda
+     de dos dialectos que este prototipo existe para no repetir. Se retira: la
+     de `sistema.css` es la buena y la comparten todas las pantallas. */
+
+  /* ---- Relacion declarada: visible en la pieza, no en pagina aparte ---- */
+  .relacion {
+    margin-top: var(--s-3);
+    border-left: 4px solid var(--accent);
+    background: var(--bg-inset);
+    padding: var(--s-2) var(--s-2) var(--s-2) var(--s-3);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+  .relacion .et {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-title);
+    display: block; margin-bottom: .4rem;
+  }
+  .relacion p { max-width: 68ch; color: var(--ink-2); }
+  .relacion p + p { margin-top: .5rem; }
+
+  /* ---- Fuente primaria destacada: antes del cuerpo ---- */
+  .primaria {
+    margin-top: var(--s-3);
+    border-top: 2px solid var(--ink-title);
+    border-bottom: 1px solid var(--rule);
+    padding-block: var(--s-2);
+  }
+  .primaria .et {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    display: block;
+  }
+  .primaria .tit {
+    font-family: var(--ff-display); font-weight: 700; font-size: var(--t-1);
+    line-height: 1.25; color: var(--ink-title); margin-top: .35rem;
+  }
+  .primaria .tit a { text-decoration: none; border-bottom: 2px solid var(--accent); }
+  .primaria .meta {
+    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2);
+    margin-top: .4rem;
+  }
+  .primaria .url { overflow-wrap: anywhere; font-family: var(--ff-num); font-size: var(--t--2); color: var(--ink-muted); }
+
+  /* ---- Cuerpo ---- */
+  .cuerpo { padding-block: var(--s-3); }
+
+  /* ============================================================
+     LAS CINCO PREGUNTAS, como bloques identificables.
+     Rejilla de regla y columna: numero + rotulo a la izquierda,
+     respuesta a la derecha. No hay tarjetas y no hay recuadros de aviso:
+     los cinco bloques tienen el mismo peso tipografico.
+     ============================================================ */
+  .cinco { padding-block: var(--s-3) var(--s-4); }
+  .preguntas { margin-top: var(--s-3); }
+  .preg {
+    display: grid; gap: .5rem var(--s-3);
+    border-top: 2px solid var(--ink-title);
+    padding-block: var(--s-3);
+  }
+  @media (min-width: 820px) { .preg { grid-template-columns: 14rem minmax(0,1fr); } }
+  .preg-num {
+    font-family: var(--ff-num); font-variant-numeric: tabular-nums;
+    font-size: var(--t-2); font-weight: 600; color: var(--ink-title);
+    line-height: 1;
+  }
+  .preg-et {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    margin-top: .4rem; display: block;
+  }
+  .preg-campo {
+    font-family: var(--ff-num); font-size: var(--t--2); color: var(--ink-muted);
+    margin-top: .3rem; display: block;
+  }
+  .preg-cuerpo > * + * { margin-top: var(--s-2); }
+  .preg-cuerpo .prosa { max-width: 40rem; }
+
+  /* Bloque Mexico: el estado se renderiza, nunca se apaga. */
+  .mex-bloque {
+    border: 2px solid var(--ink-title); border-radius: var(--radius);
+    padding: var(--s-2); max-width: 40rem;
+  }
+  .mex-bloque .mex { font-size: var(--t--1); }
+  .mex-bloque .que-falta { margin-top: var(--s-2); border-top: 1px solid var(--rule); padding-top: var(--s-2); }
+  .mex-bloque .que-falta li {
+    font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-2);
+    padding-left: 1.1rem; position: relative;
+  }
+  .mex-bloque .que-falta li + li { margin-top: .45rem; }
+  .mex-bloque .que-falta li::before {
+    content: ""; position: absolute; left: 0; top: .62em;
+    width: .45rem; height: .45rem; border: 1px dashed var(--ink-title);
+  }
+  .otros-estados { margin-top: var(--s-3); }
+  .otros-estados .fila { grid-template-columns: 1fr; }
+  @media (min-width: 780px) { .otros-estados .fila { grid-template-columns: 15rem minmax(0,1fr); } }
+
+  /* Lo que NO establece: misma tinta, sin recuadro de advertencia. */
+  .no-establece li {
+    border-top: 1px solid var(--rule);
+    padding-block: var(--s-2);
+    display: grid; gap: .2rem var(--s-2); align-items: baseline;
+    max-width: 44rem;
+  }
+  @media (min-width: 640px) { .no-establece li { grid-template-columns: 2.4rem minmax(0,1fr); } }
+  .no-establece .marca-no {
+    font-family: var(--ff-num); font-size: var(--t--1); font-weight: 600;
+    color: var(--ink-title);
+  }
+  .no-establece p {
+    font-family: var(--ff-read); font-size: var(--t-0); line-height: 1.7; color: var(--ink);
+  }
+
+  /* ---- Procedencia de cuatro etapas ---- */
+  .proced { padding-block: var(--s-3) var(--s-4); }
+  .etapas { margin-top: var(--s-2); }
+  .etapa { grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .etapa { grid-template-columns: 9rem 8.5rem minmax(0,1fr); } }
+  .etapa-nom {
+    font-family: var(--ff-ui); font-size: var(--t--1); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--ink-title);
+  }
+  .agente {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    border: 1px solid var(--rule-strong); border-radius: var(--radius);
+    padding: .15rem .5rem; color: var(--ink-2);
+    justify-self: start; width: fit-content;
+  }
+  .agente--ia { background: var(--bg-inset); color: var(--ink-2); }
+  .agente--pendiente { border-style: dashed; border-color: var(--ink-title); color: var(--ink); border-width: 2px; }
+
+  /* ---- Fuentes ---- */
+  .fuentes { padding-block: var(--s-3) var(--s-4); }
+  .fuentes-lista { margin-top: var(--s-2); }
+  .fuente { grid-template-columns: 1fr; }
+  @media (min-width: 800px) { .fuente { grid-template-columns: 7.5rem minmax(0,1fr); } }
+  .fuente .tit { font-family: var(--ff-ui); font-weight: 600; font-size: var(--t-0); line-height: 1.35; }
+  .fuente .tit a { text-decoration: none; border-bottom: 1px solid var(--accent); }
+  .fuente .meta { font-family: var(--ff-ui); font-size: var(--t--1); color: var(--ink-muted); margin-top: .25rem; }
+  .fuente .url { font-family: var(--ff-num); font-size: var(--t--2); color: var(--ink-muted); overflow-wrap: anywhere; margin-top: .2rem; }
+  .rol-fuente {
+    font-family: var(--ff-ui); font-size: var(--t--2); font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted);
+    justify-self: start; width: fit-content;
+  }
+  .rol-fuente.es-primaria { color: var(--ink-title); border-bottom: 2px solid var(--accent); }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); }
+</style>
+</head>
+<body>
+
+<a class="saltar" href="#contenido">Saltar al contenido</a>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html">Inicio</a>
+      <a href="noticias.html" aria-current="page">Noticias</a>
+      <a href="proyectos.html">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="contenido">
+<article>
+  <header class="pieza-cab wrap-read">
+    <p class="categoria">Análisis · Educación e IA</p>
+    <h1 class="h1" style="margin:.5rem 0 .7rem">La Comisión Europea y la OCDE presentaron un marco común de alfabetización en IA para primaria y secundaria</h1>
+    <p class="lede">El marco AILit se presentó el 18 de junio de 2026 en Bruselas. Organiza la alfabetización en IA en cuatro dominios y la Comisión Europea lo declara complementario de la evaluación PISA 2029 de alfabetización mediática y en IA.</p>
+    <p class="xs muted" style="margin-top:var(--s-2)">Hecho del 18 de junio de 2026 · redactado por un agente el 2026-09-14</p>
+    <div style="display:grid;gap:.6rem;margin-top:var(--s-3)">
+      <p class="aviso aviso--sim"><span><b>Borrador, sin publicar.</b> Esta pieza no está publicada en ninguna parte y su publicación requiere una decisión humana.</span></p>
+      <p class="aviso aviso--verif"><span><b>Revisión humana pendiente.</b> Lo que sigue lo redactó un agente y lo comprobó un verificador automático. Ninguna persona ha revisado la pieza todavía.</span></p>
+      <p class="aviso aviso--verif"><span><b>1 afirmación sin respaldo legible.</b> El verificador no encontró, en las fuentes que pudo leer, un pasaje que la sostenga. Queda señalada abajo, y por eso el veredicto no es completo.</span></p>
+    </div>
+    <p style="margin-top:var(--s-3)">
+      <span class="sello">PARCIAL <span>5 de 5 fuentes leídas · 2 de 2 corroborantes</span></span>
+    </p>
+  </header>
+  <hr class="filete" style="margin:var(--s-4) auto;max-width:44rem">
+  <section class="wrap-read">
+    <h2 class="h2">Qué pasó</h2>
+    <div class="prosa" style="margin-top:var(--s-2)"><p>El 18 de junio de 2026, la Comisión Europea y la OCDE presentaron el marco de alfabetización en inteligencia artificial AILit para educación primaria y secundaria. El anuncio ocurrió en Bruselas, durante el evento insignia del European Digital Education Hub «Collaborate for Impact: Advancing European Digital Education and Skills», que reunió a 150 responsables de política pública, docentes, expertos y participantes de toda Europa. El marco se desarrolló con apoyo de expertos internacionales, entre ellos CodeAI, y organiza la alfabetización en IA en cuatro dominios: Engage with AI, Create with AI, Manage AI y Shape AI. Viene acompañado de ejemplos prácticos de aula para ambos niveles. La Comisión Europea lo enumera entre los recursos que complementan la evaluación PISA 2029 de alfabetización mediática y en IA (MAIL). Según el sitio del propio proyecto —única fuente leída que lo dice—, el borrador se publicó en mayo de 2025 y la consulta previa recogió comentarios de más de 2000 personas de más de 100 países.</p></div>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-4)">
+    <h2 class="h2">Qué cambia</h2>
+    <div class="prosa" style="margin-top:var(--s-2)"><p>Para quien dirige tecnología o forma talento, deja de ser cierto que no exista un referente común: hay un marco presentado por dos instituciones internacionales, con cuatro dominios de competencia y ejemplos de aula, contra el cual contrastar un programa propio de formación en IA en vez de inventarlo desde cero. Que la Comisión Europea lo liste como complementario de PISA 2029 sugiere que su vocabulario será el que se use para discutir alfabetización en IA en los sistemas que participen en esa evaluación; alinear el vocabulario propio ahora cuesta menos que traducirlo después. Lo que NO se sigue de esto es que ningún sistema educativo lo haya adoptado.</p></div>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-4)">
+    <h2 class="h2">Qué aplica en México</h2>
+    <p class="aviso" style="margin-top:var(--s-2)"><span><b>Estado: no verificado.</b> No se comprobó si México adopta o adoptará este marco, ni si participará en la evaluación PISA 2029 de alfabetización mediática y en IA. Ninguna de las fuentes leídas lo dice. La única fuente mexicana leída —el Observatorio del Tec— reporta el marco como movimiento internacional, no como adopción nacional. Cerrar esto exige revisión manual: del lado oficial mexicano no hay hoy una fuente con cadencia verificable que registre esa adopción.</span></p>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-5)">
+    <h2 class="h2">De dónde sale cada afirmación</h2>
+    <p class="ui small muted" style="margin-top:var(--s-2);max-width:44rem">Cada afirmación relevante va con el pasaje literal que la sostiene. <b>Dos URLs no son dos corroboraciones:</b> la OCDE y la Comisión Europea son las dos coautoras del marco y el sitio <code>ailiteracyframework.org</code> es de la propia iniciativa, así que las tres comparten procedencia. La única voz ajena al marco entre las fuentes leídas es el Observatorio del Tec.</p>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">1. El 18 de junio de 2026 la Comisión Europea y la OCDE presentaron el marco AILit para primaria y secundaria.</h3>
+      <blockquote class="pasaje">
+        OECD/European Commission (2026), Empowering Learners for the Age of AI: An AI Literacy Framework for Primary and Secondary Education, OECD Publishing — 18 June 2026
+        <cite><a class="link" href="https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html" rel="noopener nofollow" target="_blank">https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65c…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <blockquote class="pasaje">
+        On 18 June, the European Commission and the Organisation for Economic Cooperation and Development (OECD) presented an AI Literacy (AILit) Framework for primary and secondary education.
+        <cite><a class="link" href="https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence" rel="noopener nofollow" target="_blank">https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <blockquote class="pasaje">
+        …the finalised AI Literacy Framework for Primary and Secondary Education, launched on 18 June 2026 during the European Digital Education Hub (EDEH) flagship event, Collaborate for Impact: Advancing European Digital Education and Skills.
+        <cite><a class="link" href="https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework" rel="noopener nofollow" target="_blank">https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-lit…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <blockquote class="pasaje">
+        La OCDE y la Comisión Europea han impulsado el marco AILit sobre la alfabetización en IA orientado a la educación primaria y secundaria.
+        <cite><a class="link" href="https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana" rel="noopener nofollow" target="_blank">https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana</a> — fuente independiente del marco</cite>
+      </blockquote>
+      <p class="xs muted" style="max-width:56ch">Las dos instituciones coautoras lo confirman por separado (OCDE y Comisión Europea), y una fuente independiente —el Observatorio del Tec— confirma la existencia y el alcance del marco, aunque no su fecha.</p>
+    </div>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">2. El anuncio fue en Bruselas y reunió a 150 asistentes.</h3>
+      <blockquote class="pasaje">
+        The announcement took place in Brussels during the European Digital Education Hub flagship event, Collaborate for Impact: Advancing European Digital Education and Skills which brought together 150 policymakers, educators, experts and stakeholders from across Europe.
+        <cite><a class="link" href="https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence" rel="noopener nofollow" target="_blank">https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <p class="xs muted" style="max-width:56ch">Una sola fuente, y es coautora. No hay corroboración independiente de la cifra.</p>
+    </div>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">3. El marco organiza la alfabetización en IA en cuatro dominios: Engage, Create, Manage y Shape.</h3>
+      <blockquote class="pasaje">
+        It enables learners to engage, create with, manage, and shape AI, while critically evaluating its benefits, risks and ethical implications.
+        <cite><a class="link" href="https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence" rel="noopener nofollow" target="_blank">https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <blockquote class="pasaje">
+        The framework spans four domains: Engage with AI, Create with AI, Manage AI, and Shape AI—covering awareness, creative use, responsible decision making, and how AI systems are shaped by human values.
+        <cite><a class="link" href="https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework" rel="noopener nofollow" target="_blank">https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-lit…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <p class="xs muted" style="max-width:56ch">Dos fuentes, pero ambas de la misma procedencia institucional. Dos URLs no son dos corroboraciones.</p>
+    </div>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">4. La Comisión Europea lo lista como complementario de la evaluación PISA 2029 de alfabetización mediática y en IA.</h3>
+      <blockquote class="pasaje">
+        The AI Literacy Framework also complements several European initiative and policy priorities: PISA 2029 Media and AI Literacy (MAIL) assessment…
+        <cite><a class="link" href="https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence" rel="noopener nofollow" target="_blank">https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <blockquote class="pasaje">
+        PISA integrará en 2029 la alfabetización mediática y en inteligencia artificial.
+        <cite><a class="link" href="https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana" rel="noopener nofollow" target="_blank">https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana</a> — fuente independiente del marco</cite>
+      </blockquote>
+      <p class="xs muted" style="max-width:56ch">CORRECCIÓN. Una versión anterior de esta pieza decía que el marco «alimenta el dominio innovador de PISA 2029». Ninguna fuente dice eso: la Comisión Europea dice que lo «complementa», y el Observatorio confirma por separado que PISA 2029 incluirá esa evaluación. Se bajó la afirmación a lo que las fuentes sostienen.</p>
+    </div>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">5. El borrador se publicó en mayo de 2025 y la consulta recogió comentarios de más de 2000 personas de más de 100 países.</h3>
+      <p class="aviso aviso--verif" style="margin-top:.6rem"><span><b>Una sola fuente, y no es independiente.</b> Se publica atribuida a quien lo dice, no como hecho corroborado.</span></p>
+      <blockquote class="pasaje">
+        …the OECD and the European Commission, with support from CodeAI (formerly Code.org) and international experts, released a draft AI Literacy Framework in May 2025… The draft framework was informed by extensive global consultation, drawing feedback from over 2000 individuals across a wide range of stakeholder groups, including teachers, education leaders, policymakers, learning designers, NGOs and researchers from over 100 countries representing all continents.
+        <cite><a class="link" href="https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework" rel="noopener nofollow" target="_blank">https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-lit…</a> — fuente de la propia iniciativa</cite>
+      </blockquote>
+      <p class="xs muted" style="max-width:56ch">Solo lo dice el sitio del propio proyecto. La página de la Comisión Europea NO trae estas cifras, y ninguna fuente independiente las repite. Se publica atribuida, no como hecho corroborado.</p>
+    </div>
+    <div style="margin-top:var(--s-4)">
+      <h3 class="h3">Sin respaldo legible</h3>
+      <p class="aviso aviso--verif" style="margin-top:.6rem"><span>El marco AILit se presentó el 18 de junio de 2026 en Bruselas. — ninguna de las 4 fuentes legibles la respalda; quedan 1 fuentes sin consultar</span></p>
+      <p class="xs muted" style="max-width:60ch;margin-top:.6rem">No significa que sea falsa: significa que el verificador no encontró el pasaje que la sostenga en las fuentes que pudo leer. Ausencia de prueba no es prueba de ausencia, y por eso queda señalada en vez de retirada o dada por buena.</p>
+    </div>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-5)">
+    <h2 class="h2">Lo que esto no establece</h2>
+    <ul style="margin-top:var(--s-2);display:grid;gap:.9rem">
+      <li class="ui small" style="border-left:2px solid var(--rule-mid);padding-left:.9rem">No establece que ningún sistema educativo lo haya adoptado, ni en México ni fuera. Presentar un marco no es adoptarlo, y no se leyó ninguna fuente que registre una adopción.</li>
+      <li class="ui small" style="border-left:2px solid var(--rule-mid);padding-left:.9rem">No establece que el marco forme parte del instrumento PISA 2029. Lo que dice la Comisión Europea es que lo «complementa», que es una relación más débil que integrarlo.</li>
+      <li class="ui small" style="border-left:2px solid var(--rule-mid);padding-left:.9rem">No establece ningún efecto sobre el aprendizaje. El marco describe competencias esperadas; no se leyó evidencia de que enseñarlas mejore algún resultado medido.</li>
+      <li class="ui small" style="border-left:2px solid var(--rule-mid);padding-left:.9rem">No establece que el marco sea reutilizable. Aquí se cita y se enlaza; no se reproduce.</li>
+      <li class="ui small" style="border-left:2px solid var(--rule-mid);padding-left:.9rem">No hay una segunda voz independiente sobre las cifras. La consulta previa y el número de asistentes los sostiene una sola fuente cada uno, y ninguna es ajena a la iniciativa.</li>
+    </ul>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-5)">
+    <h2 class="h2">Fuentes</h2>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="h3" style="font-size:var(--t-0)">New AI Literacy Framework helps schools prepare learners for the age of artificial intelligence</p>
+      <p class="xs muted">Comisión Europea — European Education Area · 18 de junio de 2026</p>
+      <p class="xs"><a class="link" href="https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence" rel="noopener nofollow" target="_blank">https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence</a></p>
+      <p class="xs muted">La Comisión Europea es una de las dos instituciones que presentan el marco. Es la fuente autorizada sobre el hecho, no una corroboración independiente de él.</p>
+    </div>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="h3" style="font-size:var(--t-0)">Empowering Learners for the Age of AI: Presenting the Finalised AI Literacy Framework for Primary and Secondary Education</p>
+      <p class="xs muted">AILit Framework — sitio del propio proyecto · 18 de junio de 2026</p>
+      <p class="xs"><a class="link" href="https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework" rel="noopener nofollow" target="_blank">https://ailiteracyframework.org/blog/empowering-learners-for-the-age-of-ai-literacy-framework</a></p>
+      <p class="xs muted">Es el sitio de la iniciativa. Comparte procedencia con la OCDE y la Comisión Europea: no cuenta como segunda voz.</p>
+    </div>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="h3" style="font-size:var(--t-0)">La inteligencia artificial no revolucionará la educación: lo harán las personas</p>
+      <p class="xs muted">Observatorio del Instituto para el Futuro de la Educación (Tec de Monterrey) · 9 de septiembre de 2026</p>
+      <p class="xs"><a class="link" href="https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana" rel="noopener nofollow" target="_blank">https://observatorio.tec.mx/revolucion-educativa-con-inteligencia-humana</a></p>
+      <p class="xs muted">Institución mexicana ajena al marco. Es la única voz independiente leída, y confirma la existencia y el alcance del marco, no su fecha.</p>
+    </div>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="h3" style="font-size:var(--t-0)">A Common Effort to Advance AI Literacy</p>
+      <p class="xs muted">AILit Framework — sitio del propio proyecto · 19 de septiembre de 2024 · modificada el 15 de junio de 2026</p>
+      <p class="xs"><a class="link" href="https://ailiteracyframework.org/about" rel="noopener nofollow" target="_blank">https://ailiteracyframework.org/about</a></p>
+      <p class="xs muted">Página de contexto del proyecto, publicada en 2024 y modificada el 2026-06-15. Se cita por el dato de PISA, no por la fecha del lanzamiento.</p>
+    </div>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="h3" style="font-size:var(--t-0)">Empowering Learners for the Age of AI (publicación)</p>
+      <p class="xs muted">OCDE · 18 de junio de 2026</p>
+      <p class="xs"><a class="link" href="https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html" rel="noopener nofollow" target="_blank">https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html</a></p>
+      <p class="xs muted">Coautora del marco, junto con la Comisión Europea. Su página de la publicación confirma por su cuenta la fecha y la autoría. Es fuente autorizada sobre el hecho, no corroboración independiente de él.</p>
+    </div>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-5)">
+    <h2 class="h2">Correcciones</h2>
+    <p class="ui small muted" style="margin-top:var(--s-2)">Lo que esta pieza afirmaba antes y ya no, con la razón. No se reescribe en silencio.</p>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="xs muted">2026-09-14 · agente</p>
+      <p class="ui small">Se bajó la afirmación sobre PISA 2029 de «alimenta el dominio innovador» a «la Comisión Europea lo lista como complementario», que es lo que la fuente sostiene. Se corrigió la fecha declarada de ailiteracyframework.org/about, que era la de modificación y no la de publicación. Se añadió la página de la Comisión Europea como fuente y se registró la de la OCDE como no consultada (403).</p>
+    </div>
+    <div class="fila" style="grid-template-columns:1fr">
+      <p class="xs muted">2026-09-14 · agente</p>
+      <p class="ui small">La pagina de la OCDE responde de forma intermitente: en unas peticiones entrega el documento y en otras rechaza al cliente. La version anterior de esta pieza afirmaba que estaba bloqueada, y eso no es exacto. En la corrida de verificacion que sello esta pieza no se pudo leer, asi que cuenta como fuente NO CONSULTADA: no corrobora, y tampoco permite afirmar que no contradiga.</p>
+    </div>
+  </section>
+  <section class="wrap-read" style="margin-top:var(--s-5)">
+    <details class="detalle">
+      <summary><span class="h3">Cómo se verificó esta pieza</span></summary>
+      <div class="detalle-cuerpo ui small">
+        <p>El canal detecta el hecho en un feed autorizado, arma un expediente con lo que la licencia de la fuente permite, y se lo entrega a un modelo que sólo puede afirmar lo que está en el expediente. Después, un verificador descarga cada fuente citada y juzga afirmación por afirmación.</p>
+        <p style="margin-top:.9rem"><b>Tres estados por fuente, no dos.</b> Una fuente puede estar <i>leída</i>, <i>no existir</i> (404 o 410) o estar <i>no consultada</i> (403, límite de peticiones, tiempo agotado). La tercera no es corroboración ni permite descartar una contradicción, y por eso baja el veredicto sin ser un fallo de la pieza.</p>
+        <p style="margin-top:.9rem"><b>Tres veredictos.</b> <i>Verificada</i>, <i>parcial</i> y <i>no verificada</i>. Ninguno se presenta con color de estado ni con insignia: el veredicto se lee.</p>
+        <p style="margin-top:.9rem"><b>Resultado exacto de esta pieza:</b></p>
+        <p class="xs" style="margin-top:.4rem;border-left:2px solid var(--rule-mid);padding-left:.9rem">VEREDICTO PARCIAL. Fuentes: 5 citadas — 4 leidas, 1 no consultadas, 0 inexistentes; 2/2 corroborantes contando solo fuentes leidas. Afirmaciones: 3 con respaldo legible, 1 pendientes, 0 contradichas. Fechas por fuente: no_confirmada/coincide/coincide/coincide/no_consultada — solo la fecha de publicacion confirma. Cifras: 7/7 presentes en el texto legible (comprueba PRESENCIA de la cifra, no que la afirmacion sea cierta). PENDIENTES: «El marco AILit se presentó el 18 de junio de 2026 en Bruselas.» (ninguna de las 4 fuentes legibles la respalda; quedan 1 fuentes sin consultar) 1 fuentes sin consultar: de ellas no se puede afirmar que no contradigan. Revision humana pendiente. Avisos: sin fecha de publicacion con rol explicito en https://education.ec.europa.eu/whats-new/news/new-ai-literacy-framework-helps-schools-prepare-learners-for-the-age-of-artificial-intelligence (la pieza declara 2026-06-18); 0 fechas sueltas en la pagina, que NO confirman nada | https://ailiteracyframework.org/about se publico 2024-09-19 y se modifico 2026-06-15: la pieza puede estar citando un texto que cambio despues. | fuente NO CONSULTADA: https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html [403] — no se pudo leer. No corrobora y NO permite afirmar que no contradiga: de este documento no sabemos nada. | doblemente debil: https://www.oecd.org/en/publications/empowering-learners-for-the-age-of-ai_65cd27d4-en.html es una referencia que otra fuente cito (no la leimos de primera mano) y ademas no se pudo consultar. Ni sabemos que dice, ni que exista.</p>
+      </div>
+    </details>
+  </section>
+  <footer class="pie wrap-read" style="margin-top:var(--s-5)">
+    <p class="small muted">
+      Prototipo de la plataforma · rama <code>feat/plataforma-editorial-y-actividad</code> ·
+      nada de esto está publicado.
+    </p>
+    <p class="small muted" style="margin-top:.4rem">
+      Esquema: <code>docs/plataforma/02-editorial.md</code> §3 ·
+      Registro: <code>docs/plataforma/prototipo/datos/piezas.json</code> ·
+      <code>id: marco-ailit-alfabetizacion-ia-educacion</code>
+    </p>
+    <p class="small" style="margin-top:var(--s-2)"><a class="link-quiet" href="noticias.html">← Todas las piezas</a></p>
+  </footer>
+</article>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+<script src="menu-movil.js" defer></script>
+</body>
+</html>

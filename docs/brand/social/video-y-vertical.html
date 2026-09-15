@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kit social — Vídeo y vertical · Rodrigo Bermejo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../prototipos/base.css">
+<link rel="stylesheet" href="../prototipos/a-expediente/tokens.css">
+<style>
+  body { padding-block: var(--space-4); }
+  .nota { max-width: 70ch; }
+
+  .lienzo-wrap { margin-bottom: var(--space-5); }
+  .lienzo-marco { overflow: hidden; border: 1px solid var(--rule-strong); border-radius: var(--radius); }
+  .lienzo { transform-origin: top left; }
+
+  .meta-pieza {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; margin-bottom: .75rem;
+  }
+  .meta-pieza .px { color: var(--link-mark); font-variant-numeric: tabular-nums; }
+  .pie-pieza { font-size: var(--step--1); color: var(--ink-muted); max-width: 68ch; margin-top: .75rem; }
+
+  .barra {
+    position: sticky; top: 0; z-index: 50; background: var(--bg-page);
+    border-bottom: 1px solid var(--rule); padding-block: .75rem;
+    margin-bottom: var(--space-4);
+    display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; align-items: center;
+  }
+  .barra label {
+    font-family: var(--font-heading); font-size: var(--step--1); font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--ink-default);
+    display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; min-height: 44px;
+  }
+  .barra .hint { font-size: var(--step--1); color: var(--ink-muted); text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+  .guia {
+    position: absolute; border: 2px dashed var(--gray-border);
+    background: rgba(204, 204, 204, .1); pointer-events: none;
+  }
+  .guia::after {
+    content: attr(data-nota); position: absolute; left: 14px; bottom: 10px;
+    font-family: var(--font-heading); font-size: 15px; font-weight: 600;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--gray-medium);
+    max-width: 92%;
+  }
+  body.exportar .guia { display: none; }
+
+  /* ---------- 1. Miniatura de YouTube 1280 x 720 ---------- */
+  .mini {
+    width: 1280px; height: 720px; background: var(--white); position: relative;
+    display: grid; grid-template-columns: 1fr 400px;
+  }
+  .mini-texto { padding: 56px 44px 56px 64px; display: flex; flex-direction: column; }
+  .mini-rot {
+    font-family: var(--font-heading); font-size: 20px; font-weight: 600;
+    letter-spacing: .26em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .mini-rot::after { content: ""; width: 70px; height: 1px; background: var(--rule-strong); }
+  .mini-tit {
+    font-family: var(--font-heading); font-weight: 700; font-size: 84px; line-height: 1.02;
+    letter-spacing: -.032em; color: var(--blue); margin-top: 28px; text-wrap: balance;
+  }
+  .mini-sub {
+    font-family: var(--font-lede); font-size: 25px; line-height: 1.45;
+    color: var(--dark-alt); margin-top: 26px; max-width: 30ch;
+  }
+  .mini-pie { margin-top: auto; display: flex; align-items: baseline; gap: 16px; }
+  .mini-pie .firma { font-size: 52px; color: var(--teal); }
+  .mini-pie .dom {
+    font-family: var(--font-heading); font-size: 18px; font-weight: 600;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .mini-retrato { position: relative; overflow: hidden; background: var(--gray-bg);
+                  border-left: 1px solid var(--rule-strong); }
+  .mini-retrato img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%;
+                      filter: grayscale(1) contrast(1.05); }
+  .mini-zona-sello { right: 0; bottom: 0; width: 200px; height: 84px; }
+
+  /* ---------- 2. Pieza vertical 1080 x 1920 ---------- */
+  .vert { width: 1080px; height: 1920px; background: var(--white); position: relative; }
+  .vert-seguro {
+    position: absolute; left: 90px; top: 320px; width: 900px; height: 1120px;
+    display: flex; flex-direction: column;
+  }
+  .vert-rot {
+    font-family: var(--font-heading); font-size: 24px; font-weight: 600;
+    letter-spacing: .24em; text-transform: uppercase; color: var(--ink-muted);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .vert-rot::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .vert-num { color: var(--teal); font-variant-numeric: tabular-nums; }
+  .vert-tit {
+    font-family: var(--font-heading); font-weight: 700; font-size: 86px; line-height: 1.03;
+    letter-spacing: -.03em; color: var(--blue); margin-top: 38px; text-wrap: balance;
+  }
+  .vert-lede {
+    font-family: var(--font-lede); font-size: 32px; line-height: 1.5;
+    color: var(--dark-alt); margin-top: 40px;
+  }
+  .vert-regla { height: 1px; background: var(--gray-border); border: 0; margin-top: 48px; }
+  .vert-par {
+    font-family: var(--font-body); font-size: 25px; line-height: 1.5;
+    color: var(--gray-medium); margin-top: 30px;
+  }
+  .vert-par b { font-weight: 600; color: var(--gray-medium); }
+  .vert-pie { margin-top: auto; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+  .vert-pie .firma { font-size: 66px; color: var(--teal); }
+  .vert-pie .dom {
+    font-family: var(--font-heading); font-size: 22px; font-weight: 600;
+    letter-spacing: .18em; text-transform: uppercase; color: var(--ink-muted);
+  }
+  .vert-zona-sup { left: 0; top: 0; width: 1080px; height: 320px; }
+  .vert-zona-inf { left: 0; bottom: 0; width: 1080px; height: 480px; }
+  .vert-zona-der { right: 0; top: 320px; width: 90px; height: 1120px; }
+  /* Columna de 90 px: la etiqueta va en vertical o no cabe. */
+  .vert-zona-der::after { writing-mode: vertical-rl; left: auto; right: 12px; bottom: 24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="rotulo" style="margin-bottom:var(--space-2)"><span class="num">04</span> Kit social · Vídeo y vertical</p>
+  <h1 class="display" style="font-size:var(--step-3)">La portada de un vídeo y la pieza de pantalla completa</h1>
+  <p class="nota lede" style="margin-top:var(--space-3)">
+    Dos formatos que el sistema todavía no había tenido que resolver: uno que se ve a
+    tamaño de sello y otro que se ve a pantalla completa con interfaz encima. Las mismas
+    reglas en los dos.
+  </p>
+
+  <div class="barra">
+    <label><input type="checkbox" id="modo-exportar"> Modo exportación</label>
+    <span class="hint">Oculta las guías de zona cubierta para capturar la pieza limpia.</span>
+  </div>
+
+  <!-- ============ 1. Miniatura ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Miniatura de vídeo · YouTube</span>
+      <span class="px">1280 × 720 px</span>
+      <span>16:9 · máx. 2 MB</span>
+    </p>
+    <div class="lienzo-marco" data-w="1280" data-h="720">
+      <div class="lienzo mini">
+        <div class="mini-texto">
+          <p class="mini-rot">Decisión técnica</p>
+          <p class="mini-tit">Un proyecto confidencial no aparece. Ni contado.</p>
+          <p class="mini-sub">Por qué no digo cuántos hay bajo NDA, y lo que me cuesta.</p>
+          <div class="mini-pie">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">@rodrigolbermejo</span>
+          </div>
+        </div>
+        <div class="mini-retrato">
+          <img src="../../../public/images/profile.jpg" alt="">
+        </div>
+        <div class="guia mini-zona-sello" data-nota="sello de duración" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      <strong>Siete palabras en el titular, y es el límite.</strong> Una miniatura se
+      decide a tamaño de sello en una rejilla de resultados: lo que no se lee a 210 px de
+      ancho no está en la miniatura. El sello de duración del reproductor ocupa la esquina
+      inferior derecha, por eso el retrato —y no el texto— vive en esa mitad. La firma lleva
+      <strong>el handle completo <code>@rodrigolbermejo</code></strong> a propósito: es la
+      mitigación del riesgo de confusión con el canal ajeno <code>@rodrigobermejo</code>
+      (<code>04-kit-social.md</code> §0.3).
+    </p>
+  </div>
+
+  <!-- ============ 2. Vertical ============ -->
+  <div class="lienzo-wrap">
+    <p class="meta-pieza">
+      <span>Pieza vertical · Reels, Shorts, Stories</span>
+      <span class="px">1080 × 1920 px</span>
+      <span>9:16</span>
+    </p>
+    <div class="lienzo-marco" data-w="1080" data-h="1920">
+      <div class="lienzo vert">
+        <div class="vert-seguro">
+          <p class="vert-rot"><span class="vert-num">01</span>&nbsp; Una afirmación</p>
+          <p class="vert-tit">No solo escribo software: lo opero.</p>
+          <p class="vert-lede">
+            Los sistemas que construyo están en producción, y cuando algo falla el que
+            responde soy yo.
+          </p>
+          <hr class="vert-regla">
+          <p class="vert-par">
+            Procedencia: <b>lo afirmo yo</b> · Verificabilidad:
+            <b>no puedes comprobarlo sin confiar en mí</b>
+          </p>
+          <div class="vert-pie">
+            <span class="firma" aria-hidden="true">rb</span>
+            <span class="dom">rodrigobermejo.com</span>
+          </div>
+        </div>
+        <div class="guia vert-zona-sup" data-nota="franja superior · interfaz de la plataforma" aria-hidden="true"></div>
+        <div class="guia vert-zona-inf" data-nota="franja inferior · texto, autor y acciones" aria-hidden="true"></div>
+        <div class="guia vert-zona-der" data-nota="columna de acciones" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="pie-pieza">
+      <strong>Las tres franjas marcadas son un margen adoptado, no una especificación
+      verificada.</strong> Reels, Shorts, TikTok y Stories cubren los bordes del 9:16 con su
+      propia interfaz, y cada uno lo hace distinto; no encontré una cifra de primera mano que
+      valga para los cuatro. Lo que sí es defendible es la regla: <strong>todo lo legible
+      dentro del rectángulo central de 900 × 1120</strong>. Si en el futuro se mide una cifra
+      real por plataforma, se sustituye aquí y se dice en <code>04-kit-social.md</code> §8.2.
+    </p>
+  </div>
+
+</div>
+
+<span class="proto-tag">Kit social · Borrador</span>
+
+<script>
+  function escalar() {
+    document.querySelectorAll('.lienzo-marco').forEach(function (marco) {
+      var w = +marco.dataset.w, h = +marco.dataset.h;
+      var s = Math.min(1, marco.clientWidth / w);
+      var lienzo = marco.querySelector('.lienzo');
+      lienzo.style.transform = 'scale(' + s + ')';
+      marco.style.height = Math.round(h * s) + 'px';
+    });
+  }
+  escalar();
+  addEventListener('resize', escalar);
+  document.fonts && document.fonts.ready.then(escalar);
+
+  var sw = document.getElementById('modo-exportar');
+  sw && sw.addEventListener('change', function () {
+    document.body.classList.toggle('exportar', sw.checked);
+  });
+</script>
+</body>
+</html>

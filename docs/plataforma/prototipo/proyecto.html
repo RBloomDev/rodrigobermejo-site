@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proof of Work — proyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Open+Sans:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Yellowtail&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="sistema.css">
+<style>
+  /* ---- Cabecera comun a toda la plataforma (identica a portada.html) ---- */
+  .top { border-bottom: 2px solid var(--ink-title); position: sticky; top: 0; z-index: 30; background: var(--bg-page); }
+  .top-in { display: flex; align-items: center; justify-content: space-between; gap: 1rem; height: 72px; }
+  .marca { display: flex; align-items: baseline; gap: .55rem; text-decoration: none; flex: none; }
+  .marca .firma { font-size: 1.9rem; }
+  .marca .nom { font-family: var(--ff-ui); font-weight: 700; font-size: var(--t--2); letter-spacing: .18em; text-transform: uppercase; }
+  .nav { display: none; gap: 1.5rem; align-items: center; }
+  .nav a {
+    font-family: var(--ff-ui); font-weight: 600; font-size: var(--t--1);
+    text-decoration: none; color: var(--ink-2); padding-block: .3rem;
+    border-bottom: 2px solid transparent;
+  }
+  .nav a:hover, .nav a[aria-current] { border-bottom-color: var(--accent); color: var(--ink); }
+  .burger { width: 44px; height: 44px; border: 1px solid var(--rule-strong); background: transparent; border-radius: var(--radius); display: grid; place-items: center; cursor: pointer; }
+  .burger span { display: block; width: 18px; height: 1.5px; background: var(--ink); }
+  .burger span + span { margin-top: 4px; }
+  @media (min-width: 920px) { .nav { display: flex; } .burger { display: none; } }
+
+  /* ---- Cabecera del proyecto ---- */
+  .miga { padding-top: var(--s-3); }
+  .cab { padding-block: var(--s-2) var(--s-3); }
+  .cab .h1 { margin-top: var(--s-1); }
+  .cab .lede { margin-top: var(--s-2); }
+  .sellos { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: var(--s-3); }
+
+  .bloque { padding-block: var(--s-3) var(--s-4); }
+  .bloque > * + * { margin-top: var(--s-3); }
+  .bloque .rotulo + * { margin-top: var(--s-3); }
+
+  .dos { display: grid; gap: var(--s-3); }
+  .dos > * { min-width: 0; }
+  @media (min-width: 860px) { .dos { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: var(--s-4); } }
+
+  /* Las rutas y los nombres de archivo son cadenas largas sin espacios: sin
+     esto, el min-content de una celda de grid empuja la pagina a scroll
+     horizontal a 375px. */
+  code { overflow-wrap: anywhere; }
+  .detalle code { font-size: .92em; }
+  .procedencia dd { overflow-wrap: anywhere; }
+
+  .pie { border-top: 2px solid var(--ink-title); padding-block: var(--s-3) var(--s-5); margin-top: var(--s-4); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="marca" href="portada.html">
+      <span class="firma" aria-hidden="true">rb</span>
+      <span class="nom">Rodrigo Bermejo</span>
+    </a>
+    <nav class="nav" aria-label="Principal">
+      <a href="portada.html">Inicio</a>
+      <a href="noticias.html">Noticias</a>
+      <a href="proyectos.html" aria-current="page">Proyectos</a>
+      <a href="#">Evidencia</a>
+      <a href="#">Sobre mí</a>
+      <a href="#">Trabajar conmigo</a>
+    </nav>
+    <button class="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===== Cabecera del proyecto: qué es, en tres líneas ===== -->
+  <section class="wrap">
+    <p class="miga small"><a class="link-quiet" href="proyectos.html">← Proyectos y actividad</a></p>
+
+    <div class="cab">
+      <p class="rotulo">Proyecto</p>
+      <h1 class="h1">Proof of Work</h1>
+      <p class="lede">«Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con narrativa.»</p>
+
+      <p class="sellos">
+        <span class="sello">Tipo <span>herramienta</span></span>
+        <span class="sello">Ciclo de vida <span>en alfa</span></span>
+        <span class="sello">Visibilidad <span>pública</span></span>
+        <span class="sello">Desde <span>2026-08-19</span></span>
+      </p>
+
+      <p class="aviso aviso--verif" style="margin-top:var(--s-3)">
+        <span>
+          <b>Cero evidencia recolectada.</b> Las tres afirmaciones públicas del sistema
+          están en <code>declared</code> / <code>unverifiable</code>: las sostiene Rodrigo y
+          hoy <b>nadie de fuera puede comprobarlas</b>. Es el estado real del proyecto en
+          alfa, no una omisión de esta pantalla.
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== El trabajo, delante: las dos pantallas publicadas ===== -->
+  <section class="wrap bloque" aria-labelledby="h-obra">
+    <h2 class="rotulo" id="h-obra">Lo que está publicado</h2>
+
+    <div class="obras">
+      <article class="obra">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-evidencia.png"
+               alt="Captura de la página /evidencia publicada: el título «Cómo respaldo lo que afirmo», un párrafo que sostiene que una afirmación cuenta igual si puedes comprobarla o si entiendes exactamente por qué no, otro sobre el trabajo bajo acuerdo de confidencialidad que no aparece en ninguna forma, y bajo «Las afirmaciones» la primera ficha, CONSTRUIR, con el par «Procedencia: lo afirmo yo · Verificabilidad: no puedes comprobarlo sin confiar en mí» al pie.">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">/evidencia</h3>
+          <p class="obra-tesis">
+            El índice canónico de las afirmaciones. Cada una lleva al pie, como una sola
+            oración y con el mismo peso, de dónde viene y hasta dónde se puede comprobar.
+          </p>
+        </div>
+      </article>
+
+      <article class="obra">
+        <div class="obra-lienzo">
+          <img src="_activos/pow-proyectos.png"
+               alt="Captura de la página /proyectos publicada: el título «Proyectos», la definición de proyecto como unidad de trabajo con dueño e intención frente al repositorio como artefacto suyo, y bajo «En producción» las tres primeras fichas —Currícula y docencia Inadaptados, Docencia universitaria, Infraestructura y automatización interna— cada una con su propósito declarado, su tipo y, donde aplica, la nota «parte del trabajo no es público».">
+        </div>
+        <div class="obra-cuerpo">
+          <h3 class="obra-titulo">/proyectos</h3>
+          <p class="obra-tesis">
+            El índice de los proyectos que sostienen esas afirmaciones, cada uno con su
+            propósito declarado y la nota de qué parte de su trabajo no es pública.
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <p class="aviso">
+      <span>
+        <b>Capturas del sitio en producción, tomadas a mano el 2026-09-15.</b> No son
+        maquetas. Tampoco se actualizan solas: <b>nada las regenera automáticamente</b>, así
+        que si el sitio cambia estas imágenes quedan desfasadas y ningún proceso lo detecta.
+      </span>
+    </p>
+  </section>
+
+  <!-- ===== Quién lo hizo y qué se entregó ===== -->
+  <section class="wrap bloque" aria-labelledby="h-autoria">
+    <h2 class="rotulo" id="h-autoria">Autoría y entregas</h2>
+
+    <div class="dos">
+      <div>
+        <h3 class="h3">Qué hizo Rodrigo</h3>
+        <dl class="aporte" style="margin-top:var(--s-2)">
+          <dt>Rol</dt>
+          <dd>Autor. Concibió el sistema, escribió su especificación y construyó lo que hoy está publicado.</dd>
+          <dt>Dimensiones</dt>
+          <dd>Construyo · Dirijo</dd>
+          <dt>Contexto</dt>
+          <dd>rbloomdev</dd>
+          <dt>Repositorio público</dt>
+          <dd><a class="link" href="https://github.com/RBloomDev/rodrigobermejo-site">github.com/RBloomDev/rodrigobermejo-site</a></dd>
+        </dl>
+        <p class="credito small" style="margin-top:var(--s-2)">
+          Trabajo individual. No hay equipo, colaboradores ni encargo externo que acreditar
+          en este proyecto.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="h3">Qué se entregó</h3>
+        <ul class="entregas" style="margin-top:var(--s-2)">
+          <li>Especificación canónica en <code>docs/</code></li>
+          <li>Feed público <code>public/proof/v1/</code></li>
+          <li><code>claims.json</code></li>
+          <li><code>projects.json</code></li>
+          <li><code>evidence.json</code></li>
+          <li><code>meta.json</code></li>
+          <li>Ruta publicada <code>/evidencia</code></li>
+          <li>Ruta publicada <code>/proyectos</code></li>
+        </ul>
+        <p class="ui small muted" style="margin-top:var(--s-2)">
+          Todo lo anterior existe y se puede abrir hoy. Lo que todavía no existe está
+          dicho en las cifras de abajo, no escondido aquí.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Estado del sistema ===== -->
+  <section class="wrap bloque" aria-labelledby="h-estado">
+    <h2 class="rotulo" id="h-estado">Estado del sistema</h2>
+
+    <div class="datos">
+      <div class="dato">
+        <p class="dato-cifra">12</p>
+        <p class="dato-que">proyectos declarados</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. Declarados, no verificados.</p>
+      </div>
+
+      <div class="dato">
+        <p class="dato-cifra">3</p>
+        <p class="dato-que">afirmaciones públicas</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. Las tres en <code>declared</code> / <code>unverifiable</code>.</p>
+      </div>
+
+      <div class="dato">
+        <p class="dato-cifra">0</p>
+        <p class="dato-que">registros de evidencia recolectados</p>
+        <p class="dato-marco">Cobertura: <b>el feed público completo</b>. <b>Cero medido, no hueco</b>: el feed existe, se leyó y no contiene ninguno.</p>
+      </div>
+    </div>
+
+    <p class="aviso aviso--verif">
+      <span>
+        <b>Ninguna de las tres afirmaciones está respaldada todavía.</b> Con cero registros
+        recolectados, el par que acompaña a cada una dice lo mismo en las tres: la sostiene
+        quien la escribe. La herramienta para publicar evidencia está entregada; la
+        evidencia, no.
+      </span>
+    </p>
+
+    <p class="aviso">
+      <span>
+        <b>Estas cifras cubren solo el feed público.</b> El motor que las genera vive en un
+        repositorio privado y <b>no aporta ni un dato a ellas</b>: el trabajo real del
+        proyecto es mayor que lo que aquí se puede contar.
+      </span>
+    </p>
+  </section>
+
+  <!-- ===== Metodología: lo único que se pliega ===== -->
+  <section class="wrap bloque" aria-labelledby="h-metodo">
+    <h2 class="rotulo" id="h-metodo">Metodología</h2>
+
+    <details class="detalle">
+      <summary><span class="ui">Cómo funciona por dentro, y por qué el motor no es público</span></summary>
+      <div class="detalle-cuerpo">
+        <blockquote class="pasaje">
+          Respaldar afirmaciones profesionales con evidencia verificable, en lugar de con
+          narrativa.
+          <cite>Propósito declarado del proyecto</cite>
+        </blockquote>
+        <p class="ui small">
+          El sistema está partido en dos a propósito. El motor de evidencia vive en un
+          repositorio privado y es el único que escribe; el sitio público <strong>solo lee y
+          renderiza</strong> lo que encuentra en <code>public/proof/v1/</code>. Esa
+          separación no es una limitación pendiente de resolver: es la decisión de diseño
+          que permite que el sitio sea estático y que nada de lo que no está autorizado
+          llegue a publicarse por descuido.
+        </p>
+        <p class="ui small" style="margin-top:var(--s-2)">
+          De ahí que las cifras de arriba solo puedan hablar del feed. Lo que el motor sabe
+          y no publica no aparece en esta pantalla en ninguna forma, ni contado.
+        </p>
+      </div>
+    </details>
+
+    <details class="detalle">
+      <summary><span class="ui">Qué significan <code>declared</code> y <code>unverifiable</code></span></summary>
+      <div class="detalle-cuerpo">
+        <dl class="procedencia">
+          <dt>Procedencia — declared</dt>
+          <dd>La afirmación la sostiene Rodrigo. No hay un tercero detrás de ella.</dd>
+          <dt>Verificabilidad — unverifiable</dt>
+          <dd>No puedes comprobarla sin confiar en quien la escribe. Es un estado que se lee, no un error que haya que señalar en rojo.</dd>
+          <dt>Por qué van juntas</dt>
+          <dd>Separadas se leen como una cualidad; juntas describen exactamente cuánto vale la afirmación hoy. Por eso viajan como una sola oración y con el mismo peso, y por eso no se pliegan en la pantalla pública.</dd>
+        </dl>
+      </div>
+    </details>
+
+    <details class="detalle">
+      <summary><span class="ui">Qué se puede comprobar por tu cuenta</span></summary>
+      <div class="detalle-cuerpo">
+        <dl class="procedencia">
+          <dt>Especificación</dt>
+          <dd><code>docs/</code> en el repositorio público. Es la autoridad del sistema: si el código y la spec divergen, el que está mal es el código.</dd>
+          <dt>Feed</dt>
+          <dd><code>public/proof/v1/</code> — <code>claims.json</code>, <code>projects.json</code>, <code>evidence.json</code> y <code>meta.json</code>. Las tres cifras de esta pantalla salen de ahí y se pueden contar a mano.</dd>
+          <dt>Rutas publicadas</dt>
+          <dd><code>/evidencia</code> y <code>/proyectos</code>, en producción. Las dos capturas de arriba son de ellas.</dd>
+        </dl>
+      </div>
+    </details>
+
+    <p style="margin-top:var(--s-3)"><a class="btn" href="#">Ir a /evidencia</a></p>
+  </section>
+
+  <footer class="pie wrap">
+    <p class="small muted">
+      Prototipo de la plataforma · nada de esto está publicado. Estado del sistema leído del
+      feed público; capturas tomadas a mano del sitio en producción el 2026-09-15.
+    </p>
+  </footer>
+</main>
+
+<span class="proto">Prototipo · Redacción</span>
+
+<script src="menu-movil.js" defer></script>
+</body>
+</html>

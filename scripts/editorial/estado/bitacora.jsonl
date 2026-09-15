@@ -1,0 +1,107 @@
+{"ts":"2026-09-14T16:52:07Z","id":"hecho:bf06e487038ab954","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:07Z","id":"hecho:bf06e487038ab954","evento":"redactada","redaccion_id":"marco-ailit-alfabetizacion-ia-educacion","modelo":"claude-opus-5[1m]","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:07Z","id":"hecho:bf06e487038ab954","evento":"verificada","pieza_id":"marco-ailit-alfabetizacion-ia-educacion","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:7f82d995c515e5ba","evento":"detectada","corrida":"9753ed33","datos":{"fuente_id":"openai-news","medio":"OpenAI News","licencia":"No declarada — tratar como reservada","uso":"solo_detectar","titulo":"How Fyxer built an AI executive assistant people trust","url":"https://openai.com/index/fyxer","url_canonica":"https://openai.com/index/fyxer","dominio":"openai.com","fecha_publicacion":"2026-09-14","fecha_lectura":"2026-09-14T16:52:07Z","huella":"sha256:3fac494413db9ed58250899856a01f50225a66719e1eb57beeaf809d4cb3af1c"}}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:dec49665ff58a0e9","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:1b7c31302b6c7f73","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:60ae7e36708c1cbf","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:41231ad497d9f27c","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:31bdbca21fcc561c","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:417ac541e5349311","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:1fe50b3825f8fc9b","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:8b539cc38f374e0f","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:02598096868d8368","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:d83563044f14049f","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:c4111ae56dba27bc","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:e9d394122c5db894","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:1ada13db8c582fef","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:703e7bd51ace8207","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:3ee540ac9a9de919","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:d0d999158b5a0a3e","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:0c7374c292712626","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:860fd5c929fc940c","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:99725d24419b54a3","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:4ac572b27c9c00d3","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:48b7505199136e13","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:5b4150a8948f5059","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:3b333fc8a02122bf","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:a0797514160959fb","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:968c32634dc2a1cb","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:46fcf5bb7b99520f","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:4aeb82da9975e2f5","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:39842fa0b34b37cb","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:6a886414536a09e3","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:0bb946f0c4215389","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:3802aa15c4b6ae22","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:b8a75fb67d817922","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:b32e9b8471353987","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:a7c183de5112de47","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:333ccaae81484d3a","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:3eb3e9557eb7038e","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:503e9c2326e78f3e","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:a00fc889a2dd293b","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:1dcea8b0f8acab14","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:2c827cba158d2f26","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:7948c39493cbd65e","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:4a36ea7ba6bb268a","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:a1b72811dd254b50","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:073b13b14ae0138b","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:e0f75446731d598c","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:3784d7aba9718af9","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:fc40ddafdd41e0cc","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:325e9dcd840a97e9","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:9281d6906e8350b6","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:52:08Z","id":"hecho:7f82d995c515e5ba","evento":"expediente_listo","corrida":"9753ed33"}
+{"ts":"2026-09-14T16:55:41Z","id":"hecho:dec49665ff58a0e9","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T16:58:32Z","id":"hecho:60ae7e36708c1cbf","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T16:59:12Z","id":"hecho:41231ad497d9f27c","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T16:59:53Z","id":"hecho:31bdbca21fcc561c","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:00:38Z","id":"hecho:417ac541e5349311","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:01:18Z","id":"hecho:1fe50b3825f8fc9b","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:02:04Z","id":"hecho:8b539cc38f374e0f","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:02:49Z","id":"hecho:02598096868d8368","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:03:34Z","id":"hecho:d83563044f14049f","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:04:17Z","id":"hecho:c4111ae56dba27bc","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"4b94b476"}
+{"ts":"2026-09-14T17:05:48Z","id":"hecho:dec49665ff58a0e9","evento":"expediente_listo","corrida":"6b839672"}
+{"ts":"2026-09-14T17:06:28Z","id":"hecho:dec49665ff58a0e9","evento":"fallo","etapa":"redactar","mensaje":"Cannot read properties of undefined (reading 'trim')","corrida":"6b839672"}
+{"ts":"2026-09-14T17:07:38Z","id":"hecho:dec49665ff58a0e9","evento":"expediente_listo","corrida":"b24f2bb2"}
+{"ts":"2026-09-14T17:08:17Z","id":"hecho:dec49665ff58a0e9","evento":"fallo","etapa":"redactar","mensaje":"La pieza «expediente-vacio-no-hay-hecho-que-redactar-a140c2» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)\n- fuente incompleta: https://observatorio.tec.mx/fraude-examenes-admision-linea","corrida":"b24f2bb2"}
+{"ts":"2026-09-14T17:10:50Z","id":"hecho:1b7c31302b6c7f73","evento":"fallo","etapa":"redactar","mensaje":"La pieza «expediente-insuficiente-no-hay-hecho-que-reportar-8c5a13» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)\n- fuente incompleta: https://observatorio.tec.mx/opinion-inteligencia-artificial-y-dolor-humano","corrida":"483cba2a"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:1b7c31302b6c7f73","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:60ae7e36708c1cbf","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:41231ad497d9f27c","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:31bdbca21fcc561c","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:417ac541e5349311","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:11:46Z","id":"hecho:1fe50b3825f8fc9b","evento":"expediente_listo","corrida":"f3bfa6cb"}
+{"ts":"2026-09-14T17:12:27Z","id":"hecho:8b539cc38f374e0f","evento":"expediente_listo","corrida":"06589ae9"}
+{"ts":"2026-09-14T17:12:27Z","id":"hecho:02598096868d8368","evento":"expediente_listo","corrida":"06589ae9"}
+{"ts":"2026-09-14T17:12:27Z","id":"hecho:d83563044f14049f","evento":"expediente_listo","corrida":"06589ae9"}
+{"ts":"2026-09-14T17:12:27Z","id":"hecho:c4111ae56dba27bc","evento":"expediente_listo","corrida":"06589ae9"}
+{"ts":"2026-09-14T17:15:51Z","id":"hecho:1b7c31302b6c7f73","evento":"fallo","etapa":"redactar","mensaje":"La pieza «el-punto-ciego-del-chatbot-detecta-el-suicidio-dicho-no--8c5a13» no cumple el esquema de §3:\n- `id` ausente o no es kebab-case\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"0fe5fc2d"}
+{"ts":"2026-09-14T17:17:12Z","id":"hecho:60ae7e36708c1cbf","evento":"fallo","etapa":"redactar","mensaje":"La pieza «el-observatorio-del-tec-de-monterrey-propone-sumar-alfab-1c5eb8» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"0fe5fc2d"}
+{"ts":"2026-09-14T17:18:19Z","id":"hecho:41231ad497d9f27c","evento":"fallo","etapa":"redactar","mensaje":"La pieza «lo-que-la-escuela-evalua-sin-ensenar-disposicion-escolas-89de30» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"0fe5fc2d"}
+{"ts":"2026-09-14T17:19:30Z","id":"hecho:1b7c31302b6c7f73","evento":"expediente_listo","corrida":"70228222"}
+{"ts":"2026-09-14T17:20:55Z","id":"hecho:1b7c31302b6c7f73","evento":"fallo","etapa":"redactar","mensaje":"La pieza «lo-explicito-lo-detecta-la-metafora-no-una-columna-sobre-8c5a13» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"70228222"}
+{"ts":"2026-09-14T17:20:55Z","id":"hecho:60ae7e36708c1cbf","evento":"expediente_listo","corrida":"70228222"}
+{"ts":"2026-09-14T17:22:04Z","id":"hecho:60ae7e36708c1cbf","evento":"fallo","etapa":"redactar","mensaje":"La pieza «el-observatorio-del-tec-pide-sumar-alfabetizacion-digita-1c5eb8» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"70228222"}
+{"ts":"2026-09-14T17:22:04Z","id":"hecho:41231ad497d9f27c","evento":"expediente_listo","corrida":"70228222"}
+{"ts":"2026-09-14T17:23:28Z","id":"hecho:41231ad497d9f27c","evento":"fallo","etapa":"redactar","mensaje":"La pieza «la-disposicion-escolastica-lo-que-la-escuela-evalua-sin--89de30» no cumple el esquema de §3:\n- `id` ausente o no es kebab-case\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"70228222"}
+{"ts":"2026-09-14T17:26:18Z","id":"hecho:31bdbca21fcc561c","evento":"fallo","etapa":"redactar","mensaje":"La pieza «la-confianza-creativa-se-construye-en-el-aula-no-se-here-4ee74d» no cumple el esquema de §3:\n- fuente incompleta: https://press.uchicago.edu/ucp/books/book/chicago/M/bo3637992.html\n- fuente incompleta: https://psycnet.apa.org/doiLanding?doi=10.1037%2Fh0063487\n- fuente incompleta: https://cambridge.org/core/books/abs/creativity-and-reason-in-cognitive-development/creative-selfbeliefs-their-nature-development-and-correlates/D00C3993642B08C3FFA4F4E3F133AB0F\n- fuente incompleta: https://jstor.org/stable/3069429\n- fuente incompleta: https://tandfonline.com/doi/abs/10.1207/s15326934crj1804_4\n- fuente incompleta: https://psycnet.apa.org/record/2018-29704-001\n- fuente incompleta: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.94\n- fuente incompleta: https://journals.sagepub.com/doi/abs/10.1177/14697874261457089\n- fuente incompleta: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.1532\n- fuente incompleta: https://sciencedirect.com/science/article/pii/S0160289626000206\n- fuente incompleta: https://sciencedirect.com/science/article/pii/S2590291124002031\n- fuente incompleta: https://sciencedirect.com/science/article/abs/pii/S1041608024000542\n- fuente incompleta: https://eric.ed.gov/?id=EJ1490925\n- fuente incompleta: https://oecd.org/en/topics/sub-issues/creative-thinking/pisa-2022-creative-thinking.html\n- fuente incompleta: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.70025","corrida":"9ab4923d"}
+{"ts":"2026-09-14T17:27:56Z","id":"hecho:417ac541e5349311","evento":"fallo","etapa":"redactar","mensaje":"La pieza «un-ensayo-testimonial-sobre-cursar-la-universidad-con-en-28846a» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"9ab4923d"}
+{"ts":"2026-09-14T17:29:09Z","id":"hecho:1fe50b3825f8fc9b","evento":"fallo","etapa":"redactar","mensaje":"La pieza «el-trafico-automatizado-supero-por-primera-vez-al-humano-3f4bf0» no cumple el esquema de §3:\n- fuente incompleta: https://cpl.thalesgroup.com/resources/application-security/2026-bad-bot-report\n- fuente incompleta: https://link.springer.com/article/10.1007/s00146-023-01857-0\n- fuente incompleta: https://researchgate.net/publication/387764031_The_Dead_Internet_Theory_A_Survey_on_Artificial_Interactions_and_the_Future_of_Social_Media\n- fuente incompleta: https://researchgate.net/publication/400034901_The_Dead_Internet_Theory_and_Ethical_AI_A_Scoping_Review\n- fuente incompleta: https://radware.com/cyberpedia/bot-management/bad-bots","corrida":"9ab4923d"}
+{"ts":"2026-09-14T17:30:08Z","id":"hecho:31bdbca21fcc561c","evento":"expediente_listo","corrida":"47f2179a"}
+{"ts":"2026-09-14T17:31:57Z","id":"hecho:31bdbca21fcc561c","evento":"redactada","redaccion_id":"el-observatorio-del-tec-de-monterrey-recopila-la-investi-4ee74d","modelo":"claude-code-cli","corrida":"47f2179a"}
+{"ts":"2026-09-14T17:31:57Z","id":"hecho:417ac541e5349311","evento":"expediente_listo","corrida":"47f2179a"}
+{"ts":"2026-09-14T17:34:20Z","id":"hecho:417ac541e5349311","evento":"fallo","etapa":"redactar","mensaje":"La pieza «el-observatorio-del-tec-publica-una-guia-para-estudiar-c-28846a» no cumple el esquema de §3:\n- fuente incompleta: https://vu.nl/en/employee/didactics/how-to-support-students-with-a-chronic-illness\n- fuente incompleta: https://aaup.org/academe/issues/2012-issues-1/chronic-illness-and-academic-career\n- fuente incompleta: https://alc.ext.unb.ca/modules/chronic-health-conditions/implications-for-learning.html\n- fuente incompleta: https://creakyjoints.org/about-arthritis/rheumatoid-arthritis/ra-patient-perspectives/poon-theory-economics-stephanie-aleite\n- fuente incompleta: https://instagram.com/butyoudontlooksickofficial\n- fuente incompleta: https://vitall.co.uk/health-tests-blog/tips-for-navigating-university-with-a-chronic-illness\n- fuente incompleta: https://healthcentral.com/chronic-health/navigating-college-while-chronic\n- fuente incompleta: https://ghlf.org/chronic-illness/navigating-university-life","corrida":"47f2179a"}
+{"ts":"2026-09-14T17:34:56Z","id":"hecho:31bdbca21fcc561c","evento":"fallo","etapa":"verificar","mensaje":"fecha declarada null no aparece en https://press.uchicago.edu/ucp/books/book/chicago/M/bo3637992.html; el documento declara 2026-07-15 | fuente no resuelve: https://cambridge.org/core/books/abs/creativity-and-reason-in-cognitive-development/creative-selfbeliefs-their-nature-development-and-correlates/D00C3993642B08C3FFA4F4E3F133AB0F [522] HTTP 522 <none> | fuente no resuelve: https://tandfonline.com/doi/abs/10.1207/s15326934crj1804_4 [403] HTTP 403 Forbidden | fuente no resuelve: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.94 [403] HTTP 403 Forbidden | fuente no resuelve: https://journals.sagepub.com/doi/abs/10.1177/14697874261457089 [403] HTTP 403 Forbidden | fuente no resuelve: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.1532 [403] HTTP 403 Forbidden | fuente no resuelve: https://sciencedirect.com/science/article/pii/S0160289626000206 [403] HTTP 403 Forbidden | fuente no resuelve: https://sciencedirect.com/science/article/pii/S2590291124002031 [403] HTTP 403 Forbidden | fuente no resuelve: https://sciencedirect.com/science/article/abs/pii/S1041608024000542 [403] HTTP 403 Forbidden | fuente no resuelve: https://eric.ed.gov/?id=EJ1490925 [ECONNRESET] TypeError: fetch failed (ECONNRESET) | fuente no resuelve: https://oecd.org/en/topics/sub-issues/creative-thinking/pisa-2022-creative-thinking.html [403] HTTP 403 Forbidden | fuente no resuelve: https://onlinelibrary.wiley.com/doi/abs/10.1002/jocb.70025 [403] HTTP 403 Forbidden","corrida":"47f2179a"}
+{"ts":"2026-09-14T17:35:55Z","id":"hecho:1fe50b3825f8fc9b","evento":"expediente_listo","corrida":"ce33f5b7"}
+{"ts":"2026-09-14T17:36:53Z","id":"hecho:1fe50b3825f8fc9b","evento":"redactada","redaccion_id":"la-teoria-del-internet-muerto-deja-de-ser-conspiracion-e-3f4bf0","modelo":"claude-code-cli","corrida":"ce33f5b7"}
+{"ts":"2026-09-14T17:38:29Z","id":"hecho:8b539cc38f374e0f","evento":"redactada","redaccion_id":"conocimiento-uam-un-reportaje-de-divulgacion-sin-dato-du-e5c93e","modelo":"claude-code-cli","corrida":"ce33f5b7"}
+{"ts":"2026-09-14T17:38:34Z","id":"hecho:1fe50b3825f8fc9b","evento":"fallo","etapa":"verificar","mensaje":"fecha declarada null no aparece en https://epidemicsound.com/blog/what-is-a-content-farm; el documento declara 2025-06-20, 2026-04-20, 2026-09-11","corrida":"ce33f5b7"}
+{"ts":"2026-09-14T17:38:42Z","id":"hecho:8b539cc38f374e0f","evento":"fallo","etapa":"verificar","mensaje":"fecha declarada null no aparece en https://colnal.mx/noticias/es-tan-importante-hacer-divulgacion-de-la-ciencia-como-producir-ciencia-juan-pedro-laclette; el documento declara 2026-02-11, 2026-01-22","corrida":"ce33f5b7"}
+{"ts":"2026-09-14T17:40:56Z","id":"hecho:02598096868d8368","evento":"redactada","redaccion_id":"las-pantallas-por-si-solas-no-explican-el-retraso-del-le-53f9a2","modelo":"claude-code-cli","corrida":"881d8dab"}
+{"ts":"2026-09-14T17:42:02Z","id":"hecho:d83563044f14049f","evento":"fallo","etapa":"redactar","mensaje":"La pieza «mindspeller-publica-en-arxiv-su-neuroprofile-cuatro-elec-1f2c7d» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"881d8dab"}
+{"ts":"2026-09-14T17:43:27Z","id":"hecho:02598096868d8368","evento":"verificada","pieza_id":"las-pantallas-por-si-solas-no-explican-el-retraso-del-le-53f9a2","corrida":"881d8dab"}
+{"ts":"2026-09-14T17:43:27Z","id":"hecho:8b539cc38f374e0f","evento":"verificada","pieza_id":"la-uam-profesionaliza-su-divulgacion-y-prepara-a-la-ia-c-e5c93e","corrida":"881d8dab"}
+{"ts":"2026-09-14T21:27:56Z","id":"hecho:d83563044f14049f","evento":"expediente_listo","corrida":"be057980"}
+{"ts":"2026-09-14T21:58:32Z","id":"hecho:d83563044f14049f","evento":"fallo","etapa":"redactar","mensaje":"La pieza «mindspeller-propone-perfiles-cognitivos-con-eeg-para-ori-1f2c7d» no cumple el esquema de §3:\n- menos de dos fuentes: con una sola, la pieza no se redacta (§3)","corrida":"b54bb546"}
