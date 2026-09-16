@@ -37,7 +37,7 @@ export default function EvidenciaPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
-      <h1 className="font-display text-4xl leading-tight text-ink-default sm:text-5xl">
+      <h1 className="text-4xl leading-tight text-ink-default sm:text-5xl">
         Cómo respaldo lo que afirmo
       </h1>
 

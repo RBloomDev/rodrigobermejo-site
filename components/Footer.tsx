@@ -77,7 +77,7 @@ export default function Footer() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
           <div className="text-center md:text-left">
-            <span className="font-display text-2xl text-ink-default block mb-2">
+            <span className="firma text-2xl text-ink-default block mb-2">
               rb
             </span>
             <p className="text-ink-muted text-sm">

@@ -75,7 +75,7 @@ export default async function ProyectoPage({
         </Link>
       </p>
 
-      <h1 className="mt-3 font-display text-4xl leading-tight text-ink-default sm:text-5xl">
+      <h1 className="mt-3 text-4xl leading-tight text-ink-default sm:text-5xl">
         {proyecto.title}
       </h1>
 
