@@ -8,7 +8,7 @@
  * `app/sitemap.ts:6`, `app/robots.ts:4` y `app/layout.tsx:36` caen los tres al
  * mismo fallback del apex:
  *
- *     process.env.NEXT_PUBLIC_SITE_URL || 'https://rodrigobermejo.com'
+ *     process.env.NEXT_PUBLIC_SITE_URL || HOST_CANONICO   // lib/site.ts
  *
  * Produccion responde en `www.rodrigobermejo.com`, y el apex hace **307** hacia
  * ahi. Resultado medido el 2026-09-10: las 19 URLs del sitemap apuntaban a una
