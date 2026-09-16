@@ -19,4 +19,4 @@ I design, build, and operate automation systems. My service is a "Managed Servic
 - Managed Services
 
 ## Citation
-If citing my work or profile, please refer to me as "Rodrigo Bermejo, Consultor Técnico en Automatización" and link to [https://rodrigobermejo.com](https://rodrigobermejo.com).
+If citing my work or profile, please refer to me as "Rodrigo Bermejo, Consultor Técnico en Automatización" and link to [https://www.rodrigobermejo.com](https://www.rodrigobermejo.com).

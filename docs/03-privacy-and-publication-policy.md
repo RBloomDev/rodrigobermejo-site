@@ -226,10 +226,34 @@ se elija al emitirlo, y no es configurable. La lista no filtra lo público: acot
 repositorios **privados** a los que el token llega, y acota los permisos distintos de
 esa lectura.
 
-Consecuencia directa para el Sprint 2: los dos repositorios que hay que leer
-—`RBloomDev/rodrigobermejo-site` y `rodrigoBermejo/proof-engine`— son **públicos**,
-así que **un solo PAT de lectura basta**, aunque pertenezcan a dos propietarios
-distintos, y la allowlist no añade contención sobre ellos.
+#### Corrección del 2026-09-15, medida contra GitHub
+
+**La versión anterior de este párrafo afirmaba que los dos repositorios del piloto eran
+públicos. Es falso, y lo escribió un agente sin medirlo.** `rodrigoBermejo/proof-engine`
+es **privado** —como `decisions/0001` y `AGENTS.md` dicen desde el principio: aquí vive
+la evidencia sin redactar—. Medido sin credencial el 2026-09-15: la API devuelve **404**
+sobre el motor y **200** sobre el sitio.
+
+Con la premisa corregida, la conclusión **sobrevive, pero por la razón contraria**:
+
+| Repositorio | Visibilidad real | Qué hace falta para leerlo |
+|---|---|---|
+| `RBloomDev/rodrigobermejo-site` | **público** | nada: cualquier PAT fine-grained lo lee, y la allowlist no lo acota |
+| `rodrigoBermejo/proof-engine` | **privado** | un PAT cuyo **propietario** sea `rodrigoBermejo`, con ese repo **explícitamente en su allowlist** |
+
+**Un solo PAT basta**, y basta porque el de `rodrigoBermejo` con `proof-engine`
+allowlisted obtiene *además*, y sin pedirlo, el repositorio público del sitio. No porque
+los dos fueran públicos.
+
+Y por lo mismo, **la allowlist sí añade contención aquí**: es exactamente lo que decide a
+qué repositorio privado llega el token. Lo que la enmienda de arriba sigue diciendo con
+razón es que sobre los **públicos** no la añade, y que por eso el criterio no puede
+redactarse como si la añadiera sobre todos.
+
+> **Por qué se conserva el error en vez de reescribirlo.** La afirmación equivocada llegó
+> a esta política por un PR mergeado, y borrarla dejaría la spec correcta y la historia
+> muda. La regla que falló no fue de criptografía ni de GitHub: fue **afirmar sin medir**,
+> teniendo el comando a mano.
 
 Qué se sustituye y qué se conserva:
 

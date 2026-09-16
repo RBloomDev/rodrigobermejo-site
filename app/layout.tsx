@@ -7,6 +7,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import { baseUrl } from "@/lib/site";
 
 const yellowtail = Yellowtail({
   weight: "400",
@@ -32,9 +33,7 @@ const libreBaskerville = Libre_Baskerville({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://rodrigobermejo.com"
-  ),
+  metadataBase: new URL(baseUrl()),
   title: {
     default: "Rodrigo Bermejo | Consultor Técnico en Automatización",
     template: "%s | Rodrigo Bermejo",

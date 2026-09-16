@@ -1,15 +1,19 @@
 # ADR 0014 — El sitio tiene spec de marca propia, y el contrato de presentación le gana
 
-- **Estado:** **PROPUESTA.** No autoriza nada todavía.
-- **Fecha:** 2026-09-12
+- **Estado:** **ACEPTADA el 2026-09-15.** Aprobada tal como estaba redactada.
+- **Fecha de redacción:** 2026-09-12
 - **Decide:** Rodrigo. Redactada por el agente como parte de la Fase 1 del rediseño.
 
-> **Qué significa PROPUESTA aquí.** Rodrigo aprobó el *plan* que contemplaba escribir esta
-> ADR; no ha aprobado su contenido, que es justamente lo que esta fase pone a revisión.
-> Mientras el estado sea PROPUESTA, `docs/brand/` es un borrador y **no es autoridad sobre
-> nada**: ni sobre `app/globals.css`, ni sobre los componentes, ni sobre el copy publicado.
-> La Fase 2 —la implementación— no empieza hasta que este estado cambie a Aceptada por
-> decisión suya. Es el mismo régimen que `decisions/0013`.
+> **Qué cambia con la aceptación.** `docs/brand/` deja de ser un borrador y pasa a ser
+> **autoridad** sobre identidad, posicionamiento, tipografía, color, arquitectura de la
+> información y copy público del sitio. La Fase 2 —la implementación sobre `app/`,
+> `components/` y `app/globals.css`— queda habilitada, y empieza el mismo 2026-09-15.
+>
+> **Lo que la aceptación NO mueve ni un milímetro:** la regla de precedencia de abajo. En
+> `/evidencia`, `/proyectos`, `/proyectos/[slug]` y `components/proof/**`, el contrato de
+> presentación de `docs/05` y `docs/02` **gana sobre la marca**, y la divergencia es
+> **FAIL**, no deuda. Aceptar esta ADR amplía lo que la marca gobierna; no toca en absoluto
+> lo que no puede gobernar.
 
 ## Contexto
 
