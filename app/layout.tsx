@@ -7,34 +7,33 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import { baseUrl } from "@/lib/site";
 
 const yellowtail = Yellowtail({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--ff-signature",
 });
 
 const josefinSans = Josefin_Sans({
   subsets: ["latin"],
-  variable: "--font-heading",
+  variable: "--ff-heading",
 });
 
 const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-body",
+  variable: "--ff-body",
 });
 
 const libreBaskerville = Libre_Baskerville({
   weight: ["400", "700"],
   style: ["normal", "italic"],
   subsets: ["latin"],
-  variable: "--font-quote",
+  variable: "--ff-quote",
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://rodrigobermejo.com"
-  ),
+  metadataBase: new URL(baseUrl()),
   title: {
     default: "Rodrigo Bermejo | Consultor Técnico en Automatización",
     template: "%s | Rodrigo Bermejo",
@@ -83,9 +82,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="scroll-smooth">
+    <html
+      lang="es"
+      className={`scroll-smooth ${yellowtail.variable} ${josefinSans.variable} ${openSans.variable} ${libreBaskerville.variable}`}
+    >
       <body
-        className={`${yellowtail.variable} ${josefinSans.variable} ${openSans.variable} ${libreBaskerville.variable} font-sans antialiased bg-bg-page text-ink-default selection:bg-brand-accent selection:text-white`}
+        className={`font-sans antialiased bg-bg-page text-ink-default selection:bg-brand-accent selection:text-white`}
       >
         <Analytics />
         {children}

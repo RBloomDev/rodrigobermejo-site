@@ -90,7 +90,7 @@ export default function ProyectosPage() {
   if (estado.estado === "ausente") {
     return (
       <main className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
-        <h1 className="font-display text-4xl leading-tight text-ink-default">Proyectos</h1>
+        <h1 className="text-4xl leading-tight text-ink-default">Proyectos</h1>
         <p className="mt-6 text-lg text-ink-balance">
           La publicación estructurada no está disponible. Los proyectos se publican como
           archivos versionados y ahora mismo no hay ninguno en este sitio.
@@ -110,7 +110,7 @@ export default function ProyectosPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16 sm:py-24">
-      <h1 className="font-display text-4xl leading-tight text-ink-default sm:text-5xl">
+      <h1 className="text-4xl leading-tight text-ink-default sm:text-5xl">
         Proyectos
       </h1>
       <p className="mt-6 text-lg leading-relaxed text-ink-balance">

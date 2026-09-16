@@ -1,6 +1,6 @@
 # ADR 0015 — Tres registros: evidencia, actividad y editorial
 
-- **Estado:** **PROPUESTA.** No autoriza nada todavía.
+- **Estado:** **ACEPTADA el 2026-09-15.** Las **siete** autorizaciones (A–G) de §4 quedan concedidas.
 - **Fecha:** 2026-09-13
 - **Decide:** Rodrigo. **Nada de este documento lo ha decidido él**: lo redacta el agente
   a petición suya del 2026-09-13, y lo revisado el 2026-09-14. Donde el texto cita a
@@ -9,10 +9,20 @@
 - **Enmienda a:** `docs/00-product-brief.md` §No-objetivos · `docs/01-scope-v1.md` §Fuera de V1 · `docs/02-domain-and-evidence-model.md` §7 y §8 · `docs/05-feed-contract.md` § Contrato de presentación
 - **No toca:** `docs/03-privacy-and-publication-policy.md`. Ninguna regla de privacidad se debilita.
 
-> **Qué significa PROPUESTA aquí.** Rodrigo pidió preparar esta enmienda; no la ha
-> aprobado. Mientras el estado sea PROPUESTA, **ninguna de las autorizaciones de abajo
-> está vigente** y el contrato sigue siendo el de hoy. Lo construido en
-> `docs/plataforma/` es prototipo para evaluar la decisión, no implementación.
+> **Qué cambia con la aceptación.** Las siete autorizaciones de §4 entran en vigor, **B y C
+> incluidas**. Con eso, dos reglas del núcleo pasan de «prohibido» a «prohibido **como
+> métrica**, permitido **como declaración de proceso**», y esa frontera hay que sostenerla
+> en cada pantalla futura: no se renegocia caso por caso.
+>
+> **Lo que la aceptación NO concede**, y §5 lo enumera entero: no autoriza publicar
+> registros individuales de `Evidence` —eso es `decisions/0013`—, no autoriza ningún número
+> que resuma a una persona, no autoriza inferencia alguna, y no exime a ninguna superficie
+> nueva de escribir su spec antes de implementarse (`AGENTS.md:8`).
+>
+> **Y una advertencia que la aceptación no cambia:** autorizar B no crea el dato. Hoy no
+> existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes, así que
+> esas dos cifras **seguirán vacías** hasta que exista el registro que las produzca. El
+> permiso está abierto; el dato no.
 
 ---
 
@@ -36,7 +46,7 @@ escritas en el JSON Schema ejecutable.
 | Filtros por dimensión | «`dimension` es una etiqueta, no un filtro» | `05:415-416` |
 | Proyectos como entrada visual | «El índice canónico es la lista de afirmaciones, no la de proyectos» | `05:410-412` |
 | Entregas y evolución temporal | `activity.json` es V1.1 | `01:39`, `05:18` |
-| Detalle detrás de cada cifra | Nadie autorizó publicar registros individuales de `Evidence` | `decisions/0013`, en PROPUESTA |
+| Detalle detrás de cada cifra | Nadie autorizó publicar registros individuales de `Evidence` | `decisions/0013` — en PROPUESTA al redactar esto; **ACEPTADA el 2026-09-15**, aunque el motor todavía no la implementa |
 
 **La lectura fácil sería decir que la petición contradice el producto. Es la lectura
 equivocada,** y este ADR explica por qué — pero también dice con precisión qué parte de
@@ -217,7 +227,9 @@ interpolación, ni con un guion que parezca un valor.
 ### 5. Lo que esta enmienda NO pide autorizar, y hay que decirlo
 
 - **No pide autorizar la publicacion de registros individuales de `Evidence`.** Eso lo decide
-  `decisions/0013`, que sigue en PROPUESTA. Mientras tanto el motor aborta si llega
+  `decisions/0013`, **ACEPTADA el 2026-09-15** — pero aceptar el mecanismo no publica nada:
+  ningún proyecto del Registry declara `publish_evidence` y el motor todavía no lo
+  implementa, así que el motor sigue abortando si llega
   evidencia al artefacto. **El «detalle detrás de cada cifra» llega hasta donde ese ADR
   permita, no más.**
 - **No pide autorizar ningun numero que resuma a una persona.** Nunca.

@@ -27,7 +27,7 @@ export const RUTA_PIEZAS = join(
   'piezas.json',
 );
 
-export const AGENTE_UA = 'rodrigobermejo-editorial/0.1 (+https://rodrigobermejo.com)';
+export const AGENTE_UA = 'rodrigobermejo-editorial/0.1 (+https://www.rodrigobermejo.com)';
 
 export function ahoraIso() {
   return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');

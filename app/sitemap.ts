@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
 import { getSortedPostsData } from "@/lib/posts";
 import { leerFeed } from "@/lib/proof/feed";
+import { baseUrl as hostCanonico } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rodrigobermejo.com';
+  const baseUrl = hostCanonico();
   const posts = getSortedPostsData();
 
   const blogUrls = posts.map((post) => ({
