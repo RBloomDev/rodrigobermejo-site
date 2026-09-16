@@ -57,9 +57,25 @@ test("NEXT_PUBLIC_SITE_URL sigue ganando: los previews se describen a si mismos"
 });
 
 test("NADIE escribe el host a mano: el apex no aparece en ningun archivo versionado", () => {
-  // `.env.example` es la única excepción, y lo es porque su texto **explica**
-  // este mismo defecto. `README.md` nombra el proyecto, no una URL.
-  const PERMITIDOS = new Set([".env.example", "README.md"]);
+  // Las excepciones son los archivos cuyo texto **explica este mismo defecto**:
+  // `.env.example` lo documenta, `lib/site.ts` y esta prueba lo citan para decir
+  // qué se corrigió. `README.md` nombra el proyecto, no una URL.
+  //
+  // Que `lib/site.ts` esté aquí no abre un hueco: su constante la fija el primer
+  // test de este archivo contra el valor exacto, que es una comprobación más
+  // fuerte que la ausencia de una cadena.
+  //
+  // > **Esta prueba dio un verde falso la primera vez.** Pasó en local y falló en
+  // > CI, y la causa es que `git grep` **solo mira archivos trackeados**: los dos
+  // > archivos nuevos todavía no estaban en el índice cuando se corrió. Una
+  // > prueba que consulta el índice de git se comporta distinto antes y después
+  // > de `git add`, y eso hay que saberlo al escribirla.
+  const PERMITIDOS = new Set([
+    ".env.example",
+    "README.md",
+    "lib/site.ts",
+    "tests/host-canonico.test.ts",
+  ]);
 
   let salida = "";
   try {
