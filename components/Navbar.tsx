@@ -7,7 +7,7 @@ export default function Navbar() {
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
         <Link href="/" className="group flex items-center gap-2">
           {/* Logo "rb" simplified text representation */}
-          <span className="font-display text-4xl text-brand-primary group-hover:text-brand-accent transition-colors pb-1">
+          <span className="firma text-4xl text-brand-primary group-hover:text-brand-accent transition-colors pb-1">
             rb
           </span>
           <span className="hidden sm:block font-heading font-bold text-lg text-ink-balance group-hover:text-brand-primary transition-colors mt-1">

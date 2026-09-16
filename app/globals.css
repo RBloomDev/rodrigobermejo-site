@@ -48,14 +48,35 @@
   --color-border-default: var(--color-gray-border);
   --color-border-subtle: var(--color-gray-border-subtle);
 
-  /* Tipografias. next/font inyecta estas mismas variables en <body>
-     (app/layout.tsx): el nombre esta repetido a proposito porque cambiarlo es
-     un cambio tipografico, y la tipografia no se toca en este trabajo
-     (deuda #9). Ver el bloque de cabecera. */
-  --font-display: var(--font-display);
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
-  --font-quote: var(--font-quote);
+  /* Tipografias. RESUELTO el 2026-09-15, Fase 2 de marca (docs/brand/01 §1.2),
+     habilitada por decisions/0014.
+
+     Antes esto era una AUTO-REFERENCIA: `--font-display: var(--font-display)`,
+     con next/font inyectando el mismo nombre en <body>. Un nombre existiendo en
+     las dos capas es justo lo que la cabecera de este archivo prohibe, y era la
+     deuda #12.
+
+     Ahora next/font inyecta `--ff-*` y @theme mapea los tokens a esas
+     variables. Un nombre, una capa. */
+  --font-display: var(--ff-signature); /* Yellowtail */
+  --font-heading: var(--ff-heading);   /* Josefin Sans */
+  --font-body: var(--ff-body);         /* Open Sans */
+  --font-quote: var(--ff-quote);       /* Libre Baskerville */
+
+  /* Y la parte que cierra la deuda #9 con UNA linea en vez de una migracion.
+
+     `<body>` lleva `font-sans`, heredada de create-next-app, y @theme no
+     redefinia `--font-sans`: la clase resolvia a la pila por defecto de
+     Tailwind y ganaba en especificidad sobre `body { font-family:
+     var(--font-body) }`, que quedaba como codigo muerto. El texto sin clase se
+     renderizaba en la sans del sistema, no en Open Sans, y por eso los
+     componentes rociaban `font-body` a mano.
+
+     La correccion obvia --- borrar `font-sans` de <body> --- cambiaria el
+     rendering de golpe y dejaria huerfanas decenas de `font-body` escritas a
+     mano. Redefinirla hace que la clase SIGA DONDE ESTA y pase a significar lo
+     correcto: `font-sans` y `font-body` convergen en la misma familia. */
+  --font-sans: var(--ff-body);
 }
 
 :root {
@@ -91,23 +112,26 @@
 body {
   background-color: var(--color-bg-page);
   color: var(--color-ink-default);
-  /* NOTA: la clase `font-sans` en <body> (app/layout.tsx) gana en especificidad
-     sobre esta regla, asi que el texto sin clase usa la pila sans por defecto
-     de Tailwind, no --font-body. Es un desajuste heredado.
-     DECIDIDO (2026-08-20): no se toca durante este proyecto. Cualquier cambio
-     tipografico sera una tarea visual independiente con revision de diseno.
-     No elimines `font-sans` ni generalices `font-body` sin esa tarea.
-     Deuda #9 en docs/audits/2026-08-19-site-baseline.md */
+  /* La clase `font-sans` de <body> sigue ganando en especificidad sobre esta
+     regla --- eso no cambio--- pero ya no importa: @theme redefine
+     `--font-sans` a `var(--ff-body)`, asi que las dos resuelven a Open Sans.
+     Esta declaracion deja de ser codigo muerto sin haber tenido que tocarla.
+     Deuda #9 CERRADA el 2026-09-15 (docs/brand/01 §1.2b). */
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, .font-display {
+/* Yellowtail queda reservado a la firma y al monograma, que es su unico uso
+   legitimo en una identidad profesional (docs/brand/01 §1.2c y §3). Titular con
+   una manuscrita es lo que hacia que la portada leyera como una tarjeta de
+   presentacion y no como el expediente de alguien que construye sistemas. */
+.firma {
   font-family: var(--font-display);
 }
 
-h2, h3, h4, h5, h6, .font-heading {
+/* Los titulares se unifican en Josefin Sans, h1 incluido. */
+h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--font-heading);
 }
 
