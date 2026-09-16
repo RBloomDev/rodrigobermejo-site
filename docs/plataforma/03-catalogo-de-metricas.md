@@ -193,7 +193,7 @@ Las siete columnas son obligatorias.
 | M-16 | Extensión de las piezas | Palabras por pieza | palabras | por pieza | `wc -w` | — | 100 % de M-15 | **PUB** |
 | M-17 | Proyectos en el feed | Registros en `projects.json` | proyectos | estado a la fecha | `public/proof/v1/projects.json` | `id` único | 100 % del feed público | **PUB** |
 | M-18 | Claims en el feed | Afirmaciones declaradas | claims | estado a la fecha | `public/proof/v1/claims.json` | `id` único | 100 % del feed público | **PUB** |
-| M-19 | Evidencia en el feed | Registros de `Evidence` publicados | registros | estado a la fecha | `public/proof/v1/evidence.json` | `id` único | 100 % del feed público | **NO** — `decisions/0013` en PROPUESTA |
+| M-19 | Evidencia en el feed | Registros de `Evidence` publicados | registros | estado a la fecha | `public/proof/v1/evidence.json` | `id` único | 100 % del feed público | **NO** — `decisions/0013` ACEPTADA el 2026-09-15, pero sin implementar en el motor y sin ningún proyecto que lo declare |
 | M-20 | Buckets de actividad | Agregados de `activity.json` | buckets | mes o trimestre | **no existe el archivo** | — | 0 % | **NO** — no hay artefacto |
 | M-21 | **Tiempo con actividad en el editor** | Segundos con actividad registrada en un editor instrumentado | **segundos de actividad**, agregados por día | diario | **API de WakaTime** (`/users/current/summaries`) | la hace WakaTime: heartbeats agrupados con timeout de inactividad | **temporal alta** (28 de 31 días); **fracción del trabajo real: desconocida** | **AGR** — solo agregada, nunca por proyecto |
 | M-22 | **Ejecuciones de agentes** | Corridas de agente registradas | — | — | **ninguna** | — | **0 %** | **DATO INEXISTENTE** |
@@ -711,7 +711,7 @@ cat public/proof/v1/evidence.json
 |---|---|---|
 | Proyectos (M-17) | **12** | 9 `private`, 3 `public`, 0 `confidential` |
 | Claims (M-18) | **3** | `construyo-sistemas`, `decido-arquitectura`, `ensino-y-mentoreo` |
-| Evidencia (M-19) | **0** | **cero deliberado**: `decisions/0013` sigue en PROPUESTA |
+| Evidencia (M-19) | **0** | **cero deliberado**: `decisions/0013` quedó ACEPTADA el 2026-09-15, pero autoriza el **mecanismo**, no una publicación — y el motor aún no lo implementa |
 | Buckets de actividad (M-20) | **no existe el archivo** | el schema existe; el artefacto no |
 | `source_coverage` | **`[]`** | el motor **no declara haber ingerido ninguna fuente** |
 | Antigüedad del feed | **16 días** | `generated_at` 2026-08-28 vs. 2026-09-13 |
@@ -853,7 +853,7 @@ pantalla debe distinguirlos visualmente; si no puede, no muestra ninguno de los 
 | M-07 Reviews emitidas por Rodrigo | **0** en 2026 | No revisa código ajeno en GitHub. Es un hecho sobre su modo de trabajo | GraphQL `totalPullRequestReviewContributions` |
 | M-08 Releases | **0** en todos los repos medidos | El flujo no usa releases de GitHub | `/releases` → `length` = 0 |
 | M-09 Tags | **0** en todos los repos medidos | No se etiquetan versiones | `/tags` → `length` = 0 |
-| M-19 Evidencia en el feed | **0** | Cero **deliberado**: `decisions/0013` en PROPUESTA bloquea publicarla | `evidence.json` = `{"evidence": []}` |
+| M-19 Evidencia en el feed | **0** | Cero **deliberado**: `decisions/0013` ACEPTADA el 2026-09-15 autoriza el mecanismo `publish_evidence`, no una publicación. Ningún proyecto lo declara y el motor aborta si llega evidencia | `evidence.json` = `{"evidence": []}` |
 | M-24 Capturas de producto | **0** | No existe ni una. Búsqueda sobre el 100 % del repo | `find` sobre todo el árbol |
 | Reviews `APPROVED` en el sitio | **0** de 7 | Las 7 son `COMMENTED`, y del bot | `/pulls/{n}/reviews` |
 | Ejecuciones de CI en un repo sin workflows | **0** | El repo no tiene workflows definidos | `actions/runs` → `total_count` = 0 |
