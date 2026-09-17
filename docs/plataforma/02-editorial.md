@@ -1,9 +1,9 @@
 # 02 — Canal editorial: noticias y análisis de IA, software y educación en México
 
-> **Estado: BORRADOR — en revisión.** No es autoridad sobre nada mientras
-> `docs/decisions/0015-actividad-proceso-y-editorial.md` siga en PROPUESTA. Nada de lo
-> descrito aquí está publicado, y ninguna pieza producida bajo esta spec sale del estado
-> de borrador sin decisión de Rodrigo.
+> **Estado: autoridad desde 2026-09-15 (ADR 0015 ACEPTADA).** La aceptación autoriza la
+> plataforma editorial y vuelve normativa esta spec; no afirma que esté implementada ni
+> publicada. Ninguna pieza producida bajo esta spec sale del estado de borrador sin
+> decisión de Rodrigo.
 
 ---
 

@@ -15,7 +15,7 @@ public/proof/
     claims.json      afirmaciones declaradas   ← raíz del grafo
     projects.json    proyectos que las sostienen
     evidence.json    registros de evidencia publicables
-    activity.json    agregados temporales      (V1.1)
+    activity.json    agregados temporales      (autorizado en V1; todavía no emitido)
   schemas/
     *.json           JSON Schema de cada archivo (Sprint 1)
 ```
@@ -265,9 +265,11 @@ Este archivo es la **autoridad** sobre `provenance` y `verifiability`. `claims.j
 
 `assistance` **ya no existe en el contrato**. Estaba documentado como "reservado, ausente en V1": un campo definido para un consumidor que no existe. Se elimina. Añadirlo en V2 será un cambio aditivo, que la regla 2 del contrato ya declara compatible — reservarlo hoy no compraba nada y congelaba una forma sin implementar. Ver `02-domain-and-evidence-model.md` §8.
 
-## `activity.json` (V1.1)
+## `activity.json`
 
-Agregados temporales. Mensual como grano mínimo; nunca diario para fuentes privadas.
+Autorizado en V1 por `decisions/0015` §4-A, pero **hoy todavía no existe en el artefacto**:
+el motor aún debe implementar su emisión. Agregados temporales. Mensual como grano mínimo;
+nunca diario para fuentes privadas.
 
 ```
 {

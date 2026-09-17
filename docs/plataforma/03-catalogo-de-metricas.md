@@ -2,7 +2,7 @@
 
 - **Estado:** **BORRADOR.** No autoriza publicar nada.
 - **Fecha de medición:** 2026-09-13 · WakaTime resondeado el 2026-09-14
-- **Depende de:** `docs/decisions/0015-actividad-proceso-y-editorial.md` (**PROPUESTA**, no aprobada)
+- **Depende de:** `docs/decisions/0015-actividad-proceso-y-editorial.md` (**ACEPTADA el 2026-09-15**)
 - **Gobernado por:** `docs/03-privacy-and-publication-policy.md` §2 y §3 · `public/proof/schemas/activity.schema.json`
 - **Autoridad:** este documento **no** es autoridad sobre nada. Mide. Si una cifra de aquí contradice a `docs/03` o al schema, manda el schema.
 
@@ -810,9 +810,11 @@ decirlo antes de diseñar la pantalla, no después.
 
 ### 3. Detalle detrás de cada cifra — **bloqueado, no vacío**
 
-`evidence.json` está vacío por decisión, no por falta de dato: `decisions/0013` sigue en
-**PROPUESTA** y, mientras tanto, el motor aborta si llega evidencia al artefacto. Aquí sí
-hay fuente potencial —los commits medidos siguen existiendo—; lo que no hay es permiso.
+`evidence.json` está vacío porque el mecanismo autorizado por `decisions/0013`,
+**ACEPTADA el 2026-09-15**, todavía no está implementado en el motor, que continúa
+abortando si llega evidencia al artefacto. Aquí sí hay fuente potencial —los commits
+medidos siguen existiendo— y ya hay permiso para el mecanismo; lo pendiente es
+implementarlo, no una publicación concreta.
 
 ---
 
@@ -1023,9 +1025,9 @@ volver a escribirla.
    `source_coverage` es `[]`. Este documento midió con `gh` y con la sonda a mano; el motor
    todavía no mide nada. Que una cifra sea medible **no** significa que el feed pueda
    producirla hoy.
-6. **`decisions/0015` está en PROPUESTA.** Mientras lo esté, las autorizaciones A–G no
-   rigen y `activity.json` sigue siendo V1.1. Este catálogo describe qué se podría medir
-   **si** se aprueba; no anticipa la aprobación.
+6. **`decisions/0015` fue ACEPTADA el 2026-09-15.** Las autorizaciones A–G rigen desde
+   esa fecha y `activity.json` está autorizado en el alcance actual. El archivo todavía no
+   existe en el artefacto y el motor no lo emite: alcance no es existencia.
 7. **Ningún test protege las seis condiciones de `decisions/0015` §3.** La vía de abuso que
    ese ADR nombra —reetiquetar una métrica de evidencia como declaración de proceso para
    publicarla sin `claim_ids`— se vigila leyendo, no corriendo CI.

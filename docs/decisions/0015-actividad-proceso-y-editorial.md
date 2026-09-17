@@ -2,10 +2,10 @@
 
 - **Estado:** **ACEPTADA el 2026-09-15.** Las **siete** autorizaciones (A–G) de §4 quedan concedidas.
 - **Fecha:** 2026-09-13
-- **Decide:** Rodrigo. **Nada de este documento lo ha decidido él**: lo redacta el agente
-  a petición suya del 2026-09-13, y lo revisado el 2026-09-14. Donde el texto cita a
-  Rodrigo, cita lo que **pidió**, no lo que aprobó. Los razonamientos son del agente y
-  están sujetos a su revisión.
+- **Decide:** Rodrigo. El agente redactó el documento a petición suya del 2026-09-13 y lo
+  revisó el 2026-09-14; Rodrigo aceptó las siete autorizaciones sin cambios el 2026-09-15.
+  Donde el texto cita a Rodrigo antes de esa aceptación, cita lo que **pidió**; la decisión
+  vigente es la aceptación registrada arriba.
 - **Enmienda a:** `docs/00-product-brief.md` §No-objetivos · `docs/01-scope-v1.md` §Fuera de V1 · `docs/02-domain-and-evidence-model.md` §7 y §8 · `docs/05-feed-contract.md` § Contrato de presentación
 - **No toca:** `docs/03-privacy-and-publication-policy.md`. Ninguna regla de privacidad se debilita.
 
@@ -19,10 +19,12 @@
 > que resuma a una persona, no autoriza inferencia alguna, y no exime a ninguna superficie
 > nueva de escribir su spec antes de implementarse (`AGENTS.md:8`).
 >
-> **Y una advertencia que la aceptación no cambia:** autorizar B no crea el dato. Hoy no
-> existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes, así que
-> esas dos cifras **seguirán vacías** hasta que exista el registro que las produzca. El
-> permiso está abierto; el dato no.
+> **Corrección de una advertencia original.** Este documento afirmó que no existía ninguna
+> fuente de tiempo humano registrado. Eso era falso: M-21 de
+> `docs/plataforma/03-catalogo-de-metricas.md` documenta la medición de actividad humana en
+> un editor instrumentado disponible desde el 2026-09-14, con sus límites y cobertura. Se
+> conserva aquí el error para no borrar el registro histórico. Las ejecuciones de agentes y
+> su duración **sí siguen sin fuente**; autorizar B no crea ese dato.
 
 ---
 
@@ -45,8 +47,8 @@ escritas en el JSON Schema ejecutable.
 | Participación de IA | Sin campo; diferido a V2 | `02:488` |
 | Filtros por dimensión | «`dimension` es una etiqueta, no un filtro» | `05:415-416` |
 | Proyectos como entrada visual | «El índice canónico es la lista de afirmaciones, no la de proyectos» | `05:410-412` |
-| Entregas y evolución temporal | `activity.json` es V1.1 | `01:39`, `05:18` |
-| Detalle detrás de cada cifra | Nadie autorizó publicar registros individuales de `Evidence` | `decisions/0013` — en PROPUESTA al redactar esto; **ACEPTADA el 2026-09-15**, aunque el motor todavía no la implementa |
+| Entregas y evolución temporal | `activity.json` era V1.1 | `01:39`, `05:18` |
+| Detalle detrás de cada cifra | Nadie había autorizado publicar registros individuales de `Evidence` al redactar esta tabla | `decisions/0013` — **ACEPTADA el 2026-09-15**; el motor todavía no la implementa |
 
 **La lectura fácil sería decir que la petición contradice el producto. Es la lectura
 equivocada,** y este ADR explica por qué — pero también dice con precisión qué parte de
@@ -69,7 +71,8 @@ pedir el cambio fue: *«Los conteos y la telemetría describen actividad; no oto
 automáticamente competencia, calidad o seniority.»* Es una restricción sobre lo que un
 conteo **no** confiere; **no** es una autorización a publicarlo, y no dice nada sobre la
 distinción entre uso y número. La construcción de esa distinción, y todo lo que se apoya
-en ella en este documento, es propuesta del agente y está sujeta a su revisión.
+en ella en este documento, fue propuesta del agente; las autorizaciones que se apoyan
+en ella quedaron concedidas el 2026-09-15.
 
 Lo que sí es anterior a esta petición, y no lo propone el agente, es que
 `docs/02-domain-and-evidence-model.md:496` **ya había tomado** una decisión de la misma
@@ -87,9 +90,10 @@ que le faltaba a `02` §7.
 
 ## Lo que se propone
 
-> Todo lo de esta seccion esta **propuesto**, no decidido. Los verbos en presente
-> describen como funcionaria el sistema si Rodrigo acepta la enmienda, no como funciona
-> hoy. Hoy rige el contrato sin enmendar.
+> **Nota histórica:** todo lo de esta sección se redactó como propuesta. Rodrigo aceptó
+> las siete autorizaciones sin cambios el 2026-09-15; desde esa fecha rige el contrato
+> enmendado. La aceptación autoriza el alcance, pero no afirma que los mecanismos ya estén
+> implementados.
 
 ### 1. Tres registros, no uno
 
@@ -233,11 +237,13 @@ interpolación, ni con un guion que parezca un valor.
   evidencia al artefacto. **El «detalle detrás de cada cifra» llega hasta donde ese ADR
   permita, no más.**
 - **No pide autorizar ningun numero que resuma a una persona.** Nunca.
-- **No pide autorizar inferencia alguna.** Y aquí está el límite práctico más importante: hoy **no
-  existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes**. El
-  ledger de `proof-engine` contiene solo un `.gitkeep`. Así que aunque esta enmienda
-  quede aprobada, **esas dos cifras seguirán vacías** hasta que exista el registro. La
-  enmienda abre el permiso; no crea el dato.
+- **No pide autorizar inferencia alguna.** Este punto afirmó originalmente que **no existía
+  ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes**. La primera
+  mitad era falsa: M-21 de `docs/plataforma/03-catalogo-de-metricas.md` registra desde el
+  2026-09-14 una fuente de actividad humana en un editor instrumentado, con cobertura
+  limitada. La segunda sigue vigente: el ledger de `proof-engine` contiene solo un
+  `.gitkeep`, por lo que las ejecuciones de agentes y su duración siguen sin fuente. La
+  enmienda abre el permiso; no crea los datos que falten.
 - **No pide saltarse `AGENTS.md:8`.** Cada superficie nueva necesita su spec antes de
   implementarse.
 
@@ -309,3 +315,21 @@ buscar. Descartada sin más discusión.
 `03:136` por separación física. Se descarta **para esta entrega** porque Rodrigo pidió
 explícitamente demostrar el producto dentro del sitio y no decidir marca ni dominio
 ahora. Queda como opción abierta, no como decisión tomada.
+
+
+## Registro histórico de las afirmaciones corregidas
+
+Los siguientes textos se conservan literalmente como registro del error, no como
+instrucción vigente. La corrección que cita M-21 arriba los sustituye respecto del
+tiempo humano; las ejecuciones de agentes siguen sin fuente.
+
+> **Y una advertencia que la aceptación no cambia:** autorizar B no crea el dato. Hoy no
+> existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes, así que
+> esas dos cifras **seguirán vacías** hasta que exista el registro que las produzca. El
+> permiso está abierto; el dato no.
+
+- **No pide autorizar inferencia alguna.** Y aquí está el límite práctico más importante: hoy **no
+  existe ninguna fuente de tiempo humano registrado ni de ejecuciones de agentes**. El
+  ledger de `proof-engine` contiene solo un `.gitkeep`. Así que aunque esta enmienda
+  quede aprobada, **esas dos cifras seguirán vacías** hasta que exista el registro. La
+  enmienda abre el permiso; no crea el dato.

@@ -78,7 +78,7 @@ Marcado en pantalla, no escondido.
 
 ## Qué requiere una decisión tuya
 
-### 1. La enmienda de contrato — `decisions/0015`, en PROPUESTA
+### 1. La enmienda de contrato — `decisions/0015`, ACEPTADA el 2026-09-15
 
 De las siete cosas que pediste ver en proyectos, **tres chocaban con prohibiciones
 declaradas permanentes**, escritas además en el JSON Schema ejecutable: `hours`,
@@ -92,7 +92,9 @@ ya había tomado para la IA: *«anotación de procedencia, no métrica de produc
 Conserva íntegros: score, rank, niveles, «ningún número que resuma a una persona»,
 tokens, prompts, y **toda** la política de privacidad.
 
-**Mientras siga en PROPUESTA, nada de `docs/plataforma/` es autoridad.**
+**Desde su aceptación el 2026-09-15, las autorizaciones A–G y las specs que derivan de
+ellas son autoridad.** Esto autoriza el alcance; no afirma que sus mecanismos ya estén
+implementados ni publicados.
 
 ### 2. La decisión de privacidad que tomé por ti — y que corregí a la baja
 
@@ -156,8 +158,10 @@ credibilidad; ilustrarla con el dato real la rompe.
 
 ### 4. El detalle detrás de cada cifra llega hasta donde permita `decisions/0013`
 
-Sigue en PROPUESTA. Nadie ha autorizado publicar registros individuales de `Evidence`, y
-mientras tanto el motor aborta si llega evidencia al artefacto.
+`decisions/0013` está **ACEPTADA desde el 2026-09-15** y autoriza el mecanismo de
+publicación de registros individuales de `Evidence`. El motor todavía no lo implementa y
+continúa abortando si llega evidencia al artefacto; la aceptación no equivale a una
+publicación.
 
 ---
 
@@ -242,7 +246,7 @@ decisión, y el kit social de la entrega anterior no se tocó.
 ## Archivos
 
 ```
-docs/decisions/0015-actividad-proceso-y-editorial.md   la enmienda, en PROPUESTA
+docs/decisions/0015-actividad-proceso-y-editorial.md   la enmienda, ACEPTADA el 2026-09-15
 docs/plataforma/00-resumen-de-entrega.md               este documento
 docs/plataforma/02-editorial.md                        spec del canal y fuentes verificadas
 docs/plataforma/03-catalogo-de-metricas.md             25 métricas (M-01 a M-25) con sus 7 columnas
