@@ -1,8 +1,12 @@
 # 05 — Identidad declarada: SEO y superficie para LLMs
 
-> **Estado: BORRADOR — Fase 1, en revisión.** Este documento no es autoridad sobre nada
-> mientras `docs/decisions/0014-el-sitio-tiene-spec-de-marca-propia.md` siga en PROPUESTA.
-> Nada de lo que aquí se describe está implementado ni publicado.
+> **Estado: Autoridad desde 2026-09-15 (ADR 0014 ACEPTADA).** Gobierna identidad,
+> posicionamiento, tipografía, color, arquitectura de información y copy público del sitio.
+> **Cláusula de precedencia:** en `/evidencia`, `/proyectos`, `/proyectos/[slug]` y
+> `components/proof/**`, `docs/05-feed-contract.md` § Contrato de presentación y
+> `docs/02-domain-and-evidence-model.md` §6–§7
+> ganan sobre la marca, y la divergencia es **FAIL, no deuda**.
+> Esta autoridad no afirma que lo aquí descrito ya esté implementado ni publicado.
 
 > Documento de diseño de marca. Es **subordinado** a `docs/03-privacy-and-publication-policy.md` y a `docs/02-domain-and-evidence-model.md`: donde este documento y una regla de publicación discrepen, manda la regla de publicación.
 > Todo lo que aquí se llama «medido» se midió contra producción el 2026-09-12 con `curl` sobre `https://www.rodrigobermejo.com`, o leyendo el archivo del repo que se cita con su línea. Nada sale de memoria.

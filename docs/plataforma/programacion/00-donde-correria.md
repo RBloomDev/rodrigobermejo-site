@@ -15,18 +15,18 @@ Se midieron cinco opciones. Cada fila lleva el comando que la produjo.
 
 | Opción | Qué hay ya | Qué falta | ¿La credencial es el bloqueo? |
 |---|---|---|---|
-| **GitHub Actions, este repo** | 4 workflows activos (`gh workflow list`), ya sobre **Node 24** (`ci.yml:39`), red saliente, checkout escribible. **Cero `schedule`** hoy | El archivo de workflow, y el secret | **Sí, y es lo único** |
+| **GitHub Actions, este repo** | 4 workflows activos (`gh workflow list`), ya sobre **Node 24** (`ci.yml:39`), red saliente, checkout escribible. **Cero `schedule`** hoy | Cerrar T-E1, el archivo de workflow y el secret | **Sí; también falta T-E1** |
 | VPS propio | Corre crons hoy (`/etc/cron.d/vps-monitor`, cada 5 min) y tiene secrets de acceso vivos | Runtime de Node —sin evidencia de que exista ahí— y acceso SSH para el agente | Sí, más un segundo hueco |
 | n8n autoalojado | Crons corriendo hoy, varios workflows activos | Dispara, **no ejecuta Node**. Habría que reescribir la redacción como nodos | Parcialmente |
 | n8n personal | 137 workflows, **todos los listados inactivos** | Todo | Sí |
 | Vercel cron | — | **No hay `vercel.json` ni `vercel.ts`**. Invoca una ruta HTTP y no persiste ficheros | Sí, y el modelo no encaja |
 
-**Recomendación: GitHub Actions en este mismo repositorio.** Es la única donde el
-entorno ya cumple los cuatro requisitos sin construir nada. En el VPS faltan dos
-cosas en vez de una.
+**Recomendación: GitHub Actions en este mismo repositorio, condicionada a T-E1.**
+El runner es efímero: todavía falta resolver la persistencia externa del estado y los
+borradores entre corridas. Declarar variables de entorno no proporciona esa persistencia.
 
-No hace falta contratar ningún servicio nuevo para la ejecución. Lo único que no
-existe es una credencial de inferencia.
+La propuesta no requiere contratar un servicio nuevo para la ejecución. Además de la
+credencial de inferencia, queda pendiente resolver la persistencia externa en T-E1.
 
 ---
 
@@ -34,12 +34,21 @@ existe es una credencial de inferencia.
 
 | Requisito | Cómo | Dónde |
 |---|---|---|
-| **Persistencia de pendientes y resultados** | La bitácora (`estado/*.jsonl`) y el corpus se commitean a la rama de trabajo al final de cada corrida. El runner es efímero; el historial de git no | paso *persistir estado y corpus* |
+| **Persistencia de pendientes y resultados** | Por política, el estado y los borradores viven **fuera de cualquier repositorio**. `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` son obligatorias, no tienen valor por defecto y deben apuntar fuera de todo repositorio | entorno de ejecución |
 | **Exclusión de ejecuciones simultáneas** | `concurrency.group` nativo de Actions. `cancel-in-progress: false` a propósito: **se encola, no se mata**. Matar a mitad deja trabajo en un estado que nadie cerró | bloque `concurrency` |
 | **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `ejecutar.mjs` |
 | **Límites de duración, piezas y consumo** | `timeout-minutes: 25`; `--limite N` acota piezas por corrida; `EDITORIAL_MAX_LLAMADAS` topa las llamadas al modelo | `env` y paso *corrida* |
 | **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla **sin títulos, URLs, prompts ni nombres de repositorio**. Se sube como artefacto con retención de 30 días | paso *registro de la corrida* |
 | **Credencial y forma segura de suministrarla** | Secret del repositorio, leído del entorno. Nunca en el archivo, nunca en la línea de comandos | `env.ANTHROPIC_API_KEY` |
+
+**Estado real al 2026-09-16:** esta política todavía no se cumple en el árbol. Los archivos
+de estado y los borradores **todavía están versionados en este repositorio público**, y el
+workflow de referencia todavía contiene el paso *persistir estado y corpus*, que los
+commitea y empuja a la rama de trabajo al ejecutarse. Sigue sin estar activado. Sacarlos del repositorio, eliminar ese paso y hacer
+obligatorias —sin fallback— `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` es trabajo
+pendiente de T-E1. Sus valores concretos viven únicamente en el `.env` local de Rodrigo;
+este documento no declara rutas. En T-E1, `EDITORIAL_REDACCIONES_DIR` sustituirá a la
+actual `EDITORIAL_PIEZAS`, pasando de ruta de archivo a ruta de directorio.
 
 Hay además una compuerta que no estaba en la lista y que corre **antes de
 commitear nada**: `auditoria-exposicion.mjs`. Este repositorio es público y la
@@ -76,7 +85,7 @@ Esta distinción es la que importa, y no se difumina.
 
 **Una corrida manual (`workflow_dispatch`) con `con_redactor: false` no necesita
 credencial y comprobaría casi todo lo anterior** salvo la inferencia. Es el
-primer paso sensato.
+primer paso de prueba una vez cerrado T-E1; no debe activarse antes.
 
 ---
 
@@ -105,6 +114,9 @@ Detalles para tomarla con la información completa:
   precisamente para que un bucle inesperado no se lo coma.
 
 ## Activar, cuando se decida
+
+**Prerrequisito: cerrar T-E1 antes de activar el workflow.** Hasta entonces, activarlo
+commitea y empuja el estado y el corpus a este repositorio público.
 
 Tres movimientos, en este orden:
 
