@@ -16,6 +16,7 @@ public/proof/
     projects.json    proyectos que las sostienen
     evidence.json    registros de evidencia publicables
     activity.json    agregados temporales      (autorizado en V1; todavía no emitido)
+    proceso.json     declaraciones de proceso  (contrato definido; sin emisión)
   schemas/
     *.json           JSON Schema de cada archivo (Sprint 1)
 ```
@@ -319,6 +320,108 @@ Las reglas 4, 5, 6 y 8 de `03` §3 —coarsening temporal, vocabulario controlad
 
 ---
 
+## proceso.json
+
+Declaraciones de proceso autorizadas por `decisions/0015` §3 y §4-C. Este archivo
+es independiente de `activity.json`: no amplía ni debilita sus prohibiciones. Esta
+forma acota la primera declaración a actividad humana registrada en un editor;
+no incorpora ejecuciones de agentes, conteos de sesiones ni llamadas a herramientas.
+Definir el contrato no publica datos ni implementa su emisión o consumo.
+
+Ruta: `public/proof/v1/proceso.json`, escrito **solo por el motor**. Añadir este
+archivo opcional es compatible dentro de v1: un lector que no lo conoce lo ignora.
+Su ausencia es el estado normal de hoy; el lector la trata como estado declarado,
+no como error de feed parcial. Esta excepción no se extiende a los archivos
+obligatorios. No se crea el artefacto en este cambio.
+
+```json
+{
+  "schema_version": "1.0.0",
+  "records": [{
+    "kind": "human_editor_activity",
+    "period": "2026-09",
+    "source": "wakatime",
+    "seconds": 3600,
+    "unit": "recorded_activity_seconds",
+    "coverage": {
+      "dias_con_dato": 28,
+      "dias_del_periodo": 30,
+      "del_trabajo": "desconocida"
+    }
+  }],
+  "absences": [{
+    "period": "2026-10",
+    "source": "wakatime",
+    "motivo_de_ausencia": "fuente_no_respondio"
+  }]
+}
+```
+
+El ejemplo es sintético, no un artefacto observado. **Allowlist cerrada** en cada
+nivel: la raíz admite solo `schema_version`, `records` y `absences`; cada registro
+medido admite solo `kind`, `period`, `source`, `seconds`, `unit` y `coverage`;
+`coverage` admite solo `dias_con_dato`, `dias_del_periodo` y `del_trabajo`.
+Cada entrada de `absences` admite solo `period`, `source` y `motivo_de_ausencia`.
+**Todos los campos de cada forma son obligatorios**; no se admite `null` ni
+campos adicionales. Ambos arreglos pueden estar vacíos.
+
+- `schema_version` es la constante `"1.0.0"`; `kind`, la constante
+  `"human_editor_activity"`.
+- `period` es mes `AAAA-MM` (01–12) o trimestre `AAAA-Q1` a `AAAA-Q4`, nunca día.
+- `source` es una enumeración cerrada cuyo único valor es `"wakatime"`.
+  Añadir otra fuente exige una ADR. Nunca admite texto libre, rutas, identidades
+  ni nombres de repositorios privados.
+- `seconds` es un número finito no negativo, admite fracciones de segundo.
+  **La unidad se declara siempre** con `unit: "recorded_activity_seconds"`:
+  segundos de actividad registrada, se muestren como se muestren. Convertirlos a
+  horas en pantalla no los convierte en horas totales de trabajo. Duración
+  acumulada no es tiempo transcurrido ni tiempo que estuvo abierto el editor.
+- **`coverage` es obligatoria en el mismo registro**, nunca una nota externa.
+  `dias_con_dato` es un entero medido no negativo; `dias_del_periodo`, un entero
+  medido positivo. El primero no supera al segundo, que corresponde a los días
+  del mes o trimestre declarado. `del_trabajo` es el literal `"desconocida"`,
+  nunca un número: la cobertura temporal se mide, la del trabajo no. No incluye
+  trabajo fuera del editor ni dispositivos sin instrumentación. No se estima
+  un denominador. Los tres campos se muestran junto al número, no al pie.
+- `motivo_de_ausencia` admite solo `"sin_fuente_registrada"`,
+  `"fuera_del_periodo_medido"` o `"fuente_no_respondio"`. Se publica en `absences`,
+  sin registro en `records` para el mismo par `period`/`source`. Cada par es único
+  entre ambos arreglos. Una entrada en `absences` declara el hueco y su motivo;
+  un par omitido de ambos no declara ese periodo como publicado ni permite inferir
+  un valor. Nunca se representa ausencia mediante un número null, cero o guion.
+  Las entradas de ausencia no son mediciones ni llevan `seconds`, `unit` o
+  `coverage`. El motor verifica unicidad y exclusión de pares y coherencia de días
+  con el periodo; el schema no impone estas comprobaciones semánticas.
+
+Sin fuente registrada no hay número: no se infiere de commits, mensajes o tiempo
+de apertura del editor. La ausencia se declara como desconocida, nunca se rellena
+con cero ni se interpola. Un cero exige observación explícita. Antes de emitir,
+el motor aplica íntegra `docs/03-privacy-and-publication-policy.md`; este contrato
+no concede permisos de publicación ni excepciones de privacidad. La fuente y la
+cobertura deben ser publicables. El schema verifica forma, no la veracidad de
+la declaración ni el cumplimiento de las condiciones semánticas de la ADR.
+
+**Está prohibido sumar horas humanas con duración de ejecuciones de agentes en
+un mismo total, serie o eje.** Si se presentan en una misma pantalla, van en
+bloques separados y rotulados. **Está prohibido derivar un porcentaje de
+«trabajo hecho por IA», «horas ahorradas» o cualquier ratio equivalente**: no hay
+denominador honesto para esa fracción. **`tokens_used` y `prompts` siguen
+prohibidos en cualquier clase**, incluida la declaración de proceso; tampoco se
+publican transcripciones, diffs generados ni código privado.
+
+`proceso.json` **no lleva `claim_ids`** porque no afirma nada sobre el sujeto del
+portafolio: describe el método y por eso no cuelga del grafo de claims. Tampoco
+se presenta junto a un claim como si lo respaldara. La vía de abuso es
+**reetiquetar una métrica de evidencia como declaración de proceso para publicarla
+sin `claim_ids`**. La prueba para distinguirlas es obligatoria: **si el número
+dice algo SOBRE EL SUJETO, es métrica de evidencia y necesita `claim_ids`; si dice
+algo sobre el MÉTODO, es proceso**. Cambiarle el nombre no cambia su clase.
+
+No se presenta como logro ni como índice global: sin ranking, orden descendente
+por magnitud, comparación valorativa contra el periodo anterior, flechas de
+tendencia o destacado tipográfico. La interfaz dice explícitamente que no implica
+competencia, calidad ni seniority, y respeta `decisions/0015` §4-bis y §4-ter.
+
 ## Prohibido en el contrato, permanentemente
 
 Estos campos no existen y añadirlos requiere cambiar `00-product-brief.md` primero:
@@ -326,6 +429,13 @@ Estos campos no existen y añadirlos requiere cambiar `00-product-brief.md` prim
 `commit_count` como habilidad · `lines_of_code` · `streak` · `stars` · `forks` · `followers`
 `tokens_used` · `prompts` · `agent_sessions` · `tool_calls` · `hours` · `language_percentages`
 `experience_level` · `score` · `rank`
+
+Única excepción acotada por `decisions/0015` §4-C: el tiempo humano registrado
+puede declararse mediante `seconds` en la forma cerrada de `proceso.json`, nunca
+como indicador. No habilita `hours`, `agent_sessions` ni `tool_calls` en
+`activity.json`, ni define registros de sesiones o llamadas en `proceso.json`.
+`score`, `rank`, `experience_level`, niveles y porcentajes de experiencia,
+`tokens_used` y `prompts` siguen prohibidos **en cualquier clase**, sin excepción.
 
 Y una regla estructural, no una lista: **ninguna métrica de evidencia publicable puede existir sin `claim_ids`**.
 
@@ -337,7 +447,11 @@ La versión anterior de esta regla decía "ningún objeto publicable que conteng
 | Metadata operativa | No | `meta.unassigned_events`, `meta.source_coverage` |
 | Metadata de presentación | No | `meta.counts`, `meta.digest` |
 
-El riesgo se traslada a la clasificación, y ahí es donde hay que vigilarlo: **reetiquetar una métrica de evidencia como metadata para poder publicarla sin claim es la única forma en que esta regla se rompe.** El Reviewer busca exactamente eso. Prueba: si el número dice algo sobre el sujeto del portafolio, es métrica de evidencia, se llame como se llame.
+La declaración de proceso tiene su autoridad propia en `decisions/0015` §3 y
+§4-C y su forma en la sección `proceso.json` anterior. No es una cuarta clase de
+`02-domain-and-evidence-model.md` §7; esa sección conserva sus tres clases.
+
+El riesgo se traslada a la clasificación: **reetiquetar una métrica de evidencia como metadata o como declaración de proceso para publicarla sin claim** rompe la regla. El Reviewer busca exactamente eso. Prueba: si el número dice algo sobre el sujeto del portafolio, es métrica de evidencia, se llame como se llame; si describe el método, es proceso.
 
 ---
 

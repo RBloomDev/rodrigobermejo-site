@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://www.rodrigobermejo.com/proof/schemas/proceso.schema.json",
+  "title": "proceso.json — v1",
+  "description": "Derivado de docs/05-feed-contract.md § proceso.json. Declaración del método, no evidencia sobre el sujeto. La veracidad, privacidad y presentación requieren las condiciones de ADR 0015 §3; validar la forma no autoriza publicar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "records",
+    "absences"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "absences": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/absence"
+      }
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "period",
+        "source",
+        "seconds",
+        "unit",
+        "coverage"
+      ],
+      "properties": {
+        "kind": {
+          "const": "human_editor_activity"
+        },
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2]|Q[1-4])$"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "wakatime"
+          ]
+        },
+        "seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "const": "recorded_activity_seconds",
+          "description": "Segundos de actividad registrada; duración acumulada, no tiempo transcurrido ni trabajo total."
+        },
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "dias_con_dato",
+            "dias_del_periodo",
+            "del_trabajo"
+          ],
+          "properties": {
+            "dias_con_dato": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "dias_del_periodo": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "del_trabajo": {
+              "const": "desconocida"
+            }
+          }
+        }
+      }
+    },
+    "absence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "period",
+        "source",
+        "motivo_de_ausencia"
+      ],
+      "properties": {
+        "period": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2]|Q[1-4])$"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "wakatime"
+          ]
+        },
+        "motivo_de_ausencia": {
+          "type": "string",
+          "enum": [
+            "sin_fuente_registrada",
+            "fuera_del_periodo_medido",
+            "fuente_no_respondio"
+          ]
+        }
+      }
+    }
+  }
+}
