@@ -24,6 +24,9 @@ Hoy existen siete rutas renderizables: `/`, `/proyectos`, `/proyectos/[slug]`, `
 `/blog`, `/blog/[slug]` y la ruta de API `/api/subscribe`. Verificado enumerando
 `app/**/page.tsx` y `app/**/route.ts`.
 
+La columna **Estado** distingue lo que existe de lo que está especificado: `Nueva` significa
+que la ruta **no existe en el árbol** y que este mapa declara su forma, no su implementación.
+
 | Ruta | Qué es | Estado | Qué la alimenta |
 |---|---|---|---|
 | `/` | Portada de identidad. Quién es Rodrigo y a dónde ir. **Sin comercio**: ni oferta, ni precios, ni CTA de venta como eje | Reescrita | **Copy editorial estático.** Prohibido leer el feed (§3) |
@@ -32,11 +35,20 @@ Hoy existen siete rutas renderizables: `/`, `/proyectos`, `/proyectos/[slug]`, `
 | `/proyectos` | El desglose de proyectos que sostienen las afirmaciones | Reestilizada | **Feed** (`lib/proof/feed.ts`, `public/proof/v1/projects.json`) |
 | `/proyectos/[slug]` | Ficha por proyecto | Reestilizada | **Feed** |
 | `/evidencia` | Método y límites: el índice canónico `Claim → Project → Evidence` | Reestilizada | **Feed** (`claims.json` + etiquetas de procedencia y verificabilidad) |
+| `/actividad` | Qué volumen de trabajo se registró en un periodo, y qué **no** cubre ese registro. **No es el índice de evidencia y no reclama serlo** | **Nueva** — autorizada por `decisions/0015` §4-A y §4-F; spec en `docs/plataforma/01-noticias-y-actividad.md` | **Feed** — `activity.json` (buckets con `claim_ids`), más `claims.json` para resolver a qué afirmación cuelga cada bucket. **`activity.json` no existe hoy en `public/proof/v1/`**: la ruta renderiza el estado de dato ausente |
+| `/noticias` | Índice del canal editorial: noticias y análisis de IA, software y educación con foco en México | **Nueva** — autorizada por `decisions/0015` §4-G; spec en `docs/plataforma/01-noticias-y-actividad.md` | **Corpus editorial publicado**, y nunca el feed. Registro en `docs/plataforma/02-editorial.md` §3. **Prohibido derivarse de evidencia** (`docs/03` §4) |
+| `/noticias/[slug]` | Pieza editorial, con sus cinco preguntas, sus fuentes, su procedencia de cuatro etapas y su declaración de relación cuando aplique | **Nueva** — autorizada por `decisions/0015` §4-G; spec en `docs/plataforma/01-noticias-y-actividad.md` | **Corpus editorial publicado** (misma frontera). Enlaza a `/evidencia`; **jamás se deriva de ella ni la alimenta** |
 | `/blog` | Índice de artículos | Reestilizada | Markdown en `posts/` vía `lib/posts.ts` |
 | `/blog/[slug]` | Artículo | Reestilizada | Markdown en `posts/` |
 | `/api/subscribe` | Alta de suscripción. Maneja PII | Sin cambio | — |
 
-Dos cosas que el mapa deja explícitas y conviene no perder:
+`/noticias` y `/blog` **no se fusionan y no son la misma cosa**: `/blog` son artículos de
+Rodrigo en Markdown dentro de este repositorio; `/noticias` es un canal con esquema, fuentes
+mínimas, verificación de hechos y procedencia declarada. Fundirlos borraría justo la
+diferencia que hace publicable al segundo. La decisión de si uno absorbe al otro más adelante
+no se toma aquí.
+
+Tres cosas que el mapa deja explícitas y conviene no perder:
 
 - **`/` deja de ser el funnel.** Hoy `app/page.tsx:11-24` monta la cadena comercial completa
   en la portada. Después del rediseño esa cadena vive entera en `/colaborar` y la portada
@@ -45,6 +57,14 @@ Dos cosas que el mapa deja explícitas y conviene no perder:
   `app/evidencia/page.tsx:8` y `app/proyectos/page.tsx:9-12` lo dicen en el propio código, y
   `docs/05` lo fundamenta: la cadena del dominio es `Claim → Project → Evidence`, y entrar
   por los proyectos la invierte. El rediseño no toca esa jerarquía.
+- **Ni `/actividad` ni `/noticias` desplazan a `/evidencia` como índice canónico**, y las tres
+  rutas nuevas lo dicen en pantalla. `decisions/0015` §4-F concede presencia visual plena a la
+  pantalla de proyectos y actividad con esa condición literal: «`/evidencia` sigue siendo el
+  índice canónico del sistema de evidencia. La pantalla de actividad no reclama serlo y
+  enlaza a él». Una pantalla de actividad con más peso visual que `/evidencia` sigue sin ser
+  el índice: la jerarquía es del modelo de dominio, no del diseño. Y `/evidencia` conserva
+  además **índice sin filtros y en orden de Registry** (`docs/05` § Contrato de presentación →
+  *Orden y agrupación*); los filtros autorizados viven en `/proyectos` y `/actividad`.
 
 ### Defecto encontrado al levantar el mapa
 
@@ -60,18 +80,43 @@ tienen. No es una decisión estética; es navegación ausente.
 
 ## 2. Navegación
 
-Seis destinos, en este orden:
+Siete destinos, en este orden:
 
-**Trabajo · Inadaptados · Docencia · Escribo · Trayectoria · Trabajar conmigo**
+**Trabajo · Noticias · Inadaptados · Docencia · Escribo · Trayectoria · Trabajar conmigo**
 
 | Etiqueta | Destino | Tipo |
 |---|---|---|
 | Trabajo | `/proyectos` | Ruta |
+| Noticias | `/noticias` | Ruta |
 | Inadaptados | `/sobre-mi#inadaptados` | **Ancla de sección** |
 | Docencia | `/sobre-mi#docencia` | **Ancla de sección** |
 | Escribo | `/blog` | Ruta |
 | Trayectoria | `/sobre-mi` | Ruta |
 | Trabajar conmigo | `/colaborar` | Ruta |
+
+**Las etiquetas las manda `03-copy-deck.md`; los destinos, este documento.** Es la misma
+división que ya rige en §5, y aquí importa porque el menú nuevo debe declarar
+`{ label, href }` explícito: cambiar una palabra del menú no puede mover una URL.
+
+### `/actividad` y `/evidencia` no entran al menú principal, y es una decisión
+
+El menú son siete destinos y ya es el techo de lo que un encabezado sostiene sin colapsar a
+móvil. Las dos rutas del sistema de evidencia se alcanzan así:
+
+| Ruta | Cómo se llega | Por qué así |
+|---|---|---|
+| `/evidencia` | Enlace desde `/proyectos`, desde cada `/proyectos/[slug]`, desde `/actividad` y desde el pie | Es el índice canónico del **método**, y se llega a él desde el trabajo que explica, no desde un menú donde competiría con «Trabajo» |
+| `/actividad` | Enlace desde `/proyectos` y desde `/evidencia`, recíprocos | Es un registro complementario. Ponerla en el menú principal la presentaría como destino de primer nivel, que es la lectura de tablero que `decisions/0015` §4-bis evita |
+
+**Las dos son enlace, nunca import.** `Navbar` y `Footer` son entradas del funnel (§3): un
+`<Link href="/actividad">` es legítimo; un `import` de `lib/proof` desde el cromo no lo es, y
+`app/actividad` ya está en `EVIDENCE_PREFIXES` del guard. `/noticias` **no** es una ruta de
+evidencia y no está en esa lista: el cromo puede enlazarla sin ninguna salvedad.
+
+Lo que esto obliga, y no es opcional: **si `/actividad` y `/evidencia` no están en el menú,
+los enlaces recíprocos son navegación, no adorno.** El defecto que §1 ya documenta —
+`/proyectos` y `/evidencia` sin `Navbar` ni `Footer`, callejones sin salida — se agrava con
+dos rutas más si se repite. Las rutas nuevas montan el cromo desde el primer commit.
 
 ### Por qué Inadaptados y Docencia no son rutas propias
 
@@ -107,7 +152,7 @@ que lleva a `/`. Esto es un defecto, no una omisión de diseño: el botón está
 su lugar y promete un comportamiento que no ocurre. Un afordance muerto es peor que ningún
 afordance.
 
-El rediseño **debe** entregar el menú móvil funcionando, con los seis destinos, y verificarlo
+El rediseño **debe** entregar el menú móvil funcionando, con los siete destinos, y verificarlo
 operándolo en un navegador a ancho de móvil — no compilándolo.
 
 ### Segundo defecto del array de navegación
@@ -314,6 +359,13 @@ externos que no sabemos que existan. No se hace.
 3. **Añadir `/colaborar` y `/sobre-mi` a `app/sitemap.ts`.** Sin eso, las dos rutas nuevas no
    son descubribles: el sitemap actual (líneas 40-67) enumera `/`, `/proyectos`, `/evidencia`,
    las fichas de proyecto, `/blog` y los artículos, y nada más.
+   **Lo mismo vale para `/actividad`, `/noticias` y cada `/noticias/[slug]`**, cada una en el
+   commit que la implemente. Con una condición que sale del estado de dato ausente
+   (`docs/plataforma/01-noticias-y-actividad.md` §5): **`/noticias/[slug]` solo entra al
+   sitemap por cada pieza publicada.** Hoy el corpus tiene **tres piezas y las tres están en
+   `estado: "borrador"`** — medido sobre `docs/plataforma/prototipo/datos/piezas.json` — así
+   que el sitemap no gana ninguna URL de pieza, y eso es correcto: un sitemap que anuncia
+   borradores publica lo que no está publicado.
 4. **Dejar en `/` un ancla `#trabajar-conmigo`** — una sección breve de cierre en la portada
    que enlace a `/colaborar`. Así `/#trabajar-conmigo` es una URL compartible que sobrevive, y
    quien aterrice en la portada buscando comercio encuentra la puerta sin scrollear a ciegas.
@@ -374,15 +426,26 @@ se apoyan en que el template no aplica. Unificar es parte del rediseño.
 | `/proyectos` | Trabajo | Los proyectos sobre los que se apoyan las afirmaciones, con su naturaleza, su madurez y sus fuentes públicas. |
 | `/proyectos/[slug]` | *(nombre del proyecto, desde el feed)* | *(derivada del feed — nunca escrita a mano)* |
 | `/evidencia` | Cómo respaldo lo que afirmo | Cada afirmación profesional, con su procedencia, su verificabilidad y el límite exacto de lo que hoy se puede comprobar. |
+| `/actividad` | Actividad registrada | Qué volumen de trabajo quedó registrado por periodo, de qué fuente sale y qué parte del trabajo no cubre. |
+| `/noticias` | Noticias | Noticias y análisis de IA, software y educación, con lo que cada hecho cambia y qué aplica en México. |
+| `/noticias/[slug]` | *(título de la pieza, desde el corpus)* | *(entradilla de la pieza — nunca escrita a mano en el código)* |
 | `/blog` | Escribo | Artículos sobre automatización, sistemas de negocio y lo que aprendo construyéndolos. |
 | `/blog/[slug]` | *(título del artículo)* | *(resumen del artículo)* |
 
-Tres restricciones que **no** son negociables por copy y que el copy deck tiene que respetar:
+Cuatro restricciones que **no** son negociables por copy y que el copy deck tiene que respetar:
 
 - `/proyectos/[slug]` y `/evidencia` describen contenido que viene del feed. Su `description`
   no puede afirmar cantidades ni resultados: si el feed está ausente, la página renderiza una
   superficie sin afirmaciones (`docs/04` §4 invariante 3) y un metadato que prometa «12
   proyectos en producción» quedaría mintiendo sin que nada falle.
+- **`/actividad` hereda esa restricción y la endurece.** Su `description` no puede contener
+  ninguna cifra, porque `activity.json` no existe hoy: un metadato con un número sería falso
+  desde el primer despliegue y no habría gate que lo notara. Tampoco puede prometer
+  actualización («actividad al día», «datos en vivo»): el sitio es estático y todo se resuelve
+  en build (`docs/05` § Contrato de presentación).
+- **`/noticias/[slug]` deriva su `title` y su `description` del corpus, nunca del código**, y
+  solo existe para piezas publicadas. Una pieza en `borrador` no tiene metadatos porque no
+  tiene ruta.
 - El `keywords` de `app/layout.tsx:44-53` es hoy una lista de SEO de consultoría de
   automatización. Contradice el posicionamiento nuevo. Se reescribe o se elimina — en Next 16
   `keywords` no aporta ranking, así que eliminarlo es defendible.
