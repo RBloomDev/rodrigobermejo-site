@@ -404,11 +404,15 @@ no la cumple todavía; qué falta y quién lo cierra está en §8.6.
 
 ### 8.1 Tres comandos, tres salidas, tres transiciones
 
-| Etapa | Comando | Lee | **Única** salida | Transición |
+| Etapa | Comando | Lee | Qué escribe — **exhaustivo** | Transición |
 |---|---|---|---|---|
 | **Generar** | `generar` | Feeds de §6 y la bitácora | Un borrador en `$EDITORIAL_REDACCIONES_DIR` y eventos en `$EDITORIAL_ESTADO_DIR` | `detectada → pendiente_redaccion → pendiente_verificacion` |
 | **Verificar** | `verificar` | El borrador y sus fuentes | El sello `procedencia.verificado` sobre **ese mismo borrador privado**, y los fallos en `$EDITORIAL_ESTADO_DIR` | `pendiente_verificacion → terminada`, o `→ fallida_reintentable` |
-| **Autorizar** | `autorizar <id>` | Un borrador en `terminada` | **Un archivo en `content/noticias/`**, y nada más | `terminada → autorizada` |
+| **Autorizar** | `autorizar <id>` | Un borrador en `terminada` | **Un archivo en `content/noticias/`** —la única escritura de todo el canal en el árbol público— y el evento `autorizada` en la bitácora de `$EDITORIAL_ESTADO_DIR` (§8.4, paso 5). Nada más | `terminada → autorizada` |
+
+**La columna «qué escribe» es exhaustiva**: lo que no aparece en esa celda, el comando no lo
+escribe. Lo que es **único** de `autorizar` no es escribir en un solo sitio —escribe en dos—,
+sino ser el único de los tres que toca el árbol público. Los otros dos no lo tocan nunca.
 
 **Los tres son invocaciones separadas, no tres banderas del mismo comando.** Un
 `--autorizar` dentro de la corrida vuelve a juntar lo que esta sección separa: bastaría un
@@ -475,7 +479,7 @@ Condiciones duras del evento `autorizada`:
 
 | Qué | Dónde | Dentro del repo | Quién escribe |
 |---|---|---|---|
-| Bitácora, fallos y el `vistos.jsonl` heredado | `$EDITORIAL_ESTADO_DIR` | **No** | `generar` y `verificar` |
+| Bitácora, fallos y el `vistos.jsonl` heredado | `$EDITORIAL_ESTADO_DIR` | **No** | `generar` y `verificar`; y `autorizar`, **solo** para emitir su evento `autorizada` (§8.1, §8.4 paso 5). Los tres comandos escriben aquí porque la bitácora es donde vive la máquina de estados, y la transición `terminada → autorizada` es una transición como las otras |
 | Borradores y redacciones | `$EDITORIAL_REDACCIONES_DIR` | **No** | `generar`; `verificar` solo sella |
 | **Corpus publicado** | **`content/noticias/`** | **Sí** | **Únicamente `autorizar`** |
 | Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Hoy sí lo escriben dos caminos del canal** —`ejecutar.mjs:276` y `reverificar-corpus.mjs:58`—, y retirarlos es T-E1 (§8.6) |
