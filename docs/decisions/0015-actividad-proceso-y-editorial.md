@@ -105,7 +105,7 @@ modela el primero, y por eso los otros dos no tenían dónde existir salvo viol�
 | **Evidencia** | Que algo ocurrió, quién lo hizo y cuándo, comprobable por un tercero | `Claim` | `02` §7 sin cambios. `claim_ids` obligatorio |
 | **Actividad** | Qué volumen de trabajo se registró en un periodo | `Claim` | `activity.json`, `claim_ids` obligatorio. Se adelanta de V1.1 |
 | **Proceso** | **Cómo** se produjo el trabajo: con qué asistencia, con cuánto tiempo registrado | Declaración humana | **Clase nueva.** Reglas en §3 |
-| **Editorial** | Lo que se publica sobre el mundo, no sobre el sujeto | Pieza | `03:136` sin cambios: enlaza a evidencia, **jamás se deriva de ella** |
+| **Editorial** | Lo que se publica sobre el mundo, no sobre el sujeto | Pieza | `03` §4 («Fronteras que nunca se cruzan») sin cambios: enlaza a evidencia, **jamás se deriva de ella** |
 
 **La frontera que sostiene todo esto:** un número de evidencia dice algo **sobre el
 sujeto del portafolio**. Un número de proceso dice algo **sobre el método**. El primero
@@ -124,7 +124,8 @@ Se conserva íntegro, y esta lista es tan normativa como las autorizaciones:
 - **`tokens_used` y `prompts` siguen prohibidos.** Los tokens no son resultados, y un
   prompt es contenido, no metadato. Rodrigo lo reiteró al pedir el cambio.
 - **Nunca se publican prompts, transcripciones, diffs generados ni código privado**
-  (`AGENTS.md:60`, `02:494`).
+  (`AGENTS.md:60`, `docs/02-domain-and-evidence-model.md` §7 «Prohibido en el schema» y §8
+  punto 2). Citado **por sección**: `02:494` apuntaba a una línea que ya no es esa regla.
 - **Toda la política de privacidad** (`docs/03`): umbral k, ≥2 sujetos independientes,
   nada de proyectos `confidential`, coarsening mensual o trimestral, sin cruces
   reidentificantes. **Ninguna se toca, ni se baja, ni se afina.**
@@ -171,7 +172,7 @@ esas palabras y aquí queda como regla.
 | D | **Filtrar por proyecto y por periodo** | Ninguna. No existía prohibición | — |
 | E | **Filtrar por dimensión, solo en las superficies de actividad y proyectos** | `05:415-416` | **`/evidencia` conserva el índice sin filtros y en orden de Registry.** El control no muestra conteos por dimensión: eso sí sería el eje de comparación que la regla evita |
 | F | **Una pantalla de proyectos y actividad con presencia visual plena** | Ninguna sobre lo visual | **`/evidencia` sigue siendo el índice canónico del sistema de evidencia.** La pantalla de actividad no reclama serlo y enlaza a él |
-| G | **Una plataforma editorial dentro del sitio** | Ninguna. No existía regla sobre contenido editorial salvo la frontera | `03:136` intacta: el editorial **enlaza** a evidencia y **jamás se deriva de ella ni la alimenta** |
+| G | **Una plataforma editorial dentro del sitio** | Ninguna. No existía regla sobre contenido editorial salvo la frontera | `03` §4 («Fronteras que nunca se cruzan») intacta: el editorial **enlaza** a evidencia y **jamás se deriva de ella ni la alimenta** |
 
 ### 4-bis. Cómo se presentan las cifras: explorar sin calificar
 
@@ -311,8 +312,8 @@ exactamente lo que Rodrigo prohibió al pedir el cambio: *«No eludas restriccio
 cambiando nombres o moviendo datos a otra ruta.»* Y es el abuso que `AGENTS.md:61` manda
 buscar. Descartada sin más discusión.
 
-**(d) Sacar la plataforma editorial a otro dominio y otra marca.** Evitaría la frontera
-`03:136` por separación física. Se descarta **para esta entrega** porque Rodrigo pidió
+**(d) Sacar la plataforma editorial a otro dominio y otra marca.** Evitaría la frontera de
+`03` §4 («Fronteras que nunca se cruzan») por separación física. Se descarta **para esta entrega** porque Rodrigo pidió
 explícitamente demostrar el producto dentro del sitio y no decidir marca ni dominio
 ahora. Queda como opción abierta, no como decisión tomada.
 

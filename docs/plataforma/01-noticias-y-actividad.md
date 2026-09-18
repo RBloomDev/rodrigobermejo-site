@@ -61,9 +61,11 @@ Tres requisitos, y el tercero es el que hace que la regla no se rompa por descui
    «publicado» y con el tiempo divergen.
 
 **Medido el 2026-09-17 sobre `docs/plataforma/prototipo/datos/piezas.json`: tres piezas, las
-tres en `estado: "borrador"`, cero publicadas.** `02-editorial.md` §3 declara además que
-`"borrador"` es hoy el **único valor permitido** y que
-`procedencia.publicado` es `pendiente` en todo el corpus. Consecuencia directa y correcta:
+tres en `estado: "borrador"`, cero publicadas.** `02-editorial.md` §3 declara el vocabulario
+**cerrado en dos valores** —`"borrador"` y `"autorizada"`— y `02` §8.2 hace de `"autorizada"`
+el único valor publicable, escrito **únicamente** por el comando de autorización. Ninguna
+pieza del corpus medido lo tiene, y `procedencia.publicado` es `pendiente` en todas.
+Consecuencia directa y correcta:
 **`/noticias` renderiza hoy su estado vacío, y `/noticias/[slug]` no tiene ni una ruta.** Ver
 §5. Publicar una pieza es una decisión de Rodrigo, no un efecto de implementar esta spec.
 
@@ -76,12 +78,12 @@ se cruzan»** — hoy en `docs/03:194`:
 > derivarse de ella ni alimentarla.»
 
 > **Corrección de referencia.** `decisions/0015` (§1, §4-G, § *Cómo conviven los tres
-> registros*) y `docs/plataforma/02-editorial.md` §0 citan esta regla como **`03:136`**. En el
-> árbol actual `docs/03:136` está en blanco, dentro de §3 — reglas de publicación de métricas —
-> y la frontera editorial vive en **`docs/03:194`**. **La regla no cambió; la referencia
-> derivó** al crecer `docs/03`. Se cita aquí por sección, no por línea, porque una sección no
-> se desplaza. Corregir las citas de esos dos documentos queda registrado como hallazgo y
-> **no** se hace en esta entrega: son sus documentos, no este.
+> registros*) y `docs/plataforma/02-editorial.md` §0 citaban esta regla como **`03:136`**. En
+> el árbol actual `docs/03:136` está en blanco, dentro de §3 — reglas de publicación de
+> métricas — y la frontera editorial vive en **`docs/03:194`**. **La regla no cambió; la
+> referencia derivó** al crecer `docs/03`. Todas esas citas quedaron corregidas a `docs/03`
+> §4 —por sección, no por línea, porque una sección no se desplaza— en la entrega que
+> reescribió `02` §8.
 
 Traducido a requisitos sobre estas dos rutas:
 
@@ -616,9 +618,10 @@ el rótulo dice «sin dato publicado», que es lo que la pantalla sabe**, y no i
 
 ### 5.4 `/noticias` hoy: el corpus no tiene ninguna pieza publicada
 
-**Medido el 2026-09-17: tres piezas en el corpus, las tres en `estado: "borrador"`.** Y
-`02-editorial.md` §3 declara `"borrador"` como único valor permitido hoy, con
-`procedencia.publicado: "pendiente"` en todo el corpus.
+**Medido el 2026-09-17: tres piezas en el corpus, las tres en `estado: "borrador"`, ninguna
+en `"autorizada"`.** El vocabulario de `estado` está cerrado en esos dos valores
+(`02-editorial.md` §3), `"autorizada"` es el único publicable y solo lo escribe el comando de
+autorización (`02` §8.2), y `procedencia.publicado` es `"pendiente"` en todo el corpus.
 
 Qué se renderiza:
 
@@ -715,9 +718,10 @@ producto.**
   cada aviso y cada rótulo, nunca con qué palabras.
 - **Emitir `activity.json`.** Es del motor de evidencia, en su repositorio privado.
 - **Publicar cualquier pieza editorial.** Decisión de Rodrigo (`02-editorial.md` §4).
-- **Corregir las citas `03:136` y `05:415-416`** en `decisions/0015` y en
-  `docs/plataforma/02-editorial.md` §0. Quedan registradas en §1.2 y §4.1 como referencias
-  derivadas; enmendar esos documentos es trabajo suyo, no de esta spec.
+- **Corregir la cita `05:415-416`** en `decisions/0015`. Queda registrada en §4.1 como
+  referencia derivada; enmendar ese documento es trabajo suyo, no de esta spec. *(La cita
+  `03:136` de `decisions/0015` y de `02-editorial.md` §0 ya fue corregida a `docs/03` §4 por
+  la entrega que reescribió `02` §8; ver §1.2.)*
 - **Marca y dominio propios del canal editorial.** `decisions/0015` § *Alternativas descartadas*
   (d) lo deja como opción abierta, no como decisión tomada.
 - **Las cinco pantallas del prototipo** no se promueven a producción por este documento. Son
