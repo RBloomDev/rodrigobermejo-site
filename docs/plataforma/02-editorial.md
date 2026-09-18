@@ -481,17 +481,25 @@ Condiciones duras del evento `autorizada`:
 | Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Hoy sí lo escriben dos caminos del canal** —`ejecutar.mjs:276` y `reverificar-corpus.mjs:58`—, y retirarlos es T-E1 (§8.6) |
 
 > **Lo que sigue en esta sección —la tabla de arriba incluida— es la política, no una
-> descripción del canal de hoy.** Medido el 2026-09-17, el código **no la cumple**: las dos
-> variables resuelven con `||` a rutas dentro del repositorio, hay tres rutas más que
-> escriben dentro sin consultar variable alguna, y `content/noticias/` no existe. El
-> inventario completo y quién lo cierra están en §8.6. Cada prohibición lleva abajo su
-> propia medición, incluidas las dos que hoy no se rompen.
+> descripción del canal de hoy.** Medido el 2026-09-17, el código **no la cumple, y las dos
+> variables no se incumplen de la misma forma**: `EDITORIAL_ESTADO_DIR` existe y resuelve con
+> un `||` a una ruta del repositorio (`estado.mjs:153`); `EDITORIAL_REDACCIONES_DIR` **no
+> existe todavía en ningún `.mjs`** —`grep -rn "EDITORIAL_REDACCIONES_DIR" scripts/` devuelve
+> cero—, así que las redacciones se resuelven por la constante `DIR_REDACCIONES`
+> (`comun.mjs:16`). Además hay **tres** rutas que resuelven dentro del repositorio **sin
+> consultar variable alguna** —dos de ellas escriben (`comun.mjs:62`,
+> `reverificar-corpus.mjs:58`) y la de redacciones hoy solo lee—, y `content/noticias/` no
+> existe. La distinción no es de redacción: **quitar los `||` no cierra T-E1**, porque una
+> constante sin variable resuelve dentro aunque la variable esté puesta y sea correcta. El
+> inventario completo, con el tipo de cada camino y quién lo cierra, está en §8.6. Cada
+> prohibición lleva abajo su propia medición, incluidas las dos que hoy no se rompen.
 
 **`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` son OBLIGATORIAS y NO tienen valor
 por defecto.** Si falta cualquiera de las dos, el canal **aborta** al arrancar —antes de
 leer un feed, antes de abrir un archivo—, sale con código distinto de 0 y **no escribe
-nada**. No hay modo degradado. Hoy no aborta: corre con el `||` y escribe dentro del
-repositorio.
+nada**. No hay modo degradado. Hoy no aborta, y por dos motivos distintos: la de estado corre
+con su `||` (`estado.mjs:153`) y las redacciones ni siquiera consultan variable —se resuelven
+por constante (`comun.mjs:16`)—. En los dos casos el canal escribe dentro del repositorio.
 
 **Son dos, y solo dos.** No hay una tercera variable para un corpus intermedio. La actual
 `EDITORIAL_PIEZAS` —que hoy apunta al fixture del prototipo (`ejecutar.mjs:66`)— **no se
@@ -592,7 +600,7 @@ con el costo delante:
 |---|---|
 | La bitácora | El nivel 3 de deduplicación (§5.2) desaparece: todo hecho ya visto vuelve a entrar como nuevo |
 | Los borradores no autorizados | Se pierde el trabajo que aún no era una decisión. Hay que volver a generarlos y a verificarlos |
-| El corpus publicado | **No se pierde**: está en git. Reconciliar la bitácora contra `content/noticias/` recierra lo ya publicado sin reprocesarlo —y con el estado nuevo, el cierre correcto de una pieza que está ahí es `autorizada`, no `terminada`—, así que el daño queda acotado a lo no publicado |
+| El corpus publicado | **No se perderá: estará en git.** Reconciliar la bitácora contra `content/noticias/` volverá a cerrar lo ya publicado sin reprocesarlo —y el cierre correcto de una pieza que esté ahí será `autorizada`, no `terminada`—, así que el daño quedará acotado a lo no publicado. **En futuro a propósito: hoy `content/noticias/` no existe (§8.6), así que esta fila describe el modelo después de T-E1, no el árbol de hoy** |
 
 **La migración a un almacén con respaldo es lo que hará falta cuando se active la ejecución
 programada**, y por una razón mecánica: un runner de CI es efímero, así que no tiene
@@ -616,10 +624,10 @@ cumple, y decirlo es parte de la spec:
 | No existe el estado `autorizada` | `estado.mjs:98` lista seis estados y `terminada` es terminal |
 | No existe `content/noticias/` | `git ls-files content` devuelve solo `content/posts/` |
 
-**Los caminos de escritura dentro del repositorio son cinco, no dos**, y no todos son del
-mismo tipo. La distinción importa porque cambia el arreglo: un **default con respaldo**
+**Los caminos que resuelven a rutas dentro del repositorio son cinco, no dos**, y no todos son
+del mismo tipo. La distinción importa porque cambia el arreglo: un **default con respaldo**
 obedece a la variable cuando está puesta y solo cae dentro del repo si falta; una
-**constante sin variable** escribe dentro del repo *siempre*, aunque la variable esté
+**constante sin variable** resuelve dentro del repo *siempre*, aunque la variable esté
 puesta y sea correcta. Quitar los `||` no toca las tres últimas filas:
 
 | Camino de escritura | Tipo | Evidencia | Qué tiene que hacer T-E1 |
@@ -627,8 +635,8 @@ puesta y sea correcta. Quitar los `||` no toca las tres últimas filas:
 | Bitácora y estado de la máquina | Default con respaldo | `estado.mjs:153` — `process.env.EDITORIAL_ESTADO_DIR \|\| DIR_ESTADO` | Quitar el `\|\| DIR_ESTADO` y abortar si falta la variable |
 | Corpus del prototipo | Default con respaldo | `ejecutar.mjs:66` — `process.env.EDITORIAL_PIEZAS \|\| RUTA_PIEZAS`, escrito en `ejecutar.mjs:276` al final de la misma corrida que redacta y verifica | **Eliminar `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`**, no hacerla obligatoria: el corpus intermedio deja de existir porque `generar` escribe el borrador en `$EDITORIAL_REDACCIONES_DIR` y solo `autorizar` escribe corpus, en `content/noticias/` (§8.3) |
 | `errores.jsonl` | **Constante sin variable** | `comun.mjs:62` (`registrarError`) anexa a `RUTA_ERRORES`, derivada de `DIR_ESTADO` en `comun.mjs:15,18`. No consulta `EDITORIAL_ESTADO_DIR`: no es un respaldo, es la única ruta | Redirigir `RUTA_ERRORES` al directorio de estado resuelto. Un fallo del canal no puede ser lo que publique el estado |
-| Redacciones | **Constante sin variable** | `DIR_REDACCIONES` en `comun.mjs:16`, leída en `redactar.mjs:92-95`. `EDITORIAL_REDACCIONES_DIR` **no aparece en ningún `.mjs` del repositorio**: `grep -rn "EDITORIAL_REDACCIONES_DIR" scripts/` devuelve cero | **Crear la variable**, que hoy solo existe en esta spec, y resolver `DIR_REDACCIONES` desde ella |
-| Reverificación del corpus | **Constante sin variable** | `reverificar-corpus.mjs:24` lee y `:58` escribe `RUTA_PIEZAS` importada de `comun.mjs:19`, sin pasar por `EDITORIAL_PIEZAS` | Resolver desde `$EDITORIAL_REDACCIONES_DIR` —reverificar es sellar un borrador, y los borradores viven ahí—, **o retirar el comando del canal** si su corpus ya no existe. Lo que no puede hacer es seguir resolviendo por `rutaPiezas()`: esa función se elimina en la fila 2 |
+| Redacciones | **Constante sin variable**, y hoy **solo de lectura** | `DIR_REDACCIONES` en `comun.mjs:16`, leída en `redactar.mjs:92-95` (`existsSync`, `readdirSync`, `leerJson`). `grep -rn "DIR_REDACCIONES" scripts/` devuelve esas cinco líneas y **ninguna escritura**: la redacción versionada del repositorio no la puso el canal. Y `EDITORIAL_REDACCIONES_DIR` **no aparece en ningún `.mjs`**: `grep -rn "EDITORIAL_REDACCIONES_DIR" scripts/` devuelve cero | **Crear la variable**, que hoy solo existe en esta spec, y resolver `DIR_REDACCIONES` desde ella. Aquí T-E1 no redirige una escritura existente: tiene que **crear** la de `generar` (§8.1), que hoy no existe en ningún `.mjs` |
+| Reverificación del corpus | **Constante sin variable** | `reverificar-corpus.mjs:24` lee y `:58` escribe `RUTA_PIEZAS` importada de `comun.mjs:19`, sin pasar por `EDITORIAL_PIEZAS` | Resolver desde `$EDITORIAL_REDACCIONES_DIR` —reverificar es sellar un borrador, y los borradores viven ahí—, **o retirar el comando del canal** si su corpus ya no existe. Lo que no puede hacer es pasar a resolver por `rutaPiezas()`: hoy no la usa —importa `RUTA_PIEZAS` directo (`reverificar-corpus.mjs:20`)— y esa función se elimina en la fila 2 |
 
 Cerrar esa distancia —mover los archivos, **hacer obligatoria la variable de estado,
 eliminar `EDITORIAL_PIEZAS` con su función, crear `EDITORIAL_REDACCIONES_DIR` y redirigir las
@@ -654,21 +662,34 @@ estado de esta tabla—. T-E1 entrega, además del cambio, un gate de CI que **f
 2. el canal **no** aborta con código distinto de 0 cuando falta `EDITORIAL_ESTADO_DIR` o
    `EDITORIAL_REDACCIONES_DIR`;
 3. la ruta resuelta de cualquiera de las dos cae dentro de un árbol de trabajo de git;
-4. una prueba resuelve la ruta real en vez de montar la suya en `tmpdir` —se comprueba
-   corriendo la suite con las dos variables apuntando a un `tmpdir` y verificando que
-   `git status --porcelain -- scripts/editorial/estado scripts/editorial/redacciones
-   docs/plataforma/prototipo/datos` queda vacío al terminar—. **Acotado a esas rutas a
-   propósito:** un `git status --porcelain` sin acotar falla ante cualquier archivo sucio del
-   árbol, tenga o no que ver con el canal, y un gate que se pone rojo por suciedad ajena se
-   acaba ignorando.
+4. una prueba resuelve la ruta real en vez de montar la suya en `tmpdir`. Se comprueba
+   corriendo la suite con las dos variables apuntando a un `tmpdir` y verificando, al
+   terminar, **dos cosas distintas y por dos medios distintos**:
+   - que las rutas históricas **no existen en disco**: `test ! -e
+     scripts/editorial/estado && test ! -e scripts/editorial/redacciones`;
+   - que el fixture trackeado sigue intacto: `git status --porcelain --
+     docs/plataforma/prototipo/datos` queda vacío.
+
+   **La primera no puede escribirse con `git status`, y por eso va sobre el disco:** un
+   `git status --porcelain` **no lista archivos ignorados** —haría falta `--ignored`—, y
+   T-E1 tiene el encargo de ignorar precisamente esas dos rutas al mover los archivos —el
+   «ajustar `.gitignore`» de §8.6, dos párrafos arriba—. Con la forma de `git status` a secas, el día que T-E1
+   termine, una prueba que escribiera en la ruta real de estado o de redacciones —las dos
+   que esta comprobación existe para vigilar— pasaría en silencio. `docs/plataforma/prototipo/datos`
+   sí conserva el filo con `git status`, porque es un fixture trackeado y no ignorado.
+   **Y el acotado es a propósito:** un `git status --porcelain` sin acotar falla ante
+   cualquier archivo sucio del árbol, tenga o no que ver con el canal, y un gate que se pone
+   rojo por suciedad ajena se acaba ignorando.
 
 Las cuatro comprobaciones son de máquina. Ninguna depende de que alguien se acuerde.
 
 ### 8.7 La frontera con la evidencia, que la autorización no mueve
 
-Autorizar una pieza la vuelve **contenido publicado**; no la vuelve evidencia. La regla de
-`docs/03-privacy-and-publication-policy.md` §4, tabla «Fronteras que nunca se cruzan», sigue
-intacta y se reitera entera:
+Autorizar una pieza la vuelve **contenido publicado**; no la vuelve evidencia. Como §8.4,
+esto es el contrato del comando terminado, no una medición: `autorizar` no existe todavía
+(§8.6), así que los requisitos de abajo son lo que T-E1 tiene que cumplir, no lo que el
+código cumple hoy. La regla de `docs/03-privacy-and-publication-policy.md` §4, tabla
+«Fronteras que nunca se cruzan», sigue intacta y se reitera entera:
 
 > «Contenido editorial (`content/`) → Evidencia: El blog puede *enlazar* a evidencia;
 > **jamás derivarse de ella ni alimentarla.**»
