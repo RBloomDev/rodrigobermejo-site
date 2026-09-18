@@ -407,7 +407,7 @@ no la cumple todavía; qué falta y quién lo cierra está en §8.6.
 | Etapa | Comando | Lee | Qué escribe — **exhaustivo** | Transición |
 |---|---|---|---|---|
 | **Generar** | `generar` | Feeds de §6 y la bitácora | Un borrador en `$EDITORIAL_REDACCIONES_DIR` y eventos en `$EDITORIAL_ESTADO_DIR` | `detectada → pendiente_redaccion → pendiente_verificacion` |
-| **Verificar** | `verificar` | El borrador y sus fuentes | El sello `procedencia.verificado` sobre **ese mismo borrador privado**, y los fallos en `$EDITORIAL_ESTADO_DIR` | `pendiente_verificacion → terminada`, o `→ fallida_reintentable` |
+| **Verificar** | `verificar` | El borrador y sus fuentes | El sello `procedencia.verificado` sobre **ese mismo borrador privado**, y los eventos —la transición y los fallos— en `$EDITORIAL_ESTADO_DIR` | `pendiente_verificacion → terminada`, o `→ fallida_reintentable` |
 | **Autorizar** | `autorizar <id>` | Un borrador en `terminada` | **Un archivo en `content/noticias/`** —la única escritura de todo el canal en el árbol público— y el evento `autorizada` en la bitácora de `$EDITORIAL_ESTADO_DIR` (§8.4, paso 5). Nada más | `terminada → autorizada` |
 
 **La columna «qué escribe» es exhaustiva**: lo que no aparece en esa celda, el comando no lo
