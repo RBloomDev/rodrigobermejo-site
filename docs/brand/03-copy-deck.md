@@ -303,8 +303,13 @@ vez.
 ## 9. Contacto
 
 No hay formulario de contacto y no se añade. La vía es la que ya existe: la cita de
-Calendly, hoy repetida a mano en **siete** lugares del código y que pasa a
-`lib/site-config.ts`.
+Calendly, hoy repetida a mano y que pasa a `lib/site-config.ts`. Dónde vive hoy, contado
+sobre el árbol el 2026-09-21: `components/Hero.tsx`, `components/HowItWorks.tsx`,
+`components/Offers.tsx` **dos veces** y `components/FinalCTA.tsx` —cuatro archivos, cinco
+apariciones—. Va enumerado y no como numeral a propósito: el numeral anterior decía
+«siete» y dejó de ser cierto en cuanto el funnel se movió a `/colaborar` y `Navbar`,
+`Footer` y `MenuMovil` perdieron su botón, sin que nada se pusiera rojo. Una lista de
+archivos se desactualiza igual, pero se ve.
 
 | Dónde | Texto |
 |---|---|

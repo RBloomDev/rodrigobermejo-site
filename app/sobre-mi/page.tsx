@@ -19,8 +19,8 @@ import Link from "next/link";
  * `inadaptados` y `docencia` son **parte del contrato de esta página**
  * (`docs/brand/02` §2). El menú enlaza `/sobre-mi#inadaptados` y
  * `/sobre-mi#docencia`: si el copy renombra las secciones, los `id` no cambian.
- * `tests/portada-identidad.test.ts` lo vigila sobre el cierre de imports de esta
- * ruta, así que renombrar uno pone la prueba roja.
+ * `tests/rutas-y-anclas.test.ts` busca `id="inadaptados"` e `id="docencia"` en
+ * este archivo, así que renombrar uno pone la prueba roja.
  *
  * ## Cero cifras sin fuente
  *
@@ -30,7 +30,10 @@ import Link from "next/link";
  * no es una estimación: sale de `timeframe.start: "2024-08-01"` del proyecto
  * `docencia-universitaria`, y el copy deck la cita como tal. Esta ruta no lee el
  * feed —es copy editorial estático (`docs/brand/02` §1)—, así que la fecha viaja
- * transcrita, no derivada.
+ * transcrita, no derivada. Que siga sin leerlo lo fija
+ * `tests/portada-sin-feed.test.ts` sobre el cierre de imports de esta ruta: no es
+ * entrada de `guard:funnel` —no monta ningún componente del funnel—, así que CI
+ * no la cubre y esa prueba se hace cargo.
  */
 
 export const metadata: Metadata = {
