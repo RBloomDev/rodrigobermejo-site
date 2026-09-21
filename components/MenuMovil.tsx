@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import type { Destino } from "@/lib/navegacion";
-import { Button } from "@/components/ui/Button";
 
 /**
  * El menú móvil, que hasta hoy no existía.
@@ -35,6 +34,15 @@ import { Button } from "@/components/ui/Button";
  * panel solo existiera mientras está abierto, el botón en reposo apuntaría a un
  * `id` inexistente, que es exactamente la clase de contrato a medias que este
  * componente vino a arreglar.
+ *
+ * ## El botón de Calendly que ya no está aquí
+ *
+ * El panel cerraba con un «Agendar diagnóstico» a Calendly, gemelo del que tenía
+ * `Navbar`. `docs/brand/02-arquitectura-y-urls.md` §2 manda los dos a
+ * `/colaborar` —«la portada de identidad no lleva CTA de agenda en el cromo»—, y
+ * el cromo se renderiza en **todas** las rutas desde que vive en el layout.
+ * Quitarlo del escritorio y dejarlo en móvil habría dejado la mitad del defecto.
+ * El destino comercial sigue en el menú, como «Trabajar conmigo» → `/colaborar`.
  */
 
 /** Literal y no `useId()`: `aria-controls` se comprueba desde fuera, y un id
@@ -113,18 +121,6 @@ export function MenuMovil({ destinos }: { destinos: readonly Destino[] }) {
               </li>
             ))}
           </ul>
-
-          <div className="mt-4 pt-4 border-t border-border-subtle">
-            <Button
-              href="https://calendly.com/rodrigo-bermejo08/30min"
-              external
-              variant="primary"
-              size="sm"
-              className="w-full"
-            >
-              Agendar diagnóstico
-            </Button>
-          </div>
         </nav>
       </div>
     </div>

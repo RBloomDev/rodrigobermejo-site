@@ -1,6 +1,26 @@
-import { Button } from "@/components/ui/Button";
 import { SubscriptionBlock } from "@/components/SubscriptionBlock";
 
+/**
+ * ## El botón de Calendly que ya no está aquí
+ *
+ * El pie cerraba con un «Agendar» a Calendly, gemelo del que tenían `Navbar` y
+ * `MenuMovil`. `docs/brand/02-arquitectura-y-urls.md` §2 (:184-186) manda los
+ * tres a `/colaborar`: «el botón de Calendly duplicado en `Navbar` […] y en
+ * `Footer` es parte del funnel y se mueve con él a `/colaborar`: la portada de
+ * identidad no lleva CTA de agenda en el cromo». Desde que el cromo vive en el
+ * layout, ese botón se renderizaba en **todas** las rutas.
+ *
+ * Hubo una divergencia real entre ese párrafo y la tabla de `docs/brand/03` §9,
+ * que asignaba «Agendar» a la fila «Pie de página». **La resolvió Rodrigo el
+ * 2026-09-21 a favor de `02`**: la fila describía una ubicación que la
+ * arquitectura del funnel ya había retirado, así que la fila se retiró del copy
+ * deck y las otras tres quedaron intactas. Quien quiera devolver el botón al pie
+ * cambia primero `docs/brand/02` §2, no este archivo.
+ *
+ * No se pierde la vía de contacto: la cita sigue en `/colaborar` —`Hero`,
+ * `HowItWorks`, `Offers` y `FinalCTA` la montan— y el destino comercial entra al
+ * menú como «Trabajar conmigo».
+ */
 export default function Footer() {
   const socialLinks = [
     {
@@ -98,17 +118,6 @@ export default function Footer() {
                 {link.icon}
               </a>
             ))}
-          </div>
-
-          <div className="hidden md:block">
-            <Button
-              href="https://calendly.com/rodrigo-bermejo08/30min"
-              external
-              variant="primary"
-              size="sm"
-            >
-              Agendar
-            </Button>
           </div>
         </div>
 
