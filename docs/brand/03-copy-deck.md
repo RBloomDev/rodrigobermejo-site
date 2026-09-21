@@ -303,15 +303,28 @@ vez.
 ## 9. Contacto
 
 No hay formulario de contacto y no se añade. La vía es la que ya existe: la cita de
-Calendly, hoy repetida a mano en **siete** lugares del código y que pasa a
-`lib/site-config.ts`.
+Calendly, hoy repetida a mano y que pasa a `lib/site-config.ts`. Dónde vive hoy, contado
+sobre el árbol el 2026-09-21: `components/Hero.tsx`, `components/HowItWorks.tsx`,
+`components/Offers.tsx` **dos veces** y `components/FinalCTA.tsx` —cuatro archivos, cinco
+apariciones—. Va enumerado y no como numeral a propósito: el numeral anterior decía
+«siete» y dejó de ser cierto en cuanto el funnel se movió a `/colaborar` y `Navbar`,
+`Footer` y `MenuMovil` perdieron su botón, sin que nada se pusiera rojo. Una lista de
+archivos se desactualiza igual, pero se ve.
 
 | Dónde | Texto |
 |---|---|
 | Navegación | Trabajar conmigo |
 | `/colaborar`, CTA principal | Agendar diagnóstico |
 | `/colaborar`, pie del CTA | Respuesta en menos de 24 horas hábiles. |
-| Pie de página | Agendar |
+
+**La fila «Pie de página | Agendar» se retiró el 2026-09-21, y no es un olvido.**
+Esta tabla asigna *qué texto* lleva cada aparición; *qué apariciones existen* lo manda
+`docs/brand/02-arquitectura-y-urls.md`, y su §2 (:184-186) mueve el botón de Calendly de
+`Navbar` **y de `Footer`** a `/colaborar` —«la portada de identidad no lleva CTA de agenda
+en el cromo»—. Los dos documentos estuvieron en contradicción desde que se aceptaron, y
+`CLAUDE.md` clasifica eso como FAIL, no como deuda: Rodrigo lo resolvió a favor de `02`,
+porque la fila describía una ubicación que la arquitectura del funnel ya había retirado.
+Las otras tres filas quedan intactas.
 
 «Respuesta en menos de 24 horas hábiles» se conserva del sitio actual. **Es un compromiso
 de servicio, no copy de diseño**: si dejara de ser cierto, lo cambia Rodrigo, no el
@@ -347,7 +360,12 @@ que el prototipo se equivocó.
 
 ## 10. Lo que este documento deja abierto para Rodrigo
 
-1. **El titular**: «Formo talento» o «Doy clase». Se decide viendo las dos maquetadas.
+1. ~~**El titular**: «Formo talento» o «Doy clase».~~ **DECIDIDO el 2026-09-21: «Formo
+   talento».** Rodrigo eligió viendo las dos maquetadas, como pedía este punto. El titular
+   queda «Dirijo tecnología. Construyo sistemas. Formo talento.», que es la propuesta de §1
+   y la que concuerda con el verbo «Formo» de la tabla de las tres dimensiones de §2. Vive
+   en `app/page.tsx`. **No se reabre**: cambiarlo vuelve a ser una decisión de Rodrigo, no
+   una variante a maquetar.
 2. **El descriptor corto** que va en las bios sociales y en `Person.jobTitle`. Hoy
    circulan cuatro versiones distintas —«Consultor Técnico», «Implementador técnico»,
    «.NET and SharePoint», «Technical Consultant»— y hay que quedarse con una. La

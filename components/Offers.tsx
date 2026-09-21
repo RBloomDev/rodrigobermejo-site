@@ -41,7 +41,11 @@ export default function Offers() {
               <ul className="space-y-4">
                 {[
                   "Diagnóstico y puesta en marcha rápida",
-                  "1 flujo automatizado crítico funcionado",
+                  // Errata viva corregida por `docs/brand/03-copy-deck.md` §4:
+                  // decía «funcionado». Se corrige porque es una errata, no
+                  // porque sea rediseño: ningún precio, plazo ni compromiso de
+                  // esta oferta cambia por una decisión de diseño.
+                  "1 flujo automatizado crítico funcionando",
                   "Infraestructura gestionada y segura",
                   "Entregable: Sistema operando",
                   "Soporte técnico estándar",

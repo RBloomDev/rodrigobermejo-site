@@ -34,23 +34,37 @@ const libreBaskerville = Libre_Baskerville({
   variable: "--ff-quote",
 });
 
+/**
+ * Los metadatos por defecto son **los de la portada**.
+ *
+ * `docs/brand/02-arquitectura-y-urls.md` §5 dice que `/` «usa el `default` del
+ * layout», y `docs/brand/03-copy-deck.md` §7 —autoridad sobre el texto— fija
+ * cuál es ese texto. Escribir el título en `app/page.tsx` produciría «Rodrigo
+ * Bermejo — CTO, constructor y docente | Rodrigo Bermejo» por el `template`,
+ * que es el defecto que §5 señala en tres rutas que hoy lo repiten a mano.
+ *
+ * Lo que se sustituye: el posicionamiento anterior describía a Rodrigo
+ * exclusivamente como consultor de automatización. Es el posicionamiento
+ * estrecho que el rediseño abandona —no se pierde, se muda a `/colaborar`, que
+ * es donde vive la oferta—. Las `keywords` hacen el mismo viaje: se reorientan
+ * a las tres dimensiones y los términos comerciales se conservan en la ruta que
+ * les corresponde (`docs/brand/03` §7).
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl()),
   title: {
-    default: "Rodrigo Bermejo | Consultor Técnico en Automatización",
+    default: "Rodrigo Bermejo — CTO, constructor y docente",
     template: "%s | Rodrigo Bermejo",
   },
   description:
-    "Diseño y opero sistemas de automatización para negocios. Modelo de servicios gestionados: elimina el caos operativo sin infraestructura propia.",
+    "Dirijo tecnología en Inadaptados, construyo y opero sistemas de software, IA y automatización, y formo desarrolladores.",
   keywords: [
-    "automatización de negocios",
-    "consultoría técnica",
-    "operación de sistemas",
-    "business process automation",
-    "managed services",
-    "integración de apis",
-    "flujos de trabajo",
-    "sin fricción",
+    "dirección tecnológica",
+    "CTO",
+    "arquitectura de software",
+    "automatización",
+    "docencia en programación",
+    "currícula",
   ],
   authors: [{ name: "Rodrigo Bermejo" }],
   creator: "Rodrigo Bermejo",
@@ -58,16 +72,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "es_MX",
     url: "/",
-    title: "Rodrigo Bermejo | Consultor Técnico",
+    title: "Rodrigo Bermejo — CTO, constructor y docente",
     description:
-      "Infraestructura de automatización operada por expertos. Elimina tareas manuales y recupera el control operativo.",
+      "Dirijo tecnología en Inadaptados, construyo y opero sistemas de software, IA y automatización, y formo desarrolladores.",
     siteName: "Rodrigo Bermejo",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Rodrigo Bermejo | Consultor Técnico",
+    title: "Rodrigo Bermejo — CTO, constructor y docente",
     description:
-      "Infraestructura de automatización operada por expertos. Elimina tareas manuales y recupera el control operativo.",
+      "Dirijo tecnología en Inadaptados, construyo y opero sistemas de software, IA y automatización, y formo desarrolladores.",
     creator: "@rodrigobermejo",
   },
   icons: {

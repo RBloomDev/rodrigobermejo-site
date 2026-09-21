@@ -28,12 +28,13 @@
  *
  * ## `disponible`: por qué existe y qué NO significa
  *
- * §2 describe el mapa de rutas **después** del rediseño. Medido sobre este
- * árbol el 2026-09-18, enumerando `app/**\/page.tsx`: de los siete destinos
- * solo existen `/proyectos` y `/blog`. `/sobre-mi`, `/colaborar` y `/noticias`
- * están marcados «Nueva» en §2 —lo que significa que el documento declara su
- * forma, no su implementación— y no hay ningún `id="inadaptados"` ni
- * `id="docencia"` en el árbol.
+ * §2 describe el mapa de rutas **después** del rediseño, y esta bandera dice
+ * qué parte de ese mapa existe ya en el árbol. Medido de nuevo el 2026-09-21,
+ * enumerando `app/**\/page.tsx`: existen `/proyectos`, `/blog`, `/colaborar` y
+ * `/sobre-mi`, y los `id` `inadaptados` y `docencia` viven en
+ * `app/sobre-mi/page.tsx`. **`/noticias` sigue sin existir** y por eso sigue en
+ * `false`: está marcada «Nueva» en §2, lo que significa que el documento
+ * declara su forma, no su implementación.
  *
  * Renderizar los siete hoy publicaría cinco enlaces muertos en la navegación
  * principal de un sitio público. Esta bandera no es una opinión de producto:
@@ -57,12 +58,15 @@ export type Destino = {
 
 export const DESTINOS: readonly Destino[] = [
   { etiqueta: "Trabajo", href: "/proyectos", disponible: true },
+  // El unico destino que sigue sin existir. `/noticias` esta marcada «Nueva» en
+  // §2 y su spec vive en `docs/plataforma/01-noticias-y-actividad.md`; el work
+  // item que la construya cambia esta bandera.
   { etiqueta: "Noticias", href: "/noticias", disponible: false },
-  { etiqueta: "Inadaptados", href: "/sobre-mi#inadaptados", disponible: false },
-  { etiqueta: "Docencia", href: "/sobre-mi#docencia", disponible: false },
+  { etiqueta: "Inadaptados", href: "/sobre-mi#inadaptados", disponible: true },
+  { etiqueta: "Docencia", href: "/sobre-mi#docencia", disponible: true },
   { etiqueta: "Escribo", href: "/blog", disponible: true },
-  { etiqueta: "Trayectoria", href: "/sobre-mi", disponible: false },
-  { etiqueta: "Trabajar conmigo", href: "/colaborar", disponible: false },
+  { etiqueta: "Trayectoria", href: "/sobre-mi", disponible: true },
+  { etiqueta: "Trabajar conmigo", href: "/colaborar", disponible: true },
 ];
 
 /** Lo que el menú renderiza hoy. Enlazar no es importar: `docs/brand/02` §3. */

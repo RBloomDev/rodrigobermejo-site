@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { MenuMovil } from "@/components/MenuMovil";
 import { DESTINOS_VISIBLES } from "@/lib/navegacion";
 
@@ -23,6 +22,25 @@ import { DESTINOS_VISIBLES } from "@/lib/navegacion";
  * no importa nada; un `import` de `lib/proof` desde aquí sí rompería el
  * invariante. Dejar las rutas de evidencia sin enlace haría la prueba de
  * trabajo invisible justo para quien evalúa contratar.
+ *
+ * ## El botón de Calendly que ya no está aquí
+ *
+ * `docs/brand/02-arquitectura-y-urls.md` §2 lo dice literal: «el botón de
+ * Calendly duplicado en `Navbar` y en `Footer` es parte del funnel y se mueve
+ * con él a `/colaborar`: la portada de identidad no lleva CTA de agenda en el
+ * cromo». Desde que el cromo vive en el layout, ese botón se renderizaba en
+ * **todas** las rutas, portada de identidad incluida.
+ *
+ * No se pierde la vía de contacto y no se toca el compromiso de servicio: la
+ * cita sigue en `/colaborar` —`HowItWorks`, `Offers` y `FinalCTA` la montan— y
+ * el destino comercial entra al menú como «Trabajar conmigo», que es lo que
+ * `docs/brand/03-copy-deck.md` §9 asigna a la fila «Navegación».
+ *
+ * **El pie tampoco lo conserva.** La tabla de §9 del copy deck le asignaba
+ * «Agendar» a la fila «Pie de página», y eso contradecía al párrafo de §2 citado
+ * arriba. Rodrigo resolvió la divergencia el 2026-09-21 a favor de `02` —§9
+ * asigna textos a apariciones, no decide cuáles existen— y la fila se retiró del
+ * copy deck. Ver `components/Footer.tsx`.
  */
 export default function Navbar() {
   return (
@@ -48,16 +66,6 @@ export default function Navbar() {
               {destino.etiqueta}
             </Link>
           ))}
-          <div className="ml-4 pl-4 border-l border-border-subtle">
-            <Button
-              href="https://calendly.com/rodrigo-bermejo08/30min"
-              external
-              variant="primary"
-              size="sm"
-            >
-              Agendar diagnóstico
-            </Button>
-          </div>
         </nav>
 
         <MenuMovil destinos={DESTINOS_VISIBLES} />
