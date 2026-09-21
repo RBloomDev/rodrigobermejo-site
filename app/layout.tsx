@@ -118,7 +118,7 @@ export default function RootLayout({
          * suyos: sin esto el documento mediría 100vh **más** el alto del cromo
          * —barra de scroll en toda página— y el pie caería bajo el pliegue.
          * Las tres páginas sueltan su `min-h-screen` por la misma razón. */}
-        <div className="flex-grow">{children}</div>
+        <div className="flex-grow flex flex-col">{children}</div>
         <Footer />
       </body>
     </html>

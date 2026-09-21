@@ -37,7 +37,7 @@
  *
  * Renderizar los siete hoy publicaría cinco enlaces muertos en la navegación
  * principal de un sitio público. Esta bandera no es una opinión de producto:
- * es el estado medido del árbol, y `tests/navegacion.test.ts` la vigila — en
+ * es el estado medido del árbol, y `tests/enlaces-de-navegacion.test.ts` la vigila — en
  * cuanto alguien marque `true` sin que la ruta o el `id` existan, la prueba se
  * pone roja.
  *

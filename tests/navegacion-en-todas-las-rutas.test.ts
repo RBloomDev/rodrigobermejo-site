@@ -23,15 +23,30 @@ test("AC-NAV-01: toda ruta renderizable monta Navbar y Footer", () => {
 test("AC-NAV-01: el cromo se monta una sola vez por ruta", () => {
   const duplicadas = paginas().filter((pagina) => {
     const capas = [pagina, ...layoutsAncestros(pagina)];
-    const montajes = capas.filter((c) => /<Navbar[\s/>]/.test(leer(c)));
-    return montajes.length > 1;
+    return ["Navbar", "Footer"].some((componente) => {
+      const patron = new RegExp(`<${componente}[\\s/>]`);
+      return capas.filter((c) => patron.test(leer(c))).length > 1;
+    });
   });
 
   assert.deepEqual(
     duplicadas,
     [],
-    `estas rutas montan Navbar dos veces —en la página y en un layout ancestro—, ` +
-      `así que renderizan dos encabezados: ${duplicadas.join(", ")}`,
+    `estas rutas montan Navbar o Footer en más de una capa: ${duplicadas.join(", ")}`,
   );
 });
 
+test("N-NAV-04: la cadena flex conserva el crecimiento del contenido del blog", () => {
+  assert.match(
+    leer("app/layout.tsx"),
+    /<div className="flex-grow flex flex-col">\{children\}<\/div>/,
+    "el envoltorio compartido debe propagar el crecimiento como contenedor flex",
+  );
+  for (const pagina of ["app/blog/page.tsx", "app/blog/[slug]/page.tsx"]) {
+    assert.match(
+      leer(pagina),
+      /return\s*\(\s*<div className="flex flex-col flex-grow">/,
+      `${pagina}: el envoltorio debe crecer para que su main ocupe el espacio disponible`,
+    );
+  }
+});

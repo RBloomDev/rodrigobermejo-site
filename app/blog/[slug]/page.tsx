@@ -34,7 +34,7 @@ export default async function Post({ params }: PostProps) {
   const postData = await getPostData(slug);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col flex-grow">
       <main className="flex-grow py-24 bg-white">
         <article className="container mx-auto px-6 max-w-3xl">
           {/* Header */}

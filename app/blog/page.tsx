@@ -14,7 +14,7 @@ export default function BlogIndex() {
   const allPostsData = getSortedPostsData();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col flex-grow">
       <main className="flex-grow py-24 bg-gray-50">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionHeader
