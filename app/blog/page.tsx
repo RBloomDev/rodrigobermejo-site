@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import { getSortedPostsData } from '@/lib/posts';
 import { SectionHeader } from '@/components/ui/SectionHeader';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { Metadata } from 'next';
 import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -16,8 +14,7 @@ export default function BlogIndex() {
   const allPostsData = getSortedPostsData();
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="flex flex-col">
       <main className="flex-grow py-24 bg-gray-50">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionHeader
@@ -51,7 +48,6 @@ export default function BlogIndex() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
