@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Problems from "@/components/Problems";
 import HowItWorks from "@/components/HowItWorks";
@@ -6,12 +5,10 @@ import Offers from "@/components/Offers";
 import About from "@/components/About";
 import FAQ from "@/components/FAQ";
 import FinalCTA from "@/components/FinalCTA";
-import Footer from "@/components/Footer";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex flex-col">
-      <Navbar />
+    <main className="flex flex-col">
       <Hero />
       <Problems />
       <HowItWorks />
@@ -19,7 +16,6 @@ export default function Home() {
       <About />
       <FAQ />
       <FinalCTA />
-      <Footer />
     </main>
   );
 }

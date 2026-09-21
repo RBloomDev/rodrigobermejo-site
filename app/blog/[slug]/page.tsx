@@ -1,6 +1,4 @@
 import { getPostData, getAllPostIds } from "@/lib/posts";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { SubscriptionBlock } from "@/components/SubscriptionBlock";
 import { Metadata } from "next";
 import { parseISO, format } from "date-fns";
@@ -36,8 +34,7 @@ export default async function Post({ params }: PostProps) {
   const postData = await getPostData(slug);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="flex flex-col flex-grow">
       <main className="flex-grow py-24 bg-white">
         <article className="container mx-auto px-6 max-w-3xl">
           {/* Header */}
@@ -88,7 +85,6 @@ export default async function Post({ params }: PostProps) {
           </div>
         </article>
       </main>
-      <Footer />
     </div>
   );
 }
