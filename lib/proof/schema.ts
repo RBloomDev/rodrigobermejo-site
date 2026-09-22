@@ -48,6 +48,13 @@ export const VERIFIABILITY = [
   "cryptographic",
 ] as const;
 export const DIMENSIONS = ["build", "lead", "teach"] as const;
+/**
+ * `context` — bajo qué contexto y **para quién** se hizo el trabajo
+ * (`docs/02-domain-and-evidence-model.md` §Validación de solapamiento). No dice
+ * cuántas personas hubo: el contrato no guarda personas. Se extrae a constante
+ * para que una sonda pueda recorrer los cuatro valores sin copiarlos a mano.
+ */
+export const CONTEXTS = ["personal", "rbloomdev", "inadaptados", "client"] as const;
 
 /**
  * `passthrough` y no `strict`, y es normativo: la **regla 3** del contrato dice
@@ -75,7 +82,7 @@ export const projectSchema = z
     ]),
     /** `confidential` NO existe aquí: ese proyecto no tiene registro. */
     visibility: z.enum(["public", "private"]),
-    context: z.enum(["personal", "rbloomdev", "inadaptados", "client"]),
+    context: z.enum(CONTEXTS),
     role: z.enum(["author", "maintainer", "contributor", "reviewer", "operator"]),
     timeframe: z.object({ start: fecha, end: fecha.optional() }).passthrough(),
     public_sources: z.array(

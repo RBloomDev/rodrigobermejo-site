@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { leerFeed, claimsDeProyecto } from "@/lib/proof/feed";
 import { proyectoAVista } from "@/lib/proof/proyectos-vista";
-import { DIMENSION_COPY, fechaEnProsa } from "@/lib/proof/proyectos-filtros";
+import { DIMENSION_COPY, creditoDe, fechaEnProsa } from "@/lib/proof/proyectos-filtros";
 import { ClaimCard } from "@/components/proof/ClaimCard";
 
 /**
@@ -102,7 +102,12 @@ export default async function ProyectoPage({
 
       {/* Contribucion y credito, SEPARADOS. El contrato no guarda personas ---
           guarda rol y contexto--- y por eso no hay ningun porcentaje de autoria
-          que publicar: publicarlo revelaria composicion de equipo ajena. */}
+          que publicar: publicarlo revelaria composicion de equipo ajena.
+
+          Y por la misma razon la frase de credito sale de `creditoDe`, la misma
+          que usa el indice: donde `docs/` no declara equipo, esta ficha no lo
+          afirma --- una cota de dos personas sobre la plantilla de un tercero
+          seria inferencia, y `decisions/0015` §5 no autoriza ninguna. */}
       <section className="mt-10" aria-labelledby="h-participacion">
         <h2 id="h-participacion" className="font-heading text-2xl text-ink-default">
           Participación
@@ -121,12 +126,7 @@ export default async function ProyectoPage({
           </div>
           <div className="sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4">
             <dt className="text-sm uppercase tracking-wide text-ink-muted">Crédito</dt>
-            <dd className="text-ink-default">
-              {vista.colectivo
-                ? `Trabajo en el contexto de ${vista.contexto}, con más manos que las suyas: el crédito es del equipo. ` +
-                  "Qué parte del trabajo es de quién no se publica, porque esa cifra describiría a personas que no lo decidieron."
-                : "Trabajo personal. El feed guarda el rol y el contexto, nunca a las personas, así que aquí no hay nombres ni reparto de autoría."}
-            </dd>
+            <dd className="text-ink-default">{creditoDe(vista.contexto)}</dd>
           </div>
         </dl>
       </section>

@@ -40,6 +40,70 @@ export const DIMENSION_COPY: Record<Dimension, string> = {
   teach: "Formo",
 };
 
+/** Los cuatro contextos del contrato. Misma duplicación deliberada que arriba. */
+export const CONTEXTOS = ["personal", "rbloomdev", "inadaptados", "client"] as const;
+
+export type Contexto = (typeof CONTEXTOS)[number];
+
+/**
+ * El contexto en copy público. No es una descripción de la plantilla: `context`
+ * dice bajo qué contexto y **para quién** se hizo el trabajo
+ * (`docs/02-domain-and-evidence-model.md` §Validación de solapamiento).
+ */
+export const CONTEXT_COPY: Record<Contexto, string> = {
+  personal: "personal",
+  rbloomdev: "RBloomDev",
+  inadaptados: "Inadaptados",
+  client: "un encargo de un tercero",
+};
+
+/**
+ * Los contextos que `docs/` declara **colectivos**, y solo esos.
+ *
+ * Hoy uno: `docs/brand/00-brand-brief.md` §Lo que no se dice nombra a Inadaptados
+ * —y a nadie más— como «una organización con equipo», y de ahí sale el mandato de
+ * atribuir el crédito al equipo. Los otros tres contextos **no** tienen ese
+ * respaldo: `docs/00-product-brief.md` dice de RBloomDev que «es la organización
+ * que opera el sitio», sin atribuirle más gente, y `client` dice para quién se
+ * hizo el trabajo, no con cuánta gente.
+ *
+ * Por qué importa que la lista sea corta: afirmar «el crédito es del equipo»
+ * sobre un contexto que el contrato no declara colectivo publica una cota
+ * inferior de dos personas sobre la plantilla de un tercero —eso es inferencia, y
+ * `decisions/0015` §5 dice literalmente que la enmienda «no pide autorizar
+ * inferencia alguna»—. `tests/credito-sin-afirmar-equipo.test.ts` lo sostiene
+ * midiendo esta lista contra la línea de `docs/brand/00` que la respalda.
+ */
+export const CONTEXTOS_COLECTIVOS: ReadonlySet<string> = new Set(["inadaptados"]);
+
+/**
+ * La frase de **crédito** de una fila, en un solo sitio.
+ *
+ * Vive aquí y no en cada superficie porque `/proyectos` y `/proyectos/[slug]`
+ * tienen que decir lo mismo: dos redacciones en paralelo divergirían en el primer
+ * cambio y una de las dos acabaría afirmando de más sin que nada fallara.
+ *
+ * Las dos ramas sostienen la distinción de `decisions/0015` §4-ter —trabajo
+ * colectivo no es contribución personal— sin colapsarla al revés: donde el
+ * contrato declara equipo, el crédito es del equipo; donde no lo declara, no se
+ * afirma ni equipo ni autoría exclusiva, porque el feed no guarda personas y no
+ * hay de dónde saberlo.
+ */
+export function creditoDe(contexto: string): string {
+  const nombre = CONTEXT_COPY[contexto as Contexto] ?? contexto;
+  if (CONTEXTOS_COLECTIVOS.has(contexto)) {
+    return (
+      `Trabajo en el contexto de ${nombre}, que es una organización con equipo: el crédito ` +
+      "es del equipo. Qué parte del trabajo es de quién no se publica, porque esa cifra " +
+      "describiría a personas que no lo decidieron."
+    );
+  }
+  return (
+    `Contexto declarado en el feed: ${nombre}. El feed guarda el rol y el contexto, nunca a ` +
+    "las personas, así que aquí no se atribuye autoría exclusiva ni se publica ningún reparto."
+  );
+}
+
 /**
  * Un proyecto listo para pintar: serializable, sin nada del lector de feed.
  *
@@ -67,11 +131,12 @@ export interface ProyectoVista {
   dimensiones: Dimension[];
   /** Rol declarado en el feed, en copy público. */
   rol: string;
-  /** Contexto declarado en el feed, en copy público. */
-  contexto: string;
-  /** El trabajo ocurre dentro de una organización: el crédito es del equipo. */
-  colectivo: boolean;
-  esPublico: boolean;
+  /**
+   * El contexto declarado, **en clave de contrato**. La traducción a copy y la
+   * frase de crédito las hace `creditoDe`, para que las dos superficies digan lo
+   * mismo y ninguna pueda afirmar por su cuenta cuántas manos hubo.
+   */
+  contexto: Contexto;
   tieneFuentesPrivadas: boolean;
   fuentesPublicas: { tipo: string; url: string }[];
 }

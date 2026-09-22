@@ -39,8 +39,9 @@ import type { Feed, FeedProject } from "./schema.ts";
  *
  * ## Y lo que este módulo NO adjunta: ninguna imagen
  *
- * `visibility` se traduce a `esPublico` y se queda ahí. No existe ninguna ruta
- * que convierta esa bandera en una captura, porque publicar la pantalla de un
+ * `visibility` **no cruza la frontera**: no hay campo que lo transporte, porque
+ * ninguna superficie lo pinta. No existe ninguna ruta que convierta la
+ * visibilidad de un proyecto en una captura, porque publicar la pantalla de un
  * proyecto es publicar un valor nuevo en la superficie pública y `docs/03` §7
  * reserva esa decisión a un humano. Falta lo que autorizaría un activo —quién lo
  * autoriza y contra qué se comprueba—, así que no hay activos. La pantalla lo
@@ -78,16 +79,6 @@ const ROLE_COPY: Record<string, string> = {
   operator: "operador",
 };
 
-const CONTEXT_COPY: Record<string, string> = {
-  personal: "trabajo personal",
-  rbloomdev: "RBloomDev",
-  inadaptados: "Inadaptados",
-  client: "trabajo para un tercero",
-};
-
-/** Un contexto de organización significa manos ajenas, y el crédito es de ellas también. */
-const COLECTIVOS = new Set(["rbloomdev", "inadaptados", "client"]);
-
 export type VistaProyectos =
   | { estado: "ausente" }
   | {
@@ -95,7 +86,6 @@ export type VistaProyectos =
       proyectos: ProyectoVista[];
       /** Fecha absoluta y en prosa del `meta.generated_at`. */
       publicadoEl: string;
-      afirmaciones: number;
     };
 
 function dimensionesDe(feed: Feed, proyecto: FeedProject): Dimension[] {
@@ -124,9 +114,7 @@ export function proyectoAVista(feed: Feed, p: FeedProject): ProyectoVista {
     finEnProsa: p.timeframe.end ? mesEnProsa(p.timeframe.end) : null,
     dimensiones: dimensionesDe(feed, p),
     rol: ROLE_COPY[p.role] ?? p.role,
-    contexto: CONTEXT_COPY[p.context] ?? p.context,
-    colectivo: COLECTIVOS.has(p.context),
-    esPublico: p.visibility === "public",
+    contexto: p.context,
     tieneFuentesPrivadas: p.has_private_sources,
     fuentesPublicas: p.public_sources.map((s) => ({ tipo: s.type, url: s.url })),
   };
@@ -143,6 +131,5 @@ export function vistaDeProyectos(dir?: string): VistaProyectos {
     // ranking construido por la pantalla.
     proyectos: feed.projects.map((p) => proyectoAVista(feed, p)),
     publicadoEl: fechaEnProsa(feed.meta.generated_at),
-    afirmaciones: feed.claims.length,
   };
 }

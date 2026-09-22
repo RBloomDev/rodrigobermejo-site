@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import {
   DIMENSION_COPY,
   FILTROS_VACIOS,
+  creditoDe,
   filtrarProyectos,
   opcionesDeDimension,
   opcionesDePeriodo,
@@ -80,7 +81,11 @@ function Ficha({ p }: { p: ProyectoVista }) {
           `decisions/0015` §4-ter: trabajo colectivo no es contribucion personal.
           Aqui no hay porcentaje de autoria que ocultar porque el contrato no
           guarda personas ---guarda rol y contexto---, y publicar ese reparto
-          describiria a terceros que no lo decidieron. */}
+          describiria a terceros que no lo decidieron.
+
+          La frase de credito la construye `creditoDe`, no esta fila: la ficha
+          del proyecto usa la MISMA, y una redaccion por superficie acabaria
+          afirmando de mas en una de las dos. */}
       <dl className="mt-3 space-y-2 text-sm">
         <div className="sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4">
           <dt className="uppercase tracking-wide text-ink-muted">Contribución declarada</dt>
@@ -93,12 +98,7 @@ function Ficha({ p }: { p: ProyectoVista }) {
         </div>
         <div className="sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4">
           <dt className="uppercase tracking-wide text-ink-muted">Crédito</dt>
-          <dd className="text-ink-default">
-            {p.colectivo
-              ? `Trabajo en el contexto de ${p.contexto}, con más manos que las suyas: el crédito es del equipo. ` +
-                "No se publica qué parte del trabajo es de quién, porque esa cifra describiría a terceros que no lo decidieron."
-              : "Trabajo personal. El feed guarda el rol y el contexto, nunca a las personas, así que aquí no hay nombres ni reparto de autoría."}
-          </dd>
+          <dd className="text-ink-default">{creditoDe(p.contexto)}</dd>
         </div>
       </dl>
     </li>
@@ -299,10 +299,11 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
           De lo privado se publica el hecho de que existe, nunca su identidad.
         </p>
         <p className="mt-2 border-l-2 border-border-default pl-4 text-ink-balance">
-          <strong>Crédito.</strong> Varios de estos proyectos son trabajo colectivo. Donde lo
-          es, se atribuye al equipo: el feed guarda el contexto del trabajo, no a las
-          personas, así que aquí no aparece ningún nombre —tampoco el suyo— como si el mérito
-          fuera de uno solo.
+          <strong>Crédito.</strong> Donde el trabajo es de una organización con equipo, el
+          crédito es del equipo y la fila lo dice. Donde el contexto declarado no dice eso,
+          tampoco se afirma lo contrario: el feed guarda el contexto del trabajo, no a las
+          personas, así que no hay de dónde saber cuántas hubo. Por eso aquí no aparece ningún
+          nombre —tampoco el suyo— como si el mérito fuera de uno solo.
         </p>
 
         {conAfirmacion.length > 0 && (
