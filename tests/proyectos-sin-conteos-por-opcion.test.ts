@@ -87,7 +87,8 @@ test("AC-PRY-02: ninguna etiqueta de opción lleva el número de resultados que 
       assert.deepEqual(opcionesDeProyecto(numerados).slice(1),
         numerados.map((p) => ({ valor: p.id, etiqueta: p.titulo })));
     }
-    assert.ok(opciones.length > 1, "el fixture debe producir opciones de periodo");
+    // El rango completo más los tres años distintos de inicio del fixture.
+    assert.equal(opciones.length, 4, "el fixture produce el rango y 2024, 2025 y 2026");
 
     for (const o of opciones) {
       // El conteo por opción es el eje de comparación que la autorización E

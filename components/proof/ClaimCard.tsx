@@ -15,19 +15,12 @@ import { ParEtiquetas } from "./ParEtiquetas";
  * La dimensión (`build`/`lead`/`teach`) es una **etiqueta, no un filtro**: con
  * tres claims y tres dimensiones, un control de filtro filtra un elemento por
  * opción y convierte la dimensión en un eje de comparación.
- *
- * Su texto sale de `docs/brand/03-copy-deck.md` §2, que es la autoridad sobre el
- * copy y fija los tres verbos en primera persona. Antes aquí decía
- * «Construir / Decidir / Enseñar», y con `/proyectos` rotulando «Construyo /
- * Dirijo / Formo» en su filtro, el mismo campo del contrato se llamaba de dos
- * maneras en dos pantallas contiguas. Si esto vuelve a separarse del deck, el
- * lector que salte de una a otra ve dos vocabularios para un solo campo.
  */
 
 const DIMENSION: Record<FeedClaim["dimension"], string> = {
-  build: "Construyo",
-  lead: "Dirijo",
-  teach: "Formo",
+  build: "Construir",
+  lead: "Decidir",
+  teach: "Enseñar",
 };
 
 export function ClaimCard({
