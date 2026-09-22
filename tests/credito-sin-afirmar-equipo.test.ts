@@ -53,8 +53,8 @@ test("los cuatro contextos del contrato son los mismos en el schema y en el clie
 });
 
 test("la lista de contextos colectivos es la que docs/ respalda, y ninguna más", () => {
-  // Medir contra la autoridad, no contra el código. `docs/brand/00` §Lo que no se
-  // dice es la línea que manda: nombra a Inadaptados —y a nadie más— como una
+  // Medir contra la autoridad, no contra el código. `docs/brand/00-brand-brief.md`
+  // §Lo que NO se afirma es la línea que manda: nombra a Inadaptados —y a nadie más— como una
   // organización con equipo, y de ahí sale el mandato de atribuir al equipo.
   const brief = leer("docs/brand/00-brand-brief.md");
   const respaldo = /—([^—]+?) es una organización con equipo—/.exec(brief);

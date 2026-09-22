@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  DIMENSION_COPY,
+  DIMENSIONES_EN_ORDEN,
   FILTROS_VACIOS,
   filtrarProyectos,
   opcionesDeDimension,
@@ -37,27 +39,16 @@ import { leer } from "./navegacion-helpers.ts";
  * El feed de fixture es el de `tests/proyectos-fixture.ts`, servido por
  * `PROOF_FEED_DIR` desde `tmpdir`. `public/proof/v1/**` no se toca.
  *
- * ## Por qué la sonda mira formas y no dígitos sueltos
- *
- * La versión anterior preguntaba si la etiqueta contenía **el dígito** de su
- * conteo, y para las opciones por proyecto ese conteo es siempre 1 por
- * construcción —filtrar por un id devuelve ese proyecto—. Medido con el matcher
- * real: «Punto de Venta v1», «MathGym 1.0» y «Fase 1» la ponían roja. Los doce
- * títulos de hoy están limpios por casualidad, así que el gate estaba verde por
- * suerte y no por diseño, y el día que el Registry publique un título con un «1»
- * el arreglo más a mano sería debilitar la aserción.
- *
- * Lo que de verdad publica un conteo es una **forma**: la cifra entre paréntesis
- * o corchetes, o pegada al final tras un separador. «Formo (2)», «Formo · 2».
- * Y además tiene que coincidir con el conteo real, porque «Inicio declarado en
- * 2026» termina en cifra y no cuenta nada.
+ * Las etiquetas de proyecto y dimension se comparan exactamente con su origen.
+ * Los titulos con cifras se conservan literalmente. La sonda de formas solo
+ * se aplica a las etiquetas construidas de periodo, nunca a los titulos.
  */
 
-/** Las formas en que un control publica un conteo por opción. */
+/** Formas de conteo agregado en una etiqueta construida. */
 const FORMAS_DE_CONTEO = [
   /\(\s*(\d+)\s*\)/, //            «Formo (2)»
   /\[\s*(\d+)\s*\]/, //            «Formo [2]»
-  /[·:•|–—-]\s*(\d+)\s*$/, // «Formo · 2», «Formo — 2», «Formo: 2»
+  /[\s·:•|–—-]\s*(\d+)\s*$/, // «Formo 2», «Formo · 2», «Formo: 2»
 ];
 
 /** La forma encontrada si la etiqueta publica su propio conteo, o `null`. */
@@ -72,21 +63,31 @@ function conteoPublicado(etiqueta: string, cuantos: number): string | null {
 test("AC-PRY-02: ninguna etiqueta de opción lleva el número de resultados que produce", () => {
   conFeedDeFixture((proyectos) => {
     const opciones = [
-      ...opcionesDeDimension().map((o) => ({
-        ...o,
-        cuantos: filtrarProyectos(proyectos, { ...FILTROS_VACIOS, dimension: o.valor }).length,
-      })),
-      ...opcionesDeProyecto(proyectos).map((o) => ({
-        ...o,
-        cuantos: filtrarProyectos(proyectos, { ...FILTROS_VACIOS, proyecto: o.valor }).length,
-      })),
       ...opcionesDePeriodo(proyectos).map((o) => ({
         ...o,
         cuantos: filtrarProyectos(proyectos, { ...FILTROS_VACIOS, periodo: o.valor }).length,
       })),
     ];
 
-    assert.ok(opciones.length >= 8, "el fixture tiene que producir opciones de los tres filtros");
+    assert.deepEqual(opcionesDeDimension(), [
+      { valor: "todas", etiqueta: "Todas" },
+      ...DIMENSIONES_EN_ORDEN.map((d) => ({ valor: d, etiqueta: DIMENSION_COPY[d] })),
+    ]);
+    const esperadas = [
+      { valor: "todos", etiqueta: "Todos" },
+      ...proyectos.map((p) => ({ valor: p.id, etiqueta: p.titulo })),
+    ];
+    assert.deepEqual(opcionesDeProyecto(proyectos), esperadas);
+    const alteradas = opcionesDeProyecto(proyectos).map((o, i) =>
+      i === 1 ? { ...o, etiqueta: `${o.etiqueta} 1` } : o,
+    );
+    assert.throws(() => assert.deepEqual(alteradas, esperadas), assert.AssertionError);
+    for (const titulo of ["MathGym 1.0", "Fase 1", "Proyecto (2)"]) {
+      const numerados = proyectos.map((p) => ({ ...p, titulo }));
+      assert.deepEqual(opcionesDeProyecto(numerados).slice(1),
+        numerados.map((p) => ({ valor: p.id, etiqueta: p.titulo })));
+    }
+    assert.ok(opciones.length > 1, "el fixture debe producir opciones de periodo");
 
     for (const o of opciones) {
       // El conteo por opción es el eje de comparación que la autorización E
@@ -116,6 +117,9 @@ test("AC-PRY-02: la sonda de conteos detecta de verdad, y no señala títulos le
   // comprobación de arriba podría estar verde porque el matcher no encuentra
   // nada nunca —y con el matcher anterior escondía además un falso rojo—.
   const conConteo: [string, number][] = [
+    ["Formo 2", 2],
+    ["Formo  3", 3],
+    ["Todos 12", 12],
     ["Formo (2)", 2],
     ["Formo [2]", 2],
     ["Formo · 2", 2],
@@ -135,7 +139,6 @@ test("AC-PRY-02: la sonda de conteos detecta de verdad, y no señala títulos le
   const legitimas: [string, number][] = [
     ["MathGym 1.0", 1],
     ["Punto de Venta v1", 1],
-    ["Fase 1", 1],
     ["Inicio declarado en 2026", 2],
     ["Todo el rango, de agosto de 2024 a junio de 2026", 12],
     ["Proyecto (piloto)", 1],

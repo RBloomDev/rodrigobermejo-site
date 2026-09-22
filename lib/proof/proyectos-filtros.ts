@@ -60,7 +60,7 @@ export const CONTEXT_COPY: Record<Contexto, string> = {
 /**
  * Los contextos que `docs/` declara **colectivos**, y solo esos.
  *
- * Hoy uno: `docs/brand/00-brand-brief.md` §Lo que no se dice nombra a Inadaptados
+ * Hoy uno: `docs/brand/00-brand-brief.md` §Lo que NO se afirma nombra a Inadaptados
  * —y a nadie más— como «una organización con equipo», y de ahí sale el mandato de
  * atribuir el crédito al equipo. Los otros tres contextos **no** tienen ese
  * respaldo: `docs/00-product-brief.md` dice de RBloomDev que «es la organización
