@@ -250,12 +250,18 @@ Tampoco cambian: los ocho valores de los dos ejes, las tres filas de alcance, lo
 motivos declarados de `AlcanceDeLaAfirmacion.tsx`, ni la línea de pie con la fecha
 absoluta y los conteos dentro de una oración.
 
+Excepción registrada el 2026-09-23: el motivo de `decido-arquitectura` en `AlcanceDeLaAfirmacion.tsx` se reescribió para cumplir la prohibición de palabras de promesa de futuro de `docs/05-feed-contract.md` §Contrato de presentación, que prevalece sobre este deck por ADR 0014.
+
+Excepción registrada el 2026-09-23 (F-PRY-17): el copy de `/proyectos` y `/proyectos/[slug]` se reescribió bajo la autorización F de ADR 0015; el pie de la ficha pasó a «El feed que sostiene esta ficha se publicó el {fecha en prosa}». Esta excepción cubre el contenido de las páginas, no sustituye los metadatos normativos de §7.
+
 **Lo único que cambia es la envoltura**: jerarquía visual, y que estas rutas por fin
 monten navegación y pie —hoy no lo hacen, y se entra en ellas sin forma de volver.
 
 ---
 
 ## 7. Metadatos
+
+Trabajo pendiente separado (F-PRY-17): unificar los metadatos de `/proyectos`, `/evidencia` y `/blog` contra la tabla de esta sección y el `title.template` de `app/layout.tsx`, corrigiendo en una sola pasada las descripciones divergentes y la duplicación del nombre en los títulos. Registrar esta tarea no autoriza la divergencia actual ni la da por corregida.
 
 `title.template` se mantiene: `%s | Rodrigo Bermejo`.
 
