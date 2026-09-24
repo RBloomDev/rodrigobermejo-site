@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next';
 import { getSortedPostsData } from "@/lib/posts";
+import { leerCorpus } from "@/app/noticias/corpus";
 import { leerFeed } from "@/lib/proof/feed";
 import { baseUrl as hostCanonico } from "@/lib/site";
 
@@ -37,6 +38,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
           priority: 0.6,
         }))
       : [];
+
+  // El canal editorial. `docs/brand/02-arquitectura-y-urls.md` §4, mitigación 3, pone la
+  // condición que sale del estado de dato ausente: **`/noticias/[slug]` solo entra al
+  // sitemap por cada pieza publicada**. Hoy el corpus está vacío —publicar es una decisión
+  // de Rodrigo (`docs/plataforma/02-editorial.md` §8.4)—, así que esto no aporta ninguna
+  // URL y eso es correcto: un sitemap que anuncia borradores publica lo que no está
+  // publicado. `/noticias` en cambio entra siempre: la ruta existe y responde con su
+  // estado declarado aunque no haya ni una pieza.
+  //
+  // Leer el corpus aquí no cruza ninguna frontera: `docs/03` §4 prohíbe que el editorial
+  // se derive de la evidencia o la alimente, y este archivo no relaciona lo uno con lo
+  // otro --- enumera URLs de dos registros que siguen separados.
+  const piezaUrls = leerCorpus().map((pieza) => ({
+    url: `${baseUrl}/noticias/${pieza.id}`,
+    lastModified: new Date(pieza.redactado_en),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
 
   return [
     {
@@ -86,6 +105,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     ...proyectoUrls,
+    {
+      url: `${baseUrl}/noticias`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    ...piezaUrls,
     {
       url: `${baseUrl}/blog`,
       lastModified: new Date(),
