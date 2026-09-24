@@ -1,0 +1,253 @@
+#!/usr/bin/env node
+/**
+ * Guard: el canal editorial es determinista, recupera lo que quedo a medias, y cierra lo
+ * que falla tres veces con un motivo escrito.
+ *
+ * Invariante que protege: `docs/plataforma/02-editorial.md` §5.2 (los tres niveles de
+ * deduplicacion) y §8.1 (la maquina de estados). Las tres propiedades que comprueba son
+ * las que el canal ANTERIOR no tenia: marcaba una entrada como vista al detectarla, asi
+ * que lo que no llegaba a pieza se perdia para siempre y en silencio.
+ *
+ * ============================ SIN RED Y SIN INFERENCIA ============================
+ *
+ * Este guard **no llama a ningun modelo**. Usa el redactor falso de
+ * `editorial/pruebas/ayuda.mjs` —el mismo doble que usa la suite— y las etapas que
+ * tocarian la red (`detectar`, `verificar`) se inyectan como dobles con datos locales.
+ *
+ * No es una comodidad, es la condicion para que exista: un guard que invocara inferencia
+ * dejaria de ser determinista —la misma entrada daria salidas distintas—, costaria dinero
+ * en cada iteracion y no podria correr en CI. La demostracion CON inferencia real es otra
+ * cosa, y va aparte.
+ *
+ * Todo lo que escribe vive en `tmpdir`, por las dos variables obligatorias mas
+ * `EDITORIAL_PIEZAS`. La ultima comprobacion verifica que el fixture trackeado del
+ * prototipo quedo intacto: un guard que ensucia el arbol que vigila acaba ignorandose.
+ *
+ * Uso:
+ *   node scripts/check-canal-editorial.mjs
+ *   node scripts/check-canal-editorial.mjs --sin-deduplicacion   # PRUEBA NEGATIVA
+ *
+ * `--sin-deduplicacion` sustituye la etapa de deduplicacion por una que deja pasar todo.
+ * Con ella el guard TIENE que ponerse rojo; si sigue verde, el guard esta desconectado y
+ * no prueba nada (`AGENTS.md`, principio de verificacion, punto 4). Su prueba automatica
+ * esta en `scripts/editorial/pruebas/guard-canal-falsable.test.mjs`.
+ *
+ * Exit 0 = las tres propiedades se sostienen. Exit 1 = alguna no.
+ */
+
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+
+import { RUTA_PIEZAS } from "./editorial/comun.mjs";
+import { ejecutar } from "./editorial/ejecutar.mjs";
+import { estadoDe, pendientesDeRedaccion, porUrlCanonica } from "./editorial/estado.mjs";
+import {
+  DIR_EDITORIAL,
+  borrador,
+  etapasFalsas,
+  item,
+  nuevoEntorno,
+  referencia,
+} from "./editorial/pruebas/ayuda.mjs";
+
+const SIN_DEDUPLICACION = process.argv.includes("--sin-deduplicacion");
+
+/**
+ * La deduplicacion rota, a proposito: deja pasar todo como nuevo. Es lo que el canal
+ * anterior hacia de hecho cuando el registro perdia una entrada.
+ */
+const deduplicarRota = (items) => ({ nuevos: items, yaPendientes: [], repetidos: [] });
+
+/** Las etapas del guard: dobles locales, y la deduplicacion real salvo prueba negativa. */
+function etapas(opciones) {
+  const base = etapasFalsas(opciones);
+  return SIN_DEDUPLICACION ? { ...base, deduplicar: deduplicarRota } : base;
+}
+
+const fallos = [];
+function comprobar(propiedad, condicion, detalle) {
+  if (!condicion) fallos.push(`${propiedad}: ${detalle}`);
+}
+
+const correr = (etapasDelCaso, banderas = {}) =>
+  ejecutar({ silencioso: true, ...banderas }, { etapas: etapasDelCaso });
+
+const corpus = () =>
+  existsSync(process.env.EDITORIAL_PIEZAS)
+    ? JSON.parse(readFileSync(process.env.EDITORIAL_PIEZAS, "utf8"))
+    : [];
+
+/** El item y su borrador: los mismos datos en las tres propiedades. */
+function caso(titulo, url, id) {
+  const noticia = item({ titulo, url });
+  const redacciones = new Map([
+    [
+      noticia.url_canonica,
+      borrador({
+        id,
+        titulo,
+        fuentes: [
+          referencia({ titulo: "Documento primario", medio: "Organismo", url: `https://organismo.example/${id}` }),
+          referencia({ titulo, medio: "Medio Uno", url: noticia.url_canonica, tipo: "secundaria" }),
+        ],
+      }),
+    ],
+  ]);
+  return { noticia, redacciones };
+}
+
+// El fixture trackeado del prototipo. Se mide ANTES de correr nada.
+const fixtureAntes = existsSync(RUTA_PIEZAS) ? readFileSync(RUTA_PIEZAS) : null;
+
+// =====================================================================================
+// PROPIEDAD 1 — la segunda corrida sobre las mismas entradas da 0 nuevos.
+// =====================================================================================
+{
+  nuevoEntorno("guard-determinismo");
+  const { noticia, redacciones } = caso(
+    "Un organismo publica su marco de alfabetizacion en IA",
+    "https://medio-uno.mx/marco-alfabetizacion-ia",
+    "marco-alfabetizacion-ia"
+  );
+  const deteccion = { items: [noticia] };
+
+  const r1 = await correr(etapas({ deteccion, redacciones }));
+  comprobar("1 determinismo", r1.nuevos === 1, `la primera corrida deberia detectar 1 nuevo, dio ${r1.nuevos}`);
+  comprobar("1 determinismo", r1.insertadas.length === 1, `deberia insertar 1 pieza, inserto ${r1.insertadas.length}`);
+  const corpusTras1 = JSON.stringify(corpus());
+
+  const r2 = await correr(etapas({ deteccion, redacciones }));
+  comprobar("1 determinismo", r2.nuevos === 0, `la segunda corrida sobre las mismas entradas deberia dar 0 nuevos, dio ${r2.nuevos}`);
+  comprobar("1 determinismo", r2.insertadas.length === 0, `la segunda corrida no deberia insertar nada, inserto ${r2.insertadas.length}`);
+  comprobar("1 determinismo", corpus().length === 1, `el corpus deberia quedarse en 1 pieza, tiene ${corpus().length}`);
+  comprobar("1 determinismo", JSON.stringify(corpus()) === corpusTras1, "el corpus cambio entre dos corridas identicas");
+  comprobar(
+    "1 determinismo",
+    porUrlCanonica(noticia.url_canonica)?.estado === "terminada",
+    `la entrada deberia quedar terminada, quedo ${porUrlCanonica(noticia.url_canonica)?.estado}`
+  );
+}
+
+// =====================================================================================
+// PROPIEDAD 2 — una corrida interrumpida deja la entrada PENDIENTE, y la siguiente la
+// recupera sin duplicar. Se interrumpe de verdad: un proceso hijo que muere por SIGKILL
+// a media corrida, que es la unica forma de probar lo que una caida real deja en disco.
+// =====================================================================================
+{
+  const entorno = nuevoEntorno("guard-interrupcion");
+  const { noticia, redacciones } = caso(
+    "Se publica el padron de escuelas con conectividad medida",
+    "https://medio-uno.mx/padron-conectividad",
+    "padron-conectividad"
+  );
+
+  const guion = join(entorno.raiz, "muere-a-medias.mjs");
+  const moduloEstado = pathToFileURL(join(DIR_EDITORIAL, "estado.mjs")).href;
+  writeFileSync(
+    guion,
+    `
+import { marcarExpedienteListo, registrarDeteccion } from ${JSON.stringify(moduloEstado)};
+const entrada = ${JSON.stringify(noticia)};
+const r = registrarDeteccion(entrada);
+marcarExpedienteListo(r.id);
+// Muere aqui: la entrada esta detectada y con expediente, y no hay pieza.
+process.kill(process.pid, 'SIGKILL');
+`,
+    "utf8"
+  );
+
+  const hijo = spawnSync(process.execPath, [guion], {
+    env: {
+      ...process.env,
+      EDITORIAL_ESTADO_DIR: entorno.estado,
+      EDITORIAL_REDACCIONES_DIR: entorno.redacciones,
+    },
+    encoding: "utf8",
+  });
+  comprobar("2 interrupcion", hijo.status !== 0, "el proceso hijo tenia que morir, no terminar bien");
+
+  const traslaCaida = porUrlCanonica(noticia.url_canonica);
+  comprobar("2 interrupcion", traslaCaida?.estado === "pendiente_redaccion", `tras la caida la entrada deberia quedar pendiente_redaccion, quedo ${traslaCaida?.estado}`);
+  comprobar("2 interrupcion", pendientesDeRedaccion().length === 1, `la entrada deberia seguir en la cola de pendientes, hay ${pendientesDeRedaccion().length}`);
+
+  const r = await correr(etapas({ deteccion: { items: [noticia] }, redacciones }));
+  comprobar("2 interrupcion", r.repetidos === 0, "lo interrumpido no puede descartarse por «ya visto»: nunca llego a pieza");
+  comprobar("2 interrupcion", r.insertadas.length === 1, `la corrida siguiente deberia recuperarla e insertar 1 pieza, inserto ${r.insertadas.length}`);
+  comprobar("2 interrupcion", corpus().length === 1, `sin duplicar: el corpus deberia tener 1 pieza, tiene ${corpus().length}`);
+  comprobar("2 interrupcion", porUrlCanonica(noticia.url_canonica)?.estado === "terminada", "la entrada recuperada deberia quedar terminada");
+}
+
+// =====================================================================================
+// PROPIEDAD 3 — tres fallos descartan la entrada CON MOTIVO. Un descarte sin motivo
+// escrito no se puede auditar, y una entrada que se reintenta para siempre es una cola
+// que nunca se vacia.
+// =====================================================================================
+{
+  nuevoEntorno("guard-reintentos");
+  const { noticia, redacciones } = caso(
+    "Un laboratorio publica su evaluacion de tutores automaticos",
+    "https://medio-uno.mx/tutores-automaticos",
+    "tutores-automaticos"
+  );
+  const verificaciones = new Map([
+    [
+      "tutores-automaticos",
+      {
+        veredicto: "no_verificada",
+        fallos: ["fuente no existe: https://organismo.example/tutores-automaticos [404] Not Found"],
+        avisos: [],
+        pendientes: [],
+        detalle: "VEREDICTO no_verificada — una fuente citada no existe",
+      },
+    ],
+  ]);
+
+  const esperados = ["fallida_reintentable", "fallida_reintentable", "descartada"];
+  for (let intento = 1; intento <= 3; intento++) {
+    await correr(etapas({ deteccion: { items: [noticia] }, redacciones, verificaciones }));
+    const entrada = porUrlCanonica(noticia.url_canonica);
+    comprobar(
+      "3 reintentos",
+      entrada?.estado === esperados[intento - 1],
+      `tras el fallo ${intento} la entrada deberia estar ${esperados[intento - 1]}, esta ${entrada?.estado}`
+    );
+    comprobar("3 reintentos", entrada?.intentos === intento, `intentos deberia ser ${intento}, es ${entrada?.intentos}`);
+  }
+
+  const final = porUrlCanonica(noticia.url_canonica);
+  comprobar("3 reintentos", Boolean(final?.motivo_descarte), "la entrada descartada tiene que llevar motivo escrito");
+  comprobar("3 reintentos", /reintentos_agotados/.test(final?.motivo_descarte ?? ""), `el motivo deberia decir reintentos_agotados, dice: ${final?.motivo_descarte}`);
+  comprobar("3 reintentos", /verificar/.test(final?.motivo_descarte ?? ""), "el motivo tiene que nombrar la etapa que fallo");
+  comprobar("3 reintentos", corpus().length === 0, `una entrada descartada no entra al corpus, tiene ${corpus().length}`);
+  comprobar("3 reintentos", estadoDe(final?.id)?.estado === "descartada", "la entrada no queda reintentandose para siempre");
+}
+
+// =====================================================================================
+// El guard no ensucia el arbol que vigila. Se mide sobre el DISCO, no con `git status`:
+// las rutas privadas estan ignoradas y un `git status --porcelain` no lista ignorados.
+// =====================================================================================
+{
+  const fixtureDespues = existsSync(RUTA_PIEZAS) ? readFileSync(RUTA_PIEZAS) : null;
+  const intacto =
+    (fixtureAntes === null && fixtureDespues === null) ||
+    (fixtureAntes !== null && fixtureDespues !== null && fixtureAntes.equals(fixtureDespues));
+  comprobar("4 aislamiento", intacto, `el guard escribio en el fixture trackeado ${RUTA_PIEZAS}`);
+}
+
+if (fallos.length > 0) {
+  for (const f of fallos) console.error(`::error::${f}`);
+  console.error(
+    `::error::${fallos.length} comprobacion(es) rotas. ` +
+      (SIN_DEDUPLICACION
+        ? "Esperado: corre con --sin-deduplicacion, que existe para demostrar que este guard puede fallar."
+        : "Ver docs/plataforma/02-editorial.md §5.2 y §8.1.")
+  );
+  process.exit(1);
+}
+
+console.log(
+  "OK: canal determinista (2a corrida = 0 nuevos), lo interrumpido se recupera sin duplicar, " +
+    "y tres fallos descartan con motivo. Sin red y sin inferencia."
+);

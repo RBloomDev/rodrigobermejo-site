@@ -85,7 +85,7 @@
 import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DIR_ESTADO, ahoraIso } from './comun.mjs';
+import { ahoraIso, dirEstado } from './comun.mjs';
 
 // --- Configuracion -----------------------------------------------------------------
 
@@ -145,13 +145,11 @@ const CAMPOS_ENTRADA = [
 // --- Rutas -------------------------------------------------------------------------
 
 /**
- * Raiz del estado. Se resuelve en cada llamada, nunca se cachea: las pruebas montan su
- * propio directorio en `tmpdir` con `EDITORIAL_ESTADO_DIR` y ninguna escribe en el estado
- * real del repo. Mismo patron que `PROOF_FEED_DIR` en el sitio.
+ * Raiz del estado. Vive en `comun.mjs` y es **obligatoria, sin valor por defecto**: se
+ * re-exporta aqui porque este modulo es el que la usa, no porque la resuelva. Ver el
+ * bloque «Directorios privados» de `comun.mjs` y §8.3.
  */
-export function dirEstado() {
-  return process.env.EDITORIAL_ESTADO_DIR || DIR_ESTADO;
-}
+export { dirEstado };
 
 export function rutaBitacora() {
   return join(dirEstado(), 'bitacora.jsonl');
@@ -498,6 +496,14 @@ export function pendientesDeVerificacion({ limite = Infinity } = {}) {
 /**
  * La pieza paso §5.4 y entro al corpus.
  * `pendiente_verificacion | fallida_reintentable -> terminada`.
+ *
+ * QUIEN LLAMA A ESTO SE COMPROMETE A QUE LA PIEZA ESTA EN EL CORPUS **PERSISTIDO**, no a
+ * que haya pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no
+ * vuelve a la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo
+ * verificada —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
+ * `ejecutar.mjs` lo resuelve releyendo el corpus del disco antes de llamar; una entrada sin
+ * pieza guardada se queda donde estaba y la corrida siguiente la recupera.
+ *
  * @param {string} id
  * @param {{pieza_id?: string, corrida?: string}} [datos]
  * @returns {object}

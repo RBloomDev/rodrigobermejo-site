@@ -36,18 +36,43 @@
  *   node scripts/editorial/ejecutar.mjs --incluir el-economista    # fuerza un fallo real
  *   node scripts/editorial/ejecutar.mjs --entradas <snapshot.json> # mismas entradas
  *
- * Variables de entorno (para probar sin tocar el estado ni el corpus reales):
- *   EDITORIAL_ESTADO_DIR  raiz de la bitacora y los fallos
- *   EDITORIAL_PIEZAS      ruta del corpus `piezas.json`
+ * Variables de entorno:
+ *   EDITORIAL_ESTADO_DIR       OBLIGATORIA. Raiz de la bitacora, los fallos y los errores.
+ *   EDITORIAL_REDACCIONES_DIR  OBLIGATORIA. Raiz de los borradores.
+ *   EDITORIAL_PIEZAS           ruta del corpus intermedio `piezas.json`. SIN RESPALDO: si
+ *                              no esta, la corrida no escribe corpus (ver `rutaPiezas()`)
+ *                              y ninguna entrada llega a `terminada`.
+ *
+ * Las dos primeras no tienen valor por defecto y sin ellas la corrida ABORTA antes de
+ * escribir nada (`docs/plataforma/02-editorial.md` §8.3).
+ *
+ * ================== LOS DOS CORPUS, Y COMO SE HACEN UNO ==================
+ *
+ * Hoy hay DOS comandos que resuelven su corpus por caminos distintos, y conviene decirlo
+ * en vez de que alguien lo descubra con dos corpus divergentes:
+ *
+ *   - este comando escribe en `$EDITORIAL_PIEZAS`, la ruta completa de un archivo;
+ *   - `reverificar-corpus.mjs` lee y resella `$EDITORIAL_REDACCIONES_DIR/piezas.json`,
+ *     porque reverificar es sellar un borrador y los borradores viven ahi (§8.6 fila 5).
+ *
+ * **Para que los dos operen sobre el MISMO corpus, `EDITORIAL_PIEZAS` tiene que apuntar a
+ * `$EDITORIAL_REDACCIONES_DIR/piezas.json`.** Apuntada a otro sitio, las dos rutas son dos
+ * corpus distintos y `reverificar` resella uno que este comando nunca escribio.
+ *
+ * No se deriva sola de `$EDITORIAL_REDACCIONES_DIR` A PROPOSITO: derivarla seria fabricar
+ * otra vez el valor por defecto que T-E1 existe para quitar, y ademas §8.6 fila 2 no pide
+ * renombrar esta variable sino ELIMINARLA, cuando el comando se parta en `generar` y
+ * `autorizar`. Mientras tanto se declara la relacion y la pone quien corre el comando.
  */
 
 import { randomUUID } from 'node:crypto';
 import {
-  RUTA_PIEZAS, ahoraIso, argumentos, esCli, escribirJson, leerJson,
+  ConfiguracionAusente, DirectorioVersionado, ahoraIso, argumentos, esCli,
+  escribirJson, exigirDirectoriosPrivados, leerJson,
 } from './comun.mjs';
 import { detectar as detectarPorDefecto, resolverFuentes } from './detectar.mjs';
 import { CATALOGO } from './fuentes.mjs';
-import { deduplicar } from './deduplicar.mjs';
+import { deduplicar as deduplicarPorDefecto } from './deduplicar.mjs';
 import {
   conciliarConCorpus,
   instantanea,
@@ -61,9 +86,29 @@ import {
   registrarFallo,
 } from './estado.mjs';
 
-/** El corpus. Sobrescribible para que las pruebas no escriban en `docs/`. */
+/**
+ * El corpus intermedio. **Sin respaldo dentro del repositorio, y esa ausencia es el
+ * arreglo**: devuelve `null` cuando `EDITORIAL_PIEZAS` no esta puesta, y entonces la
+ * corrida no escribe corpus en ningun sitio.
+ *
+ * Antes era `process.env.EDITORIAL_PIEZAS || RUTA_PIEZAS`, que es literalmente el mismo
+ * patron de respaldo silencioso que este cambio quito de `dirEstado()`: una corrida sin la
+ * variable escribia en `docs/plataforma/prototipo/datos/piezas.json`, un fixture trackeado
+ * del arbol publico. No filtraba estado privado —por eso no era la fuga que T-E1 cierra—,
+ * pero ensuciaba el arbol publico desde una ruta que nadie habia pedido.
+ *
+ * ESTO NO ES LA ELIMINACION QUE PIDE §8.6 fila 2. Esa dice, literal, «Eliminar
+ * `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`, no hacerla obligatoria», y no cabe aqui:
+ * depende de partir el comando en `generar` (que escribe el borrador en
+ * `$EDITORIAL_REDACCIONES_DIR`) y `autorizar` (que escribe corpus en `content/noticias/`),
+ * que hoy no existen —`content/noticias/` tampoco— y que ningun criterio de aceptacion de
+ * T-E1 cubre. Lo que se hace aqui es el retiro que SI cabe: quitar el respaldo al
+ * repositorio. La eliminacion completa queda para la tarea que parta el comando, y esta
+ * declarada asi tambien en §8.6 para que no parezca un olvido.
+ */
 export function rutaPiezas() {
-  return process.env.EDITORIAL_PIEZAS || RUTA_PIEZAS;
+  const crudo = process.env.EDITORIAL_PIEZAS;
+  return typeof crudo === 'string' && crudo.trim() !== '' ? crudo.trim() : null;
 }
 
 /**
@@ -78,6 +123,11 @@ async function resolverEtapas(etapas = {}) {
   const ver = necesitaVerificar ? await import('./verificar.mjs') : null;
   return {
     detectar: etapas.detectar ?? detectarPorDefecto,
+    // La deduplicacion se inyecta por la misma puerta que el resto de etapas, y no es
+    // una comodidad: `guard:canal` la sustituye por una que no deduplica para demostrar
+    // que el guard se pone ROJO. Un guard que nunca ha fallado puede estar desconectado
+    // (`AGENTS.md`, principio de verificacion, punto 4).
+    deduplicar: etapas.deduplicar ?? deduplicarPorDefecto,
     prepararExpediente: etapas.prepararExpediente ?? red.prepararExpediente,
     redactar: etapas.redactar ?? red.redactar,
     verificarPieza: etapas.verificarPieza ?? ver.verificarPieza,
@@ -126,14 +176,25 @@ export function aItemDetectado(entrada) {
  * @param {object} [inyeccion] {etapas, redacciones} — solo para pruebas
  */
 export async function ejecutar(banderas = {}, inyeccion = {}) {
+  // PRIMERA LINEA, antes de leer un feed y antes de abrir un archivo (§8.3). Si falta
+  // cualquiera de las dos variables obligatorias, esto lanza y la corrida no escribe
+  // nada. Comprobarlo mas abajo seria comprobarlo despues de haber escrito.
+  exigirDirectoriosPrivados();
+
   const corrida = randomUUID().slice(0, 8);
   const inicio = ahoraIso();
   const linea = (s) => { if (!banderas.silencioso) console.log(s); };
   const etapas = await resolverEtapas(inyeccion.etapas);
 
-  const piezasAntes = leerJson(rutaPiezas(), []);
+  // Se resuelve UNA vez por corrida: que la ruta del corpus cambie a mitad de una corrida
+  // —leer de una y escribir en otra— seria un modo de fallo nuevo, y gratis de cerrar.
+  const rutaCorpus = rutaPiezas();
+  const piezasAntes = rutaCorpus ? leerJson(rutaCorpus, []) : [];
   linea(`== corrida ${corrida} · ${inicio}`);
   linea(`piezas en el corpus ANTES: ${piezasAntes.length}`);
+  if (!rutaCorpus) {
+    linea('corpus: EDITORIAL_PIEZAS no esta definida; esta corrida NO escribira corpus.');
+  }
 
   // --- 0. conciliar ------------------------------------------------------------
   // Lo que ya tiene pieza en el corpus se cierra como `terminada` antes de nada, para
@@ -163,7 +224,7 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
   }
 
   // --- 2. deduplicar -----------------------------------------------------------
-  const { nuevos, yaPendientes, repetidos } = deduplicar(items, { piezas: piezasAntes });
+  const { nuevos, yaPendientes, repetidos } = etapas.deduplicar(items, { piezas: piezasAntes });
   linea(`deduplicar: ${nuevos.length} nuevos, ${yaPendientes.length} ya pendientes, ${repetidos.length} cerrados`);
   const porMotivo = repetidos.reduce((a, r) => ({ ...a, [r.motivo]: (a[r.motivo] ?? 0) + 1 }), {});
   for (const [motivo, n] of Object.entries(porMotivo)) linea(`  - ${motivo}: ${n}`);
@@ -273,12 +334,41 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
 
   // --- 5. escribir el corpus ---------------------------------------------------
   const { corpus, insertadas, omitidas } = upsert(piezasAntes, verificadas.map((v) => v.pieza));
-  if (insertadas.length || leerJson(rutaPiezas(), null) === null) escribirJson(rutaPiezas(), corpus);
+  // Sin `EDITORIAL_PIEZAS` NO se escribe corpus en ningun sitio. Antes se caia al fixture
+  // trackeado del prototipo, que es ensuciar el arbol publico por omision de una variable.
+  if (rutaCorpus && (insertadas.length || leerJson(rutaCorpus, null) === null)) {
+    escribirJson(rutaCorpus, corpus);
+  }
 
-  // `terminada` tanto si se inserto como si el corpus ya la tenia: en ambos casos existe
-  // la pieza, que es lo que este estado afirma. Omitida por duplicado no es un fallo.
+  // --- 6. cerrar SOLO lo que quedo guardado ------------------------------------
+  //
+  // `terminada` es TERMINAL —`estado.mjs`, tabla de transiciones— y afirma, literal, «la
+  // pieza paso §5.4 y entro al corpus». Marcarla sin que el corpus se haya escrito declara
+  // hecho lo que no se hizo, y como no tiene vuelta atras, la deduplicacion no la vuelve a
+  // mirar NUNCA: la pieza se pierde en silencio y la entrada queda cerrada para siempre.
+  // Ocurria en toda corrida sin `EDITORIAL_PIEZAS`, que es exactamente la corrida en la que
+  // no se escribe corpus en ningun sitio.
+  //
+  // Se mide releyendo el DISCO, no la variable `corpus` en memoria ni `insertadas`. Medir
+  // contra el registro de la escritura en vez de contra el archivo escrito es la misma
+  // clase de error que este arreglo cierra.
+  const idsEnDisco = new Set(rutaCorpus ? leerJson(rutaCorpus, []).map((p) => p?.id) : []);
+  const sinCorpus = [];
   for (const { entrada, pieza } of verificadas) {
+    // Vale igual insertada ahora que ya presente de antes: en los dos casos la pieza existe
+    // en el corpus persistido, que es lo que `terminada` afirma. Omitida por duplicado no
+    // es un fallo.
+    if (!idsEnDisco.has(pieza.id)) { sinCorpus.push({ entrada, pieza }); continue; }
     marcarVerificada(entrada.id, { pieza_id: pieza.id, corrida });
+  }
+  // Lo que no se guardo NO se registra como fallo, y es deliberado: no tener corpus
+  // configurado no es culpa de la entrada, y `marcarFallida()` le subiria `intentos` hasta
+  // descartarla a las tres corridas —cambiar una perdida silenciosa por otra—. La entrada
+  // se queda donde estaba, sigue en la cola de `pendientesDeVerificacion()`, y la corrida
+  // siguiente con corpus configurado la recupera. Por la misma razon no da salida 2: es
+  // trabajo pendiente, como el expediente que espera redactor, no un fallo de etapa.
+  for (const { entrada, pieza } of sinCorpus) {
+    linea(`corpus: NO GUARDADA ${pieza.id} — ${entrada.id} sigue PENDIENTE, no terminada`);
   }
 
   linea(`corpus: +${insertadas.length} insertadas, ${omitidas.length} omitidas por ya existir`);
@@ -303,6 +393,10 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
     repetidos: repetidos.length,
     insertadas: insertadas.map((p) => p.id),
     omitidas,
+    // Piezas verificadas que NO quedaron en el corpus persistido, y cuyas entradas por
+    // tanto siguen pendientes. Se reporta en vez de esconderse: una corrida que verifica
+    // tres piezas y guarda cero tiene que poder distinguirse de una que guarda tres.
+    sinCorpus: sinCorpus.map(({ entrada, pieza }) => ({ entrada_id: entrada.id, pieza_id: pieza.id })),
     rechazadas: rechazadas.map((e) => ({ id: e.id, estado: e.estado, intentos: e.intentos })),
     errores: [...erroresDeteccion, ...erroresRedaccion],
     pendientes: sinRedaccion.length,
@@ -333,6 +427,21 @@ export function upsert(corpusActual, piezas) {
 }
 
 if (esCli(import.meta.url)) {
+  // Antes de nada, y fuera del `try` de abajo: sin un directorio privado valido no hay
+  // donde registrar un fallo, asi que intentar registrarlo volveria a lanzar y el
+  // mensaje util se perderia detras de un stack. Se dice que pasa y se sale.
+  //
+  // Son DOS fallos distintos y los dos abortan igual: la variable no esta (§8.3, primera
+  // prohibicion) o esta pero apunta dentro de un arbol de git (§8.3, tercera). El segundo
+  // es el que sobrevive a quitar el `||`, y por eso no basta con mirar el primero.
+  try {
+    exigirDirectoriosPrivados();
+  } catch (e) {
+    if (!(e instanceof ConfiguracionAusente) && !(e instanceof DirectorioVersionado)) throw e;
+    console.error(`ejecutar: ABORTA — ${e.message}`);
+    process.exit(1);
+  }
+
   const banderas = argumentos(process.argv.slice(2));
 
   // --con-redactor: conecta la via de inferencia real. Se comprueba que existe
