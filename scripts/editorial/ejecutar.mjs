@@ -98,13 +98,16 @@ import {
  * pero ensuciaba el arbol publico desde una ruta que nadie habia pedido.
  *
  * ESTO NO ES LA ELIMINACION QUE PIDE §8.6 fila 2. Esa dice, literal, «Eliminar
- * `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`, no hacerla obligatoria», y no cabe aqui:
- * depende de partir el comando en `generar` (que escribe el borrador en
- * `$EDITORIAL_REDACCIONES_DIR`) y `autorizar` (que escribe corpus en `content/noticias/`),
- * que hoy no existen —`content/noticias/` tampoco— y que ningun criterio de aceptacion de
- * T-E1 cubre. Lo que se hace aqui es el retiro que SI cabe: quitar el respaldo al
- * repositorio. La eliminacion completa queda para la tarea que parta el comando, y esta
- * declarada asi tambien en §8.6 para que no parezca un olvido.
+ * `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`, no hacerla obligatoria», y no cabe aqui.
+ * Lo que se hace aqui es el retiro que SI cabe: quitar el respaldo al repositorio.
+ *
+ * **Vuelto a medir el 2026-09-24:** `autorizar` YA EXISTE —`scripts/editorial/autorizar.mjs`—
+ * y es la unica ruta al corpus publicado. Lo que esta funcion resuelve es el corpus
+ * INTERMEDIO de esta corrida, que ya no es el publico. Lo que falta para eliminarla es
+ * partir esta corrida en `generar` y `verificar`, para que el borrador terminado viva solo
+ * en `$EDITORIAL_REDACCIONES_DIR` y nadie mas necesite escribir un corpus. Esa separacion
+ * es lo que queda de §8.1 y no la hizo la tarea que añadio `autorizar`; esta declarada asi
+ * tambien en §8.6 para que no parezca un olvido.
  */
 export function rutaPiezas() {
   const crudo = process.env.EDITORIAL_PIEZAS;
