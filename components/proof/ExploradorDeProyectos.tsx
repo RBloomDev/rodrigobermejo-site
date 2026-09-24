@@ -163,7 +163,7 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
                   type="button"
                   aria-pressed={filtros.dimension === o.valor}
                   onClick={aplicarDimension(o.valor)}
-                  className="border border-border-default px-3 py-1 text-sm text-ink-default underline-offset-4 aria-pressed:border-ink-default aria-pressed:underline"
+                  className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-default border border-border-default px-3 py-1 text-sm text-ink-default underline-offset-4 aria-pressed:border-ink-default aria-pressed:underline"
                 >
                   {o.etiqueta}
                 </button>
@@ -181,7 +181,7 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
               </label>
               <select
                 id="f-proyecto"
-                className="mt-2 w-full border border-border-default bg-bg-page px-3 py-2 text-sm text-ink-default"
+                className="mt-2 w-full border border-border-default bg-bg-page px-3 py-2 text-sm text-ink-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-default"
                 value={filtros.proyecto}
                 onChange={(e) => setFiltros((f) => ({ ...f, proyecto: e.target.value }))}
               >
@@ -202,7 +202,7 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
               </label>
               <select
                 id="f-periodo"
-                className="mt-2 w-full border border-border-default bg-bg-page px-3 py-2 text-sm text-ink-default"
+                className="mt-2 w-full border border-border-default bg-bg-page px-3 py-2 text-sm text-ink-default focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-default"
                 value={filtros.periodo}
                 onChange={(e) => setFiltros((f) => ({ ...f, periodo: e.target.value }))}
               >
@@ -218,7 +218,7 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
           <button
             type="button"
             onClick={limpiar}
-            className="border border-border-default px-3 py-1 text-sm text-ink-default"
+            className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink-default border border-border-default px-3 py-1 text-sm text-ink-default"
           >
             Quitar los filtros
           </button>
@@ -228,6 +228,11 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
             viendo. Un conteo por opcion seria otra cosa, y esa esta prohibida. */}
         <p className="mt-4 text-ink-balance" role="status">
           {recuento}
+        </p>
+        <p className="mt-2 text-ink-balance">
+          Los proyectos que no sostienen ninguna afirmación no tienen dimensión asignada
+          y desaparecen de la lista al filtrar por una. No es un defecto de los proyectos:
+          es dónde están hoy.
         </p>
         {/* `decisions/0015` §3, condicion 6: que estas cifras no impliquen
             competencia, calidad ni seniority no se deja implicito ni se manda a
@@ -325,9 +330,7 @@ export function ExploradorDeProyectos({ proyectos }: { proyectos: ProyectoVista[
               Proyectos que no sostienen ninguna afirmación
             </h3>
             <p className="mt-2 text-ink-balance">
-              Existen y se muestran. Lo que no hacen es respaldar ninguna afirmación pública,
-              así que no tienen dimensión asignada y desaparecen de la lista en cuanto se
-              filtra por una. No es un defecto de los proyectos: es dónde están hoy.
+              Existen y se muestran. Lo que no hacen es respaldar ninguna afirmación pública.
             </p>
             <ul className="mt-2">
               {sinAfirmacion.map((p) => (

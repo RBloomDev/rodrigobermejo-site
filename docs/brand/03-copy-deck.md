@@ -261,8 +261,6 @@ monten navegación y pie —hoy no lo hacen, y se entra en ellas sin forma de vo
 
 ## 7. Metadatos
 
-Trabajo pendiente separado (F-PRY-17): unificar los metadatos de `/proyectos`, `/evidencia` y `/blog` contra la tabla de esta sección y el `title.template` de `app/layout.tsx`, corrigiendo en una sola pasada las descripciones divergentes y la duplicación del nombre en los títulos. Registrar esta tarea no autoriza la divergencia actual ni la da por corregida.
-
 `title.template` se mantiene: `%s | Rodrigo Bermejo`.
 
 | Ruta | `title` | `description` |

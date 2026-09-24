@@ -6,8 +6,9 @@ import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const metadata: Metadata = {
-  title: 'Blog | Rodrigo Bermejo',
-  description: 'Artículos sobre automatización, productividad y sistemas de negocio.',
+  title: "Escribo",
+  description:
+    "Notas sobre sistemas, decisiones técnicas y lo que se aprende operando lo que uno construye.",
 };
 
 export default function BlogIndex() {

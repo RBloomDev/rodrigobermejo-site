@@ -41,9 +41,9 @@ import { vistaDeProyectos } from "@/lib/proof/proyectos-vista";
  */
 
 export const metadata: Metadata = {
-  title: "Proyectos — Rodrigo Bermejo",
+  title: "Proyectos",
   description:
-    "Lo declarado de cada proyecto —propósito, estado, periodo y rol—, con la contribución personal separada del crédito al equipo y filtros por proyecto, periodo y dimensión.",
+    "Los proyectos sobre los que se apoyan mis afirmaciones, con su propósito declarado y su estado real.",
 };
 
 export default function ProyectosPage() {
