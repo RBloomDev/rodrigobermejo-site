@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { fechaEnProsa } from "@/lib/proof/proyectos-filtros";
 import { leerFeed } from "@/lib/proof/feed";
 import { ClaimCard } from "@/components/proof/ClaimCard";
 
@@ -27,9 +28,9 @@ import { ClaimCard } from "@/components/proof/ClaimCard";
  */
 
 export const metadata: Metadata = {
-  title: "Cómo respaldo lo que afirmo — Rodrigo Bermejo",
+  title: "Cómo respaldo lo que afirmo",
   description:
-    "Cada afirmación profesional, con su procedencia, su verificabilidad y el límite exacto de lo que hoy se puede comprobar.",
+    "Publico mis afirmaciones con su procedencia y su verificabilidad, y digo explícitamente qué no puede probar este sistema.",
 };
 
 export default function EvidenciaPage() {
@@ -166,7 +167,7 @@ export default function EvidenciaPage() {
                 abandonado. Y los conteos van dentro de una oracion, no como fila de
                 cifras: una fila de cifras es el dashboard que esto existe para no ser. */}
             <p>
-              Publicado el {estado.feed.meta.generated_at.slice(0, 10)}. Este archivo contiene{" "}
+              Publicado el {fechaEnProsa(estado.feed.meta.generated_at)}. Este archivo contiene{" "}
               {estado.feed.projects.length} proyectos y {estado.feed.claims.length} afirmaciones.
             </p>
             <p className="mt-2">
