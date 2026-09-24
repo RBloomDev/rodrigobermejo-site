@@ -39,7 +39,8 @@
  * Variables de entorno:
  *   EDITORIAL_ESTADO_DIR       OBLIGATORIA. Raiz de la bitacora, los fallos y los errores.
  *   EDITORIAL_REDACCIONES_DIR  OBLIGATORIA. Raiz de los borradores.
- *   EDITORIAL_PIEZAS           ruta del corpus `piezas.json` (para probar sin tocar el real)
+ *   EDITORIAL_PIEZAS           ruta del corpus intermedio `piezas.json`. SIN RESPALDO: si
+ *                              no esta, la corrida no escribe corpus (ver `rutaPiezas()`).
  *
  * Las dos primeras no tienen valor por defecto y sin ellas la corrida ABORTA antes de
  * escribir nada (`docs/plataforma/02-editorial.md` §8.3).
@@ -47,7 +48,7 @@
 
 import { randomUUID } from 'node:crypto';
 import {
-  ConfiguracionAusente, DirectorioVersionado, RUTA_PIEZAS, ahoraIso, argumentos, esCli,
+  ConfiguracionAusente, DirectorioVersionado, ahoraIso, argumentos, esCli,
   escribirJson, exigirDirectoriosPrivados, leerJson,
 } from './comun.mjs';
 import { detectar as detectarPorDefecto, resolverFuentes } from './detectar.mjs';
@@ -66,9 +67,29 @@ import {
   registrarFallo,
 } from './estado.mjs';
 
-/** El corpus. Sobrescribible para que las pruebas no escriban en `docs/`. */
+/**
+ * El corpus intermedio. **Sin respaldo dentro del repositorio, y esa ausencia es el
+ * arreglo**: devuelve `null` cuando `EDITORIAL_PIEZAS` no esta puesta, y entonces la
+ * corrida no escribe corpus en ningun sitio.
+ *
+ * Antes era `process.env.EDITORIAL_PIEZAS || RUTA_PIEZAS`, que es literalmente el mismo
+ * patron de respaldo silencioso que este cambio quito de `dirEstado()`: una corrida sin la
+ * variable escribia en `docs/plataforma/prototipo/datos/piezas.json`, un fixture trackeado
+ * del arbol publico. No filtraba estado privado —por eso no era la fuga que T-E1 cierra—,
+ * pero ensuciaba el arbol publico desde una ruta que nadie habia pedido.
+ *
+ * ESTO NO ES LA ELIMINACION QUE PIDE §8.6 fila 2. Esa dice, literal, «Eliminar
+ * `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`, no hacerla obligatoria», y no cabe aqui:
+ * depende de partir el comando en `generar` (que escribe el borrador en
+ * `$EDITORIAL_REDACCIONES_DIR`) y `autorizar` (que escribe corpus en `content/noticias/`),
+ * que hoy no existen —`content/noticias/` tampoco— y que ningun criterio de aceptacion de
+ * T-E1 cubre. Lo que se hace aqui es el retiro que SI cabe: quitar el respaldo al
+ * repositorio. La eliminacion completa queda para la tarea que parta el comando, y esta
+ * declarada asi tambien en §8.6 para que no parezca un olvido.
+ */
 export function rutaPiezas() {
-  return process.env.EDITORIAL_PIEZAS || RUTA_PIEZAS;
+  const crudo = process.env.EDITORIAL_PIEZAS;
+  return typeof crudo === 'string' && crudo.trim() !== '' ? crudo.trim() : null;
 }
 
 /**
@@ -146,9 +167,15 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
   const linea = (s) => { if (!banderas.silencioso) console.log(s); };
   const etapas = await resolverEtapas(inyeccion.etapas);
 
-  const piezasAntes = leerJson(rutaPiezas(), []);
+  // Se resuelve UNA vez por corrida: que la ruta del corpus cambie a mitad de una corrida
+  // —leer de una y escribir en otra— seria un modo de fallo nuevo, y gratis de cerrar.
+  const rutaCorpus = rutaPiezas();
+  const piezasAntes = rutaCorpus ? leerJson(rutaCorpus, []) : [];
   linea(`== corrida ${corrida} · ${inicio}`);
   linea(`piezas en el corpus ANTES: ${piezasAntes.length}`);
+  if (!rutaCorpus) {
+    linea('corpus: EDITORIAL_PIEZAS no esta definida; esta corrida NO escribira corpus.');
+  }
 
   // --- 0. conciliar ------------------------------------------------------------
   // Lo que ya tiene pieza en el corpus se cierra como `terminada` antes de nada, para
@@ -288,7 +315,11 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
 
   // --- 5. escribir el corpus ---------------------------------------------------
   const { corpus, insertadas, omitidas } = upsert(piezasAntes, verificadas.map((v) => v.pieza));
-  if (insertadas.length || leerJson(rutaPiezas(), null) === null) escribirJson(rutaPiezas(), corpus);
+  // Sin `EDITORIAL_PIEZAS` NO se escribe corpus en ningun sitio. Antes se caia al fixture
+  // trackeado del prototipo, que es ensuciar el arbol publico por omision de una variable.
+  if (rutaCorpus && (insertadas.length || leerJson(rutaCorpus, null) === null)) {
+    escribirJson(rutaCorpus, corpus);
+  }
 
   // `terminada` tanto si se inserto como si el corpus ya la tenia: en ambos casos existe
   // la pieza, que es lo que este estado afirma. Omitida por duplicado no es un fallo.

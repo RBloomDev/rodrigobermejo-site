@@ -21,7 +21,7 @@ El motor de evidencia **no vive aquí**. Este repo solo lee y renderiza.
 npm run dev          # desarrollo
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint, cero warnings tolerados
-npm test             # node --test, 269 tests, sin dependencias y sin red
+npm test             # node --test, 270 tests, sin dependencias y sin red
 npm run build        # build de producción
 npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de imports)
 

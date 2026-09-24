@@ -670,7 +670,16 @@ estado de esta tabla—. T-E1 entrega, además del cambio, un gate de CI que **f
    corriendo la suite con las dos variables apuntando a un `tmpdir` y verificando, al
    terminar, **dos cosas distintas y por dos medios distintos**:
    - que las rutas históricas **no existen en disco**: `test ! -e
-     scripts/editorial/estado && test ! -e scripts/editorial/redacciones`;
+     scripts/editorial/estado && test ! -e scripts/editorial/redacciones`. **Esta vigila el
+     estado DESPUÉS de migrar, y el orden es parte de la comprobación, no una excusa:**
+     desrastrear no es borrar —AC-EDI-07 prohíbe el `git rm --cached` que deje a Rodrigo sin
+     bitácora—, así que entre el desrastreo y la migración esas dos rutas **tienen** que
+     seguir en disco. Exigir su ausencia desde el primer día sería exigir perder la
+     bitácora. `guard:estado-editorial` la implementa condicionada a que haya señal de que
+     la migración ya corrió —`$EDITORIAL_ESTADO_DIR` definida y con `bitacora.jsonl`
+     dentro—, y mientras no la haya informa **NO MEDIDA**, no verde: la diferencia entre no
+     saber y afirmar. Hasta entonces su sustituto vigente es el paso 3 de «Comprobar que
+     salió bien» del runbook de migración, que lo corre quien migra;
    - que el fixture trackeado sigue intacto: `git status --porcelain --
      docs/plataforma/prototipo/datos` queda vacío.
 
@@ -685,7 +694,22 @@ estado de esta tabla—. T-E1 entrega, además del cambio, un gate de CI que **f
    cualquier archivo sucio del árbol, tenga o no que ver con el canal, y un gate que se pone
    rojo por suciedad ajena se acaba ignorando.
 
-Las cuatro comprobaciones son de máquina. Ninguna depende de que alguien se acuerde.
+Las cuatro comprobaciones son de máquina. Ninguna depende de que alguien **se acuerde** —y
+la primera sub-comprobación del punto 4 tampoco: depende de que la **migración se haya
+corrido**, que es un hecho que la propia máquina detecta, y hasta entonces se declara NO
+MEDIDA en vez de pasar en silencio.
+
+**Lo que T-E1 dejó sin cerrar de esta sección, dicho aquí para que no parezca un olvido.**
+La fila 2 de la tabla de arriba pide *eliminar* `rutaPiezas()` y `EDITORIAL_PIEZAS`, no
+hacerlas obligatorias, y esa eliminación **no cabe en T-E1**: depende de partir el comando
+en `generar` y `autorizar` (§8.1), que necesita `content/noticias/` —hoy inexistente— y que
+ningún criterio de aceptación de T-E1 cubre. Lo que T-E1 sí hizo es el retiro que cabía:
+`rutaPiezas()` **ya no tiene respaldo dentro del repositorio** —devuelve `null` sin la
+variable y entonces la corrida no escribe corpus en ningún sitio—, con lo que desaparece el
+`||` que era el mismo patrón que esta tarea quitó de `dirEstado()`. La eliminación completa
+queda para **la tarea que parta el comando en `generar`/`autorizar`**. La fila 5
+(`reverificar-corpus.mjs`) sí está cerrada: resuelve desde `$EDITORIAL_REDACCIONES_DIR` y
+aborta sin ella, que es la primera de las dos salidas que esa fila autoriza.
 
 ### 8.7 La frontera con la evidencia, que la autorización no mueve
 

@@ -72,8 +72,21 @@ New-Item -ItemType Directory -Force -Path $env:EDITORIAL_ESTADO_DIR, $env:EDITOR
 Move-Item scripts\editorial\estado\*.jsonl      $env:EDITORIAL_ESTADO_DIR
 Move-Item scripts\editorial\redacciones\*.json  $env:EDITORIAL_REDACCIONES_DIR
 
-Remove-Item scripts\editorial\estado, scripts\editorial\redacciones -Force
+# El equivalente de `rmdir`: quita el directorio SOLO si ya está vacío, y aborta si no.
+# El `Move-Item` de arriba solo mueve `*.jsonl` y `*.json`, así que un archivo de otra
+# extensión seguiría dentro; borrarlo con él sería perder algo sin enterarse.
+foreach ($d in 'scripts\editorial\estado', 'scripts\editorial\redacciones') {
+  if (Get-ChildItem $d -Force) { throw "$d no está vacío: mueve lo que queda antes de borrarlo." }
+  Remove-Item $d -Force
+}
 ```
+
+**Por qué no un `Remove-Item -Force` a secas.** `-Force` sin `-Recurse` sobre un directorio
+con hijos no tiene un comportamiento que este documento pueda afirmar —cambia entre
+PowerShell 5.1 y 7, y entre sesión interactiva y no interactiva—, y una rama de migración
+no es sitio para depender de eso. El `foreach` mide primero con `Get-ChildItem -Force`
+—que sí lista archivos ocultos— y no borra nada si queda algo. La garantía viene de la
+comprobación escrita, no de una propiedad supuesta del comando de borrado.
 
 ### bash
 
@@ -105,7 +118,35 @@ para que el canal las encuentre en cada corrida.
 
 ## Comprobar que salió bien
 
-Cuatro comprobaciones, y cada una mide algo distinto:
+Cuatro comprobaciones, y cada una mide algo distinto. **Van en las dos ramas, igual que el
+comando de migración**: tres de las cuatro no son `npm run`, y en su forma POSIX no existen
+en PowerShell —que es el shell primario de esta máquina—, así que dejarlas solo en bash
+dejaba sin verificación a quien siguiera la rama que sí puede correr.
+
+### PowerShell (Windows)
+
+```powershell
+# 0. Guarda la ruta ANTES de la comprobación 2, que borra las variables de la sesión.
+$estadoDir = $env:EDITORIAL_ESTADO_DIR
+
+# 1. git no rastrea nada de estado. Sale 0.
+npm run guard:estado-editorial
+
+# 3. Las rutas históricas ya no existen en disco. Las dos tienen que decir False.
+Test-Path scripts\editorial\estado
+Test-Path scripts\editorial\redacciones
+
+# 4. La bitácora llegó entera: el conteo tiene que coincidir con el de antes de mover.
+(Get-Content $estadoDir\bitacora.jsonl).Count
+
+# 2. El canal aborta si las variables no están. $LASTEXITCODE != 0 y no escribe nada.
+#    Va al final porque deja la sesión sin las dos variables.
+Remove-Item Env:EDITORIAL_ESTADO_DIR, Env:EDITORIAL_REDACCIONES_DIR -ErrorAction SilentlyContinue
+node scripts/editorial/ejecutar.mjs
+$LASTEXITCODE
+```
+
+### bash
 
 ```bash
 # 1. git no rastrea nada de estado. Sale 0.
@@ -125,9 +166,23 @@ wc -l "$EDITORIAL_ESTADO_DIR"/bitacora.jsonl
 La 4 es la que importa para no perder trabajo. Antes de mover, el conteo era:
 `bitacora.jsonl` 107 líneas, `errores.jsonl` 28, `fallos.jsonl` 30, `vistos.jsonl` 50.
 
+La 3 la comprueba además `npm run guard:estado-editorial` por su cuenta, pero **solo
+después de migrar**: el guard exige la ausencia en disco únicamente cuando
+`$EDITORIAL_ESTADO_DIR` ya contiene la bitácora, porque antes de mover esas rutas tienen que
+seguir existiendo —desrastrear no es borrar— y un guard que fallara por eso estaría
+exigiendo perder la bitácora.
+
 ## Si algo sale mal
 
 El estado es **append-only** y ningún paso de aquí reescribe una línea, así que la
 reversión es mover los archivos de vuelta. Lo único irreversible sería borrarlos, y por
-eso el comando usa `mv`/`Move-Item` y nunca `rm` sobre los archivos —el `rmdir` final
-solo quita directorios ya vacíos, y falla si no lo están, que es justo lo que se quiere—.
+eso el comando usa `mv`/`Move-Item` y nunca `rm` sobre los archivos.
+
+El borrado final solo quita directorios **ya vacíos** en las dos ramas, pero no por la
+misma razón, y la distinción importa porque una de las dos se apoya en el comando y la otra
+en una comprobación escrita:
+
+- **bash:** `rmdir` falla ante un directorio con hijos. Es la propiedad del comando.
+- **PowerShell:** el `foreach` mide con `Get-ChildItem -Force` y lanza si queda algo, sin
+  llegar a borrar. `Remove-Item -Force` por sí solo **no** da esa garantía de forma
+  afirmable, y este documento no la afirma.

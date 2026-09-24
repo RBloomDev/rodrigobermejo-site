@@ -28,8 +28,14 @@
  * que dejar correr el canal. Sin ese par, la prueba pasaria igual si el canal abortara
  * siempre por cualquier otro motivo, y no probaria que lo causa el `.git`.
  *
- * COMO SE PONE ROJA: en `comun.mjs`, quitar la llamada a `exigirFueraDeGit()` dentro de
- * `exigirDirectorio()`. Los dos casos rojos pasan a no lanzar y los asserts caen.
+ * COMO SE PONE ROJA: en `comun.mjs`, hacer que `arbolDeGitQueContiene()` (:120-128) devuelva
+ * siempre `null`. Con eso la guarda inline de `exigirDirectorio()` (:134-135) nunca lanza,
+ * los dos casos rojos pasan a no lanzar y los asserts caen.
+ *
+ * La receta anterior nombraba una funcion `exigirFueraDeGit()` que no existe en ningun
+ * archivo: la comprobacion nunca se extrajo a una funcion propia, vive inline en
+ * `exigirDirectorio()`. Una receta que nombra un simbolo inexistente lleva a concluir que
+ * la prueba no se puede falsar, que es lo contrario de lo que existe para demostrar.
  */
 
 import assert from 'node:assert/strict';

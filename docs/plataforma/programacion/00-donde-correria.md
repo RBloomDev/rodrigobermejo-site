@@ -128,6 +128,13 @@ local de Rodrigo; este documento no declara rutas. **Las variables obligatorias 
 el borrador vive en `EDITORIAL_REDACCIONES_DIR` y lo único que llega al árbol público lo
 escribe `autorizar` en `content/noticias/`.
 
+**Lo que T-E1 cerró de esa fila y lo que no.** T-E1 quitó el respaldo al repositorio:
+`rutaPiezas()` devuelve `null` sin la variable y la corrida no escribe corpus en ningún
+sitio, así que el `||` ya no existe. La **eliminación** de la función y la variable queda
+para la tarea que parta el comando en `generar`/`autorizar`, porque necesita
+`content/noticias/`, que no existe. Está declarado así en `02-editorial.md` §8.6, al cierre
+de la sección, y en el comentario de `ejecutar.mjs` sobre la propia función.
+
 Hay además una compuerta que no estaba en la lista: `auditoria-exposicion.mjs`. Este
 repositorio es público y la corrida acaba de escribir en disco; si algo nombra un repositorio
 privado, se para ahí. **No es la que sostiene esta política:** una auditoría que corre después
