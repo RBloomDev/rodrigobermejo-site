@@ -29,12 +29,12 @@
  * ## `disponible`: por qué existe y qué NO significa
  *
  * §2 describe el mapa de rutas **después** del rediseño, y esta bandera dice
- * qué parte de ese mapa existe ya en el árbol. Medido de nuevo el 2026-09-21,
- * enumerando `app/**\/page.tsx`: existen `/proyectos`, `/blog`, `/colaborar` y
- * `/sobre-mi`, y los `id` `inadaptados` y `docencia` viven en
- * `app/sobre-mi/page.tsx`. **`/noticias` sigue sin existir** y por eso sigue en
- * `false`: está marcada «Nueva» en §2, lo que significa que el documento
- * declara su forma, no su implementación.
+ * qué parte de ese mapa existe ya en el árbol. Medido de nuevo el 2026-09-24,
+ * enumerando `app/**\/page.tsx`: existen `/proyectos`, `/blog`, `/colaborar`,
+ * `/sobre-mi` y `/noticias`, y los `id` `inadaptados` y `docencia` viven en
+ * `app/sobre-mi/page.tsx`. **Los siete destinos de §2 están disponibles**; la
+ * bandera se queda porque el mapa de §2 puede volver a crecer antes que el
+ * árbol —`/actividad` no está en el menú por decisión de §2, no por ausencia—.
  *
  * Renderizar los siete hoy publicaría cinco enlaces muertos en la navegación
  * principal de un sitio público. Esta bandera no es una opinión de producto:
@@ -58,10 +58,12 @@ export type Destino = {
 
 export const DESTINOS: readonly Destino[] = [
   { etiqueta: "Trabajo", href: "/proyectos", disponible: true },
-  // El unico destino que sigue sin existir. `/noticias` esta marcada «Nueva» en
-  // §2 y su spec vive en `docs/plataforma/01-noticias-y-actividad.md`; el work
-  // item que la construya cambia esta bandera.
-  { etiqueta: "Noticias", href: "/noticias", disponible: false },
+  // `/noticias` existe desde el work item que la construyo: `app/noticias/page.tsx` y
+  // `app/noticias/[slug]/page.tsx`. Enlazarla desde el cromo es lo que `docs/brand/02`
+  // §2 manda y lo que `docs/plataforma/01-noticias-y-actividad.md` §1.2 declara
+  // permitido: un menu identico en todas las paginas no afirma nada sobre ninguna, asi
+  // que esta entrada en `/evidencia` no convierte el editorial en evidencia.
+  { etiqueta: "Noticias", href: "/noticias", disponible: true },
   { etiqueta: "Inadaptados", href: "/sobre-mi#inadaptados", disponible: true },
   { etiqueta: "Docencia", href: "/sobre-mi#docencia", disponible: true },
   { etiqueta: "Escribo", href: "/blog", disponible: true },
