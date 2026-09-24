@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -75,6 +75,50 @@ test("AC-NOT-01: un corpus con un archivo roto es rojo, no una lista a medias", 
     "«no hay corpus» y «el corpus está roto» son estados distintos: colapsarlos publicaría " +
       "un índice vacío en verde sobre una escritura interrumpida",
   );
+});
+
+test("AC-NOT-01: `leerPieza` resuelve por el nombre del archivo, no releyendo el corpus", () => {
+  // El `id` ES el nombre del archivo (§3), así que pedir una pieza no obliga a leer,
+  // parsear y validar las demás. Que ya no lo haga se MIDE, no se declara: se pone una
+  // pieza buena junto a un archivo que no es JSON. Antes, pedir la buena reventaba por
+  // culpa de la otra --- la prueba de que se leía el corpus entero por cada slug, dos
+  // veces por ficha en cada build (`generateMetadata` y el componente).
+  const dir = mkdtempSync(path.join(os.tmpdir(), "noticias-vecino-roto-"));
+  const buena = CORPUS[1]!;
+  writeFileSync(path.join(dir, `${buena.id}.json`), JSON.stringify(buena), "utf8");
+  writeFileSync(path.join(dir, "vecina-truncada.json"), '{"id": "vecina-truncada"', "utf8");
+
+  assert.equal(leerPieza(buena.id, dir)?.id, buena.id);
+  // Y el corpus roto sigue siendo rojo donde importa: el índice y `generateStaticParams`
+  // leen el corpus entero, así que el build no se pone verde sobre una escritura a medias.
+  assert.throws(() => leerCorpus(dir), /E_CORPUS_JSON/);
+});
+
+test("AC-NOT-01: un slug que no compone contra §3 no lee fuera del corpus", () => {
+  // Ahora que la pieza se resuelve por su nombre de archivo, la ruta se arma
+  // concatenando, y eso es exactamente donde un slug con `..` deja de ser un slug. El
+  // caso se monta de forma que **discrimine**: hay una pieza legal en un directorio
+  // hermano, así que sin la comprobación del formato el `existsSync` la encontraría y
+  // `leerPieza` serviría un archivo de fuera del corpus.
+  const raiz = mkdtempSync(path.join(os.tmpdir(), "noticias-fuera-"));
+  const corpus = path.join(raiz, "corpus");
+  const fuera = path.join(raiz, "fuera");
+  mkdirSync(corpus);
+  mkdirSync(fuera);
+  const ajena = CORPUS[1]!;
+  writeFileSync(path.join(fuera, `${ajena.id}.json`), JSON.stringify(ajena), "utf8");
+
+  assert.equal(
+    leerPieza(`../fuera/${ajena.id}`, corpus),
+    null,
+    "un slug con `..` no es un `id` de §3, y servirlo leería un archivo que nadie autorizó",
+  );
+  for (const slug of ["a/b", "Mayusculas", "", "con espacio", "..\\fuera\\x"]) {
+    assert.equal(leerPieza(slug, corpus), null, `el slug ${JSON.stringify(slug)} no es legal`);
+  }
+  // Y un slug legal que simplemente no existe también es `null`, no una excepción: una
+  // URL inventada responde 404, no rompe el build.
+  assert.equal(leerPieza("pieza-que-no-existe", corpus), null);
 });
 
 /** Las dos rutas de `/noticias`, con todo lo que alcanzan por imports estáticos. */

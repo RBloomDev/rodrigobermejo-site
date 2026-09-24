@@ -1,9 +1,9 @@
 import "server-only";
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 
-import { piezaSchema } from "./esquema.ts";
+import { SLUG, piezaSchema } from "./esquema.ts";
 import type { Pieza } from "./esquema.ts";
 
 /**
@@ -164,7 +164,33 @@ export function leerCorpus(dir: string = raizDelCorpus()): Pieza[] {
     );
 }
 
-/** Una pieza publicada por su slug, o `null`. Un borrador nunca se encuentra. */
+/**
+ * Una pieza publicada por su slug, o `null`. Un borrador nunca se encuentra.
+ *
+ * ## Por qué lee UN archivo y no el corpus entero
+ *
+ * Porque el `id` **es** el nombre del archivo (§3), así que el slug ya dice dónde está la
+ * pieza. Resolverlo con `leerCorpus(dir).find(...)` leía, parseaba y validaba con zod
+ * todos los archivos por cada slug, y la ficha lo llama dos veces —`generateMetadata` y el
+ * componente—: `1 + 2n` pasadas completas sobre el corpus en cada build, para `n` piezas.
+ * Con el corpus vacío de hoy el coste es cero y ningún gate lo ve; con cien piezas es
+ * cuadrático sin que nada lo avise.
+ *
+ * ## Qué NO cambia con eso
+ *
+ * Que un corpus roto sea rojo. `leerCorpus` sigue leyéndolo entero y sigue lanzando, y es
+ * quien alimenta el índice y `generateStaticParams`: una pieza corrupta tira el build
+ * igual. Lo que ya no ocurre es que pedir la pieza *A* falle por culpa de la pieza *B*.
+ *
+ * El slug se comprueba contra `SLUG` **antes** de tocar el sistema de archivos. La ruta se
+ * arma concatenando, y un slug con `..` o con separadores leería fuera del corpus: hoy
+ * solo llegan slugs de `generateStaticParams`, y eso es una propiedad de quien llama, no
+ * de esta función.
+ */
 export function leerPieza(slug: string, dir: string = raizDelCorpus()): Pieza | null {
-  return leerCorpus(dir).find((p) => p.id === slug) ?? null;
+  if (!SLUG.test(slug)) return null;
+  const nombre = `${slug}.json`;
+  if (!existsSync(path.join(dir, nombre))) return null;
+  const pieza = leerPiezaDeArchivo(dir, nombre);
+  return pieza.estado === "autorizada" ? pieza : null;
 }

@@ -246,14 +246,43 @@ export function revisionDePieza(pieza: Pieza): RevisionVista {
   };
 }
 
+/**
+ * Cuál de las `fuentes[]` es la primaria: **la primera cuya `url` es la de
+ * `fuente_primaria`**, y ninguna otra. `-1` si la pieza no la incluye en la lista.
+ *
+ * ## Por qué el `tipo` de §3 no decide esto
+ *
+ * Porque nada acota su cardinalidad. §3 declara `tipo: "primaria" | "secundaria"` como
+ * campo opcional de cada entrada y no dice cuántas pueden llevar `"primaria"`, así que
+ * decidir el rol con `f.tipo === "primaria"` permitía dos resultados que la pantalla no
+ * puede sostener: **dos** entradas rotuladas «Fuente primaria» mientras la prosa nombra
+ * una sola, y —peor— una entrada con `tipo: "primaria"` y otra `url` haciendo creer al
+ * ensamblado que la primaria real ya estaba en la lista, con lo que nunca se añadía.
+ *
+ * `fuente_primaria` es el campo que §2 declara obligatorio y el que la prosa nombra, así
+ * que es el único árbitro. Un `tipo: "primaria"` que lo contradiga se lee como lo que la
+ * pieza declara de esa fuente, no como una segunda primaria.
+ */
+function indiceDeLaPrimaria(fuentes: readonly Fuente[], urlPrimaria: string): number {
+  return fuentes.findIndex((f) => f.url === urlPrimaria);
+}
+
 /** El registro completo de una pieza, convertido en lo que la pantalla enseña. */
 export function vistaDePieza(pieza: Pieza): PiezaVista {
-  const urlPrimaria = pieza.fuente_primaria.url;
-  const esPrimaria = (f: Fuente) => f.tipo === "primaria" || f.url === urlPrimaria;
+  const indicePrimaria = indiceDeLaPrimaria(pieza.fuentes, pieza.fuente_primaria.url);
+  const declaradas = pieza.fuentes.map((f, i) => fuenteAVista(f, i === indicePrimaria));
   // La primaria primero, y el resto en el orden en que la pieza las declara. El criterio
   // es el papel de la fuente, no ninguna magnitud: no hay nada que ordenar por tamaño.
-  const declaradas = [...pieza.fuentes.filter(esPrimaria), ...pieza.fuentes.filter((f) => !esPrimaria(f))];
-  const fuentes = declaradas.map((f) => fuenteAVista(f, esPrimaria(f)));
+  // Si la pieza no la incluye en `fuentes[]` se antepone, porque §1.4 pide renderizar
+  // `fuente_primaria` **y** `fuentes[]`, y una lista que se la salte deja al lector sin
+  // saber cuál sostiene el hecho.
+  const fuentes =
+    indicePrimaria === -1
+      ? [fuenteAVista(pieza.fuente_primaria, true), ...declaradas]
+      : [
+          ...declaradas.filter((_, i) => i === indicePrimaria),
+          ...declaradas.filter((_, i) => i !== indicePrimaria),
+        ];
 
   return {
     tipoEtiqueta: TIPO_ETIQUETA[pieza.tipo],
@@ -270,12 +299,7 @@ export function vistaDePieza(pieza: Pieza): PiezaVista {
     noEstablece: pieza.no_establece,
     revision: revisionDePieza(pieza),
     fuentePrimaria: fuenteAVista(pieza.fuente_primaria, true),
-    // Si la primaria no aparece en `fuentes[]` se añade al frente: §1.4 pide renderizar
-    // `fuente_primaria` **y** `fuentes[]`, y una lista que se la salte deja al lector sin
-    // saber cuál sostiene el hecho.
-    fuentes: pieza.fuentes.some(esPrimaria)
-      ? fuentes
-      : [fuenteAVista(pieza.fuente_primaria, true), ...fuentes],
+    fuentes,
     relacion:
       typeof pieza.relacion_declarada === "string" && pieza.relacion_declarada.trim() !== ""
         ? pieza.relacion_declarada

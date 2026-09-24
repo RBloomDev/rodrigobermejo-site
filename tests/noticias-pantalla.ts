@@ -98,6 +98,36 @@ export function envoltoriosDe(fuente: string, ruta: string): string[] | null {
 }
 
 /**
+ * Lo mismo que `envoltoriosDe`, pero para **todas** las apariciones de `ruta`, no solo la
+ * primera. Devuelve `[]` si no aparece ninguna vez.
+ *
+ * Hace falta cuando el campo se lee dos veces con papeles distintos: la ficha escribe
+ * `{vista.relacion !== null && (<section>…<p>{vista.relacion}</p></section>)}`, y la
+ * primera aparición —la condición— cuelga del `<main>`, no de la sección que envuelve al
+ * texto. Preguntar solo por la primera dejaría sin mirar justo el bloque que se renderiza:
+ * plegar la sección en un `<details>` no movería la condición ni un carácter.
+ */
+export function envoltoriosDeCadaUno(fuente: string, ruta: string): string[][] {
+  const origen = ast(fuente);
+  const objetivos: ts.Node[] = [];
+  recorrer(origen, (n) => {
+    if (!ts.isPropertyAccessExpression(n)) return;
+    if (n.getText(origen).replace(/\s/g, "") === ruta) objetivos.push(n);
+  });
+
+  return objetivos.map((objetivo) => {
+    const envoltorios: string[] = [];
+    let actual: ts.Node | undefined = objetivo.parent;
+    while (actual) {
+      const etiqueta = etiquetaDe(actual, origen);
+      if (etiqueta) envoltorios.unshift(etiqueta);
+      actual = actual.parent;
+    }
+    return envoltorios;
+  });
+}
+
+/**
  * Todo nombre de propiedad que la fuente lee de algo (`x.titulo`, `fuente.url`, …).
  *
  * Sirve para las hojas del modelo de vista que se renderizan dentro de un `.map()`, donde

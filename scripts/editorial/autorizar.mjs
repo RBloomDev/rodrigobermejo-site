@@ -321,7 +321,14 @@ export function validarEsquema(pieza) {
     fallos.push(`\`estado\` tiene que ser "borrador" al autorizar, y es ${JSON.stringify(pieza.estado)}`);
   }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(pieza.ocurrido_en ?? ''))) fallos.push('`ocurrido_en` no es YYYY-MM-DD');
-  if (!cadenaLlena(pieza.redactado_en)) fallos.push('`redactado_en` vacio');
+  // El formato, no solo la presencia: `app/sitemap.ts` hace `new Date(redactado_en)` y Next
+  // lo serializa con `.toISOString()`, que lanza sobre un `Invalid Date`. Una pieza
+  // autorizada con la fecha malformada tiraba el build del sitio publico con un error que
+  // no nombra el corpus. Mismo patron que `redactar.mjs` ya exige al escribir el borrador y
+  // que `app/noticias/esquema.ts` exige al leerlo.
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/.test(String(pieza.redactado_en ?? ''))) {
+    fallos.push('`redactado_en` no es YYYY-MM-DDTHH:MMZ (§3)');
+  }
   if (!/^sha256:[0-9a-f]{64}$/.test(String(pieza.huella ?? ''))) fallos.push('`huella` no es `sha256:<64 hex>` (§5.2)');
 
   const mx = pieza.mexico;
@@ -341,6 +348,12 @@ export function validarEsquema(pieza) {
     if (f === null || typeof f !== 'object' || Array.isArray(f)) { fallos.push(`${ruta} no es objeto`); return; }
     for (const k of Object.keys(f)) if (!CLAVES_FUENTE.includes(k)) fallos.push(`${ruta}.${k} no permitido por §3`);
     for (const k of ['titulo', 'medio', 'url', 'fecha']) if (!cadenaLlena(f[k])) fallos.push(`${ruta}.${k} vacio`);
+    // Enlazable, no solo no vacia: `01` §1.4 exige las fuentes «enlazadas» y la ficha
+    // vuelca este valor a un `href`. Una cadena que no navega es un enlace muerto que
+    // ningun gate ve, y una fuente que no se puede abrir no sostiene nada.
+    if (cadenaLlena(f.url) && !/^https?:\/\/[^\s]+$/.test(String(f.url))) {
+      fallos.push(`${ruta}.url no es una URL http(s) enlazable`);
+    }
     if (exigirTipo && !['primaria', 'secundaria'].includes(f.tipo)) fallos.push(`${ruta}.tipo invalido`);
   };
   validarFuente(pieza.fuente_primaria, '`fuente_primaria`', false);

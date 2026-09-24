@@ -25,10 +25,40 @@ import { z } from "zod";
  */
 
 /** Fecha de calendario. `ocurrido_en` es un día, no un instante (§3). */
-const fecha = z.string().regex(/^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/);
+const FECHA = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$/;
+const fecha = z.string().regex(FECHA);
 
-/** El `id` es también el nombre del archivo y el slug de la ruta (§3). */
-const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+/**
+ * `redactado_en` es un instante, `YYYY-MM-DDTHH:MMZ` (§3), y su formato **se valida aquí**.
+ *
+ * No es cosmética. `app/sitemap.ts` construye `lastModified: new Date(pieza.redactado_en)`
+ * y Next serializa ese `Date` con `.toISOString()`, que lanza `RangeError` sobre un
+ * `Invalid Date`: una pieza con la fecha malformada tiraba el build con un error que no
+ * nombra ni el corpus ni la pieza, y se persigue el bug equivocado. Con el formato en el
+ * esquema, el mismo corpus falla como `E_CORPUS_ESQUEMA` diciendo qué archivo y qué campo.
+ *
+ * El patrón es el mismo que `scripts/editorial/redactar.mjs` ya impone al escribir el
+ * borrador; lo que faltaba era imponerlo también donde se lee y donde se autoriza.
+ */
+export const INSTANTE = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])T(?:[01]\d|2[0-3]):[0-5]\dZ$/;
+const instante = z.string().regex(INSTANTE);
+
+/**
+ * El `id` es también el nombre del archivo y el slug de la ruta (§3). Se exporta porque
+ * `corpus.ts` lee la pieza por su nombre de archivo y un slug tiene que componer contra
+ * esta forma **antes** de tocar el sistema de archivos.
+ */
+export const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const slug = z.string().regex(SLUG);
+
+/**
+ * La URL de una fuente. `01` §1.4 las exige «enlazadas», y la pantalla las vuelca directo
+ * a un `href`: una cadena no vacía que no es navegable produce un enlace muerto sin que
+ * nada falle, que es exactamente la forma de «declarar sin renderizar» aplicada a la
+ * comprobabilidad de la pieza. Si la fuente no se puede abrir, no sostiene nada.
+ */
+export const URL_ENLAZABLE = /^https?:\/\/[^\s]+$/;
+const urlEnlazable = z.string().regex(URL_ENLAZABLE);
 
 const cadenaLlena = z.string().trim().min(1);
 
@@ -47,8 +77,12 @@ export const ETAPAS = ["detectado", "redactado", "verificado", "publicado"] as c
 export const fuenteSchema = z.strictObject({
   titulo: cadenaLlena,
   medio: cadenaLlena,
-  url: cadenaLlena,
+  url: urlEnlazable,
   fecha: cadenaLlena,
+  // §3 lo admite y el comando de autorización lo escribe, así que aquí se acepta. **No es
+  // quien decide el rol en pantalla**: eso lo decide la identidad con `fuente_primaria.url`
+  // (ver `vista.ts`). Nada en §3 acota cuántas entradas pueden llevar `"primaria"`, y una
+  // pantalla que etiquete dos contradice su propia prosa, que nombra una.
   tipo: z.enum(["primaria", "secundaria"]).optional(),
 });
 
@@ -72,7 +106,7 @@ export const piezaSchema = z.strictObject({
   entradilla: cadenaLlena,
   estado: z.enum(ESTADOS),
   ocurrido_en: fecha,
-  redactado_en: cadenaLlena,
+  redactado_en: instante,
   hecho: cadenaLlena,
   que_cambia: cadenaLlena,
   mexico: z.strictObject({

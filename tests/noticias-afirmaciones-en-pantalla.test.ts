@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { piezaSchema } from "../app/noticias/esquema.ts";
 import { revisionDePieza, vistaDePieza } from "../app/noticias/vista.ts";
 import { leer } from "./navegacion-helpers.ts";
-import { envoltoriosDe } from "./noticias-pantalla.ts";
+import { envoltoriosDe, envoltoriosDeCadaUno } from "./noticias-pantalla.ts";
 import { PIEZA_PARCIAL, PIEZA_VERIFICADA } from "./noticias-fixture.ts";
 
 /**
@@ -106,6 +106,83 @@ test("AC-NOT-03: la procedencia tampoco se pliega", () => {
     (envoltorios ?? []).filter((e) => ESCONDITES.includes(e.toLowerCase())),
     [],
     "la procedencia de las cuatro etapas va abierta: plegarla esconde que nadie revisó la nota",
+  );
+});
+
+test("AC-NOT-03: la declaración de conflicto de interés tampoco se pliega", () => {
+  // El tercer bloque de aviso de la ficha, y el que más se parece a lo que `01` §1.3
+  // persigue: la relación declarada existe para que el lector sepa que la pieza cubre
+  // trabajo propio o de Inadaptados **antes** de leer el análisis. §4 de `02-editorial.md`
+  // la manda «en la pieza, visible», y §1.3 requisito 3 da la forma general: un aviso que
+  // exige un clic es un aviso que no se dio. Sin esta sonda, envolverla mañana en un
+  // `<details>` pasaba typecheck, lint, los cinco criterios y el build.
+  // Todas sus apariciones, no solo la primera: la ficha lee `vista.relacion` dos veces
+  // --- en la condición, que cuelga del `<main>`, y en el párrafo que la enseña. Mirar
+  // solo la primera dejaría sin comprobar justo el bloque que se renderiza.
+  const apariciones = envoltoriosDeCadaUno(leer(DETALLE), "vista.relacion");
+
+  assert.notEqual(
+    apariciones.length,
+    0,
+    "la ficha no renderiza `vista.relacion` en ninguna parte: una pieza sobre trabajo " +
+      "propio saldría sin declararlo",
+  );
+  const escondido = apariciones
+    .flat()
+    .filter((e) => ESCONDITES.includes(e.toLowerCase()));
+  assert.deepEqual(
+    escondido,
+    [],
+    `el conflicto de interés se renderiza dentro de <${escondido.join(">, <")}>. Plegarlo ` +
+      `o mandarlo al pie es no declararlo (02-editorial.md §4, 01 §1.3)`,
+  );
+  assert.ok(
+    apariciones.some((e) => e.includes("section")),
+    "el texto de la relación va en una sección del cuerpo, antes del análisis",
+  );
+});
+
+test("AC-NOT-03: la sonda del conflicto de interés se pone roja a propósito", () => {
+  // Las tres formas llevan la condición fuera del bloque, igual que la ficha real: es la
+  // forma que una sonda sobre la primera aparición no distingue.
+  const suelta = `
+    <main>{vista.relacion !== null && (
+      <section>
+        <h2>Relación declarada</h2>
+        <p>{vista.relacion}</p>
+      </section>
+    )}</main>`;
+  const plegada = `
+    <main>{vista.relacion !== null && (
+      <section>
+        <details>
+          <summary>Relación declarada</summary>
+          <p>{vista.relacion}</p>
+        </details>
+      </section>
+    )}</main>`;
+  const alPie = `<main>{vista.relacion !== null && (<footer><p>{vista.relacion}</p></footer>)}</main>`;
+
+  const escondidosDe = (fuente: string) =>
+    envoltoriosDeCadaUno(fuente, "vista.relacion")
+      .flat()
+      .filter((e) => ESCONDITES.includes(e));
+
+  assert.deepEqual(escondidosDe(suelta), []);
+  assert.deepEqual(
+    escondidosDe(plegada),
+    ["details"],
+    "la sonda no vio el <details> que esconde la declaración de relación",
+  );
+  assert.deepEqual(
+    escondidosDe(alPie),
+    ["footer"],
+    "un aviso en el pie no es un aviso dado",
+  );
+  assert.deepEqual(
+    envoltoriosDeCadaUno("<p>ninguna relación por aquí</p>", "vista.relacion"),
+    [],
+    "«no aparece» y «aparece suelta» tienen que ser respuestas distintas",
   );
 });
 
