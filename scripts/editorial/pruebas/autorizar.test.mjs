@@ -19,7 +19,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -330,7 +330,25 @@ function modulosDelRepo() {
 }
 
 test('AC-AUT-05 · `autorizar` es el UNICO modulo que resuelve `content/noticias`', () => {
-  const culpables = modulosDelRepo()
+  // COBERTURA PRIMERO. Sin esto la prueba podia pasar en verde sin abrir un solo archivo:
+  // terminaba en `deepEqual(culpables, [])` y no habia ninguna asercion sobre cuantos
+  // modulos recorrio. Si `modulosDelRepo()` devolviera `[]` —alguien mueve `scripts/` a
+  // `tools/editorial/`, o cambia como se deriva RAIZ_REPO— `culpables` seria `[]` y la
+  // sonda quedaria verde PARA SIEMPRE, ciega a una segunda puerta al corpus escrita en el
+  // directorio nuevo. Un vacio y un «no hay culpables» se ven iguales y significan lo
+  // opuesto.
+  const modulos = modulosDelRepo();
+  assert.ok(
+    modulos.includes(join(DIR_EDITORIAL, 'autorizar.mjs')),
+    'el recorrido no encontro ni el propio autorizar.mjs: la sonda no esta mirando el arbol'
+  );
+  assert.ok(
+    modulos.some((r) => r.startsWith(join(RAIZ_REPO, 'lib'))),
+    'el recorrido no alcanza lib/, y ahi tambien se puede escribir una ruta al corpus'
+  );
+  assert.ok(modulos.length > 20, `solo recorrio ${modulos.length} modulos; hoy son ~35`);
+
+  const culpables = modulos
     .filter((ruta) => ruta !== join(DIR_EDITORIAL, 'autorizar.mjs'))
     .filter((ruta) => nombraElCorpus(readFileSync(ruta, 'utf8')))
     .map((ruta) => ruta.slice(RAIZ_REPO.length + 1));
@@ -405,6 +423,31 @@ test('§8.2 · autorizar es idempotente: ni evento nuevo ni reescritura', () => 
   assert.match(segunda.stdout, /ya estaba autorizada/);
   assert.equal(readFileSync(archivo, 'utf8'), antes);
   assert.equal(eventosDeAutorizacion().length, 1, 'un evento por autorizacion, no dos');
+});
+
+test('§8.2 · idempotente NO es «devuelve exito sin mirar»: si el corpus falta, se niega', () => {
+  // La rama idempotente devolvia la ruta sin comprobar que el archivo siguiera ahi, y el
+  // CLI imprimia «ya estaba autorizada» con salida 0.
+  //
+  // La ventana es real, no teorica: el archivo queda SIN COMMITEAR a proposito (§8.4 paso
+  // 6) mientras la bitacora vive fuera de git. Un cambio de worktree o un `git clean -fd`
+  // se lleva el archivo y deja la bitacora diciendo `autorizada`. Y `autorizada` es
+  // TERMINAL, asi que no hay camino de vuelta: el comando reportaria exito para siempre
+  // sobre una pieza que no esta publicada. Un estado que afirma que algo existe cuando no
+  // existe es peor que un error, porque nadie va a mirar.
+  const pieza = borradorDePrueba({ id: 'corpus-borrado' });
+  const escenario = montarAutorizacion('corpus-borrado', pieza);
+  const registro = escribirRegistro(registroDe(pieza));
+  assert.equal(correrAutorizar(escenario.proyecto, [pieza.id, '--registro', registro]).status, 0);
+
+  const archivo = join(escenario.proyecto.corpus, `${pieza.id}.json`);
+  rmSync(archivo);
+
+  const segunda = correrAutorizar(escenario.proyecto, [pieza.id, '--registro', registro]);
+  assert.notEqual(segunda.status, 0, 'reportar exito sobre un corpus que no esta es la falla');
+  assert.match(`${segunda.stdout}${segunda.stderr}`, /CORPUS_AUSENTE/);
+  assert.equal(existsSync(archivo), false, 'y no lo republica: eso seria autorizar sin que nadie lo decida');
+  assert.equal(eventosDeAutorizacion().length, 1, 'ni emite un evento nuevo');
 });
 
 // =====================================================================================

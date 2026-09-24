@@ -117,7 +117,11 @@ workflow no está instalado y el bloque de medición que sigue a la tabla dice q
   persistencia.** Es T-E3 y no T-E1 porque el archivo es de este directorio: T-E1 arregla el
   canal, T-E3 arregla el workflow. Se deja descrito aquí para que quede claro qué hay que
   borrar; el workflow sigue sin estar activado.
-- No existe `content/noticias/` ni el estado `autorizada`.
+- ~~No existe `content/noticias/` ni el estado `autorizada`.~~ **Vuelto a medir el
+  2026-09-24: los dos existen.** `scripts/editorial/autorizar.mjs` es el único camino al
+  corpus y `estado.mjs` ya tiene la transición `terminada → autorizada`. El corpus
+  publicado sigue **vacío**, que es otra cosa: el mecanismo existe y nadie ha autorizado
+  nada todavía.
 
 Sacar los archivos del repositorio, hacer obligatorias —sin fallback—
 `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`, y partir el canal en los tres comandos

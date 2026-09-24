@@ -518,7 +518,30 @@ export function autorizar({ id, registro: rutaRegistro, corrida = null }) {
   }
   if (entrada.estado === 'autorizada') {
     // §8.2: idempotente. Ni evento ni reescritura del archivo.
-    return { id, archivo: join(dirCorpusPublico(), `${id}.json`), idempotente: true, evento: null };
+    //
+    // Pero idempotente no es «devuelve exito sin mirar». Antes se devolvia la ruta sin
+    // comprobar que el archivo siguiera ahi, y el CLI imprimia «ya estaba autorizada» con
+    // salida 0. La ventana es real y no teorica: el archivo queda SIN COMMITEAR a proposito
+    // (§8.4 paso 6) mientras la bitacora vive fuera de git, asi que un cambio de worktree o
+    // un `git clean -fd` se lleva el archivo y deja la bitacora diciendo `autorizada`.
+    //
+    // Y `autorizada` es TERMINAL —`estado.mjs` no le da transicion de salida y
+    // `conciliarConCorpus` la salta—, asi que no hay camino de vuelta: el comando reportaria
+    // exito para siempre sobre una pieza que no esta publicada. Un estado que dice que algo
+    // existe cuando no existe es peor que un error, porque nadie va a mirar.
+    //
+    // Se NIEGA en vez de reescribir. Reescribir exigiria el registro humano, que en una
+    // llamada idempotente puede no venir, y volver a publicar sin releer esa firma seria
+    // autorizar por segunda vez sin que nadie lo decidiera.
+    const archivo = join(dirCorpusPublico(), `${id}.json`);
+    if (!existsSync(archivo)) {
+      throw new Negativa('CORPUS_AUSENTE',
+        `la bitacora dice que "${id}" esta autorizada, pero ${archivo} no existe. `
+        + 'No se reescribe el corpus desde aqui: republicar sin releer el registro humano '
+        + 'seria autorizar una segunda vez sin que nadie lo decidiera. Recupera el archivo '
+        + 'del commit donde quedo, o corrige la bitacora a mano sabiendo lo que haces.');
+    }
+    return { id, archivo, idempotente: true, evento: null };
   }
   if (entrada.estado !== 'terminada') {
     throw new Negativa('ESTADO_INCORRECTO',

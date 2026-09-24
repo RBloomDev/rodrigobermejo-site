@@ -207,7 +207,7 @@ Cinco etapas. La implementación vive en `scripts/editorial/`.
 > escribe cada uno y dónde vive su estado lo fija **§8**, que manda sobre cualquier lectura
 > de ubicación que se derive de aquí. **Ninguna de estas cinco etapas debe publicar nada**:
 > publicar es la autorización de §8.4 y no ocurre dentro de una corrida. Hoy sí ocurre
-> —`ejecutar.mjs:340` escribe el corpus **intermedio** al final de la misma corrida que
+> —`ejecutar.mjs:343` escribe el corpus **intermedio** al final de la misma corrida que
 > redacta y verifica—, y ese corpus ya no es el público: desde el 2026-09-24, lo único que
 > llega a `content/noticias/` lo escribe `autorizar` (§8.4). Lo que queda por separar es
 > `generar` de `verificar` (§8.6).
@@ -484,7 +484,7 @@ Condiciones duras del evento `autorizada`:
 | Bitácora, fallos y el `vistos.jsonl` heredado | `$EDITORIAL_ESTADO_DIR` | **No** | `generar` y `verificar`; y `autorizar`, **solo** para emitir su evento `autorizada` (§8.1, §8.4 paso 5). Los tres comandos escriben aquí porque la bitácora es donde vive la máquina de estados, y la transición `terminada → autorizada` es una transición como las otras |
 | Borradores y redacciones | `$EDITORIAL_REDACCIONES_DIR` | **No** | `generar`; `verificar` solo sella |
 | **Corpus publicado** | **`content/noticias/`** | **Sí** | **Únicamente `autorizar`** |
-| Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Los dos caminos que lo escribían están retirados**, medido el 2026-09-24: `ejecutar.mjs:109-111` ya no cae al fixture —sin `EDITORIAL_PIEZAS` no escribe corpus en ningún sitio— y `reverificar-corpus.mjs:47` resuelve desde `$EDITORIAL_REDACCIONES_DIR` |
+| Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Los dos caminos que lo escribían están retirados**, medido el 2026-09-24: `ejecutar.mjs:112-115` ya no cae al fixture —sin `EDITORIAL_PIEZAS` no escribe corpus en ningún sitio— y `reverificar-corpus.mjs:47` resuelve desde `$EDITORIAL_REDACCIONES_DIR` |
 
 > **Lo que sigue en esta sección —la tabla de arriba incluida— es la política, no una
 > descripción del canal de hoy.** Medido el 2026-09-17, el código **no la cumple, y las dos
@@ -632,7 +632,7 @@ cumple, y decirlo es parte de la spec:
 
 | Hecho medido | Evidencia |
 |---|---|
-| El estado y una redacción están **versionados en este repositorio público** | `git ls-files scripts/editorial` devuelve `estado/bitacora.jsonl`, `estado/errores.jsonl`, `estado/fallos.jsonl`, `estado/vistos.jsonl` y `redacciones/marco-ailit-alfabetizacion-ia-educacion.json`. **Cerrado por T-E1:** ese `git ls-files` ya no devuelve nada —vuelto a medir el 2026-09-24— y `guard:estado-editorial` lo vigila |
+| El estado y una redacción están **versionados en este repositorio público** | `git ls-files scripts/editorial` devuelve `estado/bitacora.jsonl`, `estado/errores.jsonl`, `estado/fallos.jsonl`, `estado/vistos.jsonl` y `redacciones/marco-ailit-alfabetizacion-ia-educacion.json`. **Cerrado por T-E1:** `git ls-files scripts/editorial/estado scripts/editorial/redacciones` devuelve **0** —vuelto a medir el 2026-09-24— y `guard:estado-editorial` lo vigila. Ojo con la cita anterior, que decía «ese `git ls-files` ya no devuelve nada»: `git ls-files scripts/editorial` devuelve **37 archivos**, que son los módulos del canal. Lo que se sacó del repositorio fueron los dos subdirectorios, no el directorio |
 | Hay **un** comando, no tres | `scripts/editorial/ejecutar.mjs` encadena detectar → redactar → verificar → escribir corpus |
 | No existe el estado `autorizada` | `estado.mjs:98` lista seis estados y `terminada` es terminal |
 | No existe `content/noticias/` | `git ls-files content` devuelve solo `content/posts/` |
@@ -732,8 +732,8 @@ aborta sin ella, que es la primera de las dos salidas que esa fila autoriza.
 **Lo que sigue abierto tras añadir `autorizar`, y tampoco es un olvido.** Medido el
 2026-09-24 sobre este árbol:
 
-- **`rutaPiezas()` y `EDITORIAL_PIEZAS` siguen ahí**: `ejecutar.mjs:109-111` resuelve una
-  ruta de archivo arbitraria desde esa variable y `:340` escribe el corpus intermedio en
+- **`rutaPiezas()` y `EDITORIAL_PIEZAS` siguen ahí**: `ejecutar.mjs:112-115` resuelve una
+  ruta de archivo arbitraria desde esa variable y `:343` escribe el corpus intermedio en
   ella. Ya no tiene respaldo dentro del repositorio —sin la variable no escribe corpus en
   ningún sitio—, pero **acepta cualquier destino que se le dé, `content/noticias/` incluido**.
   Su eliminación es la fila 2 de la tabla de arriba y depende de partir `ejecutar` en

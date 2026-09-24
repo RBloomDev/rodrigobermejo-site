@@ -18,6 +18,7 @@ import {
   marcarDescartada,
   marcarExpedienteListo,
   marcarFallida,
+  marcarAutorizada,
   marcarRedactada,
   marcarVerificada,
   pendientesDeRedaccion,
@@ -156,4 +157,77 @@ test('descartar exige motivo', () => {
   const { id } = registrarDeteccion(unItem());
   assert.throws(() => marcarDescartada(id, ''), /se exige un motivo/);
   assert.equal(marcarDescartada(id, 'fuera de alcance editorial').motivo_descarte, 'fuera de alcance editorial');
+});
+
+const registroCompleto = (over = {}) => ({
+  pieza_id: 'p1',
+  autorizado_por: 'Rodrigo Bermejo',
+  autorizado_en: '2026-09-24T18:00:00-06:00',
+  version_borrador: 'sha256:' + 'a'.repeat(64),
+  pendientes_aceptados: [],
+  acepta_limites: false,
+  ...over,
+});
+
+/**
+ * El guard de `marcarAutorizada`, que su propio comentario llama «el mecanismo entero».
+ *
+ * No tenia ninguna prueba. `grep marcarAutorizada scripts/` devolvia solo sus dos
+ * definiciones y las dos llamadas de `autorizar.mjs`; ningun archivo de `pruebas/` la
+ * nombraba. El unico camino probado pasaba ANTES por `validarRegistro` en `autorizar.mjs`,
+ * asi que un refactor podia quitar el bloque entero --- o relajarlo a «si `autorizado_por`
+ * viene, vale» --- y la suite seguia verde.
+ *
+ * Importa porque esta es la defensa de la maquina de estados contra un evento `autorizada`
+ * emitido por CUALQUIER otro camino, no solo por el CLI. Si el unico que comprueba es el
+ * CLI, la maquina no se defiende: confia.
+ */
+test('marcarAutorizada exige los cinco campos, uno por uno', () => {
+  const CAMPOS = ['pieza_id', 'autorizado_por', 'autorizado_en', 'version_borrador',
+    'pendientes_aceptados', 'acepta_limites'];
+
+  for (const campo of CAMPOS) {
+    nuevoEntorno(`autorizada-sin-${campo}`);
+    const { id } = registrarDeteccion(unItem());
+    marcarExpedienteListo(id);
+    marcarRedactada(id, { redaccion_id: 'r1', modelo: 'modelo-de-prueba' });
+    marcarVerificada(id, { pieza_id: 'p1' });
+
+    const registro = registroCompleto();
+    delete registro[campo];
+
+    assert.throws(
+      () => marcarAutorizada(id, registro),
+      new RegExp(`falta[^]*${campo}`),
+      `sin \`${campo}\` la transicion tiene que negarse: un registro incompleto es una firma en blanco`
+    );
+    assert.equal(estadoDe(id).estado, 'terminada', 'y la entrada no se mueve');
+  }
+});
+
+test('marcarAutorizada con los cinco campos completa la transicion', () => {
+  // El otro lado. Sin esto, un guard que negara SIEMPRE tambien pasaria la prueba de
+  // arriba, y seria igual de inutil por el extremo contrario.
+  nuevoEntorno('autorizada-completa');
+  const { id } = registrarDeteccion(unItem());
+  marcarExpedienteListo(id);
+  marcarRedactada(id, { redaccion_id: 'r1', modelo: 'modelo-de-prueba' });
+  marcarVerificada(id, { pieza_id: 'p1' });
+
+  assert.equal(marcarAutorizada(id, registroCompleto()).estado, 'autorizada');
+  assert.equal(estadoDe(id).estado, 'autorizada');
+});
+
+test('marcarAutorizada rechaza una cadena vacia igual que un campo ausente', () => {
+  // Un `autorizado_por: ''` es exactamente el caso que el comentario de :548 nombra: «sin
+  // el nombre del humano no se emite». Presente-pero-vacio no es presente.
+  nuevoEntorno('autorizada-vacia');
+  const { id } = registrarDeteccion(unItem());
+  marcarExpedienteListo(id);
+  marcarRedactada(id, { redaccion_id: 'r1', modelo: 'modelo-de-prueba' });
+  marcarVerificada(id, { pieza_id: 'p1' });
+
+  assert.throws(() => marcarAutorizada(id, registroCompleto({ autorizado_por: '   ' })),
+    /falta[^]*autorizado_por/);
+  assert.equal(estadoDe(id).estado, 'terminada');
 });
