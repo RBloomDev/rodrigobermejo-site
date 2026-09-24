@@ -36,18 +36,23 @@
  *   node scripts/editorial/ejecutar.mjs --incluir el-economista    # fuerza un fallo real
  *   node scripts/editorial/ejecutar.mjs --entradas <snapshot.json> # mismas entradas
  *
- * Variables de entorno (para probar sin tocar el estado ni el corpus reales):
- *   EDITORIAL_ESTADO_DIR  raiz de la bitacora y los fallos
- *   EDITORIAL_PIEZAS      ruta del corpus `piezas.json`
+ * Variables de entorno:
+ *   EDITORIAL_ESTADO_DIR       OBLIGATORIA. Raiz de la bitacora, los fallos y los errores.
+ *   EDITORIAL_REDACCIONES_DIR  OBLIGATORIA. Raiz de los borradores.
+ *   EDITORIAL_PIEZAS           ruta del corpus `piezas.json` (para probar sin tocar el real)
+ *
+ * Las dos primeras no tienen valor por defecto y sin ellas la corrida ABORTA antes de
+ * escribir nada (`docs/plataforma/02-editorial.md` §8.3).
  */
 
 import { randomUUID } from 'node:crypto';
 import {
-  RUTA_PIEZAS, ahoraIso, argumentos, esCli, escribirJson, leerJson,
+  ConfiguracionAusente, DirectorioVersionado, RUTA_PIEZAS, ahoraIso, argumentos, esCli,
+  escribirJson, exigirDirectoriosPrivados, leerJson,
 } from './comun.mjs';
 import { detectar as detectarPorDefecto, resolverFuentes } from './detectar.mjs';
 import { CATALOGO } from './fuentes.mjs';
-import { deduplicar } from './deduplicar.mjs';
+import { deduplicar as deduplicarPorDefecto } from './deduplicar.mjs';
 import {
   conciliarConCorpus,
   instantanea,
@@ -78,6 +83,11 @@ async function resolverEtapas(etapas = {}) {
   const ver = necesitaVerificar ? await import('./verificar.mjs') : null;
   return {
     detectar: etapas.detectar ?? detectarPorDefecto,
+    // La deduplicacion se inyecta por la misma puerta que el resto de etapas, y no es
+    // una comodidad: `guard:canal` la sustituye por una que no deduplica para demostrar
+    // que el guard se pone ROJO. Un guard que nunca ha fallado puede estar desconectado
+    // (`AGENTS.md`, principio de verificacion, punto 4).
+    deduplicar: etapas.deduplicar ?? deduplicarPorDefecto,
     prepararExpediente: etapas.prepararExpediente ?? red.prepararExpediente,
     redactar: etapas.redactar ?? red.redactar,
     verificarPieza: etapas.verificarPieza ?? ver.verificarPieza,
@@ -126,6 +136,11 @@ export function aItemDetectado(entrada) {
  * @param {object} [inyeccion] {etapas, redacciones} — solo para pruebas
  */
 export async function ejecutar(banderas = {}, inyeccion = {}) {
+  // PRIMERA LINEA, antes de leer un feed y antes de abrir un archivo (§8.3). Si falta
+  // cualquiera de las dos variables obligatorias, esto lanza y la corrida no escribe
+  // nada. Comprobarlo mas abajo seria comprobarlo despues de haber escrito.
+  exigirDirectoriosPrivados();
+
   const corrida = randomUUID().slice(0, 8);
   const inicio = ahoraIso();
   const linea = (s) => { if (!banderas.silencioso) console.log(s); };
@@ -163,7 +178,7 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
   }
 
   // --- 2. deduplicar -----------------------------------------------------------
-  const { nuevos, yaPendientes, repetidos } = deduplicar(items, { piezas: piezasAntes });
+  const { nuevos, yaPendientes, repetidos } = etapas.deduplicar(items, { piezas: piezasAntes });
   linea(`deduplicar: ${nuevos.length} nuevos, ${yaPendientes.length} ya pendientes, ${repetidos.length} cerrados`);
   const porMotivo = repetidos.reduce((a, r) => ({ ...a, [r.motivo]: (a[r.motivo] ?? 0) + 1 }), {});
   for (const [motivo, n] of Object.entries(porMotivo)) linea(`  - ${motivo}: ${n}`);
@@ -333,6 +348,21 @@ export function upsert(corpusActual, piezas) {
 }
 
 if (esCli(import.meta.url)) {
+  // Antes de nada, y fuera del `try` de abajo: sin un directorio privado valido no hay
+  // donde registrar un fallo, asi que intentar registrarlo volveria a lanzar y el
+  // mensaje util se perderia detras de un stack. Se dice que pasa y se sale.
+  //
+  // Son DOS fallos distintos y los dos abortan igual: la variable no esta (§8.3, primera
+  // prohibicion) o esta pero apunta dentro de un arbol de git (§8.3, tercera). El segundo
+  // es el que sobrevive a quitar el `||`, y por eso no basta con mirar el primero.
+  try {
+    exigirDirectoriosPrivados();
+  } catch (e) {
+    if (!(e instanceof ConfiguracionAusente) && !(e instanceof DirectorioVersionado)) throw e;
+    console.error(`ejecutar: ABORTA — ${e.message}`);
+    process.exit(1);
+  }
+
   const banderas = argumentos(process.argv.slice(2));
 
   // --con-redactor: conecta la via de inferencia real. Se comprueba que existe

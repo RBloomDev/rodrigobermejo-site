@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test --conditions=react-server \"tests/**/*.test.ts\" \"scripts/editorial/pruebas/*.test.mjs\" \"scripts/editorial/pruebas-verificacion/*.test.mjs\" \"scripts/editorial/pruebas-afirmaciones/*.test.mjs\"",
     "guard:exposicion": "node scripts/auditoria-exposicion.mjs",
-    "guard:funnel": "node scripts/check-funnel-isolation.mjs"
+    "guard:funnel": "node scripts/check-funnel-isolation.mjs",
+    "guard:estado-editorial": "node scripts/check-estado-editorial.mjs",
+    "guard:canal": "node scripts/check-canal-editorial.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

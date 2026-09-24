@@ -6,10 +6,15 @@
  *   1. **Sin red.** Ninguna prueba sale a internet. Las etapas que la usarian
  *      (`detectar`, `verificar`) se inyectan como dobles con fixtures locales. Lo que se
  *      prueba es la maquina de estados y el orquestador, no el RSS de nadie.
- *   2. **Sin tocar el estado real.** Cada prueba monta su propio `EDITORIAL_ESTADO_DIR` y
- *      su propio `EDITORIAL_PIEZAS` en `tmpdir`. Igual que `PROOF_FEED_DIR` en el sitio:
- *      si la unica forma de probar algo fuera escribir en el estado de produccion, la
- *      prueba seria el mecanismo por el que ese estado se corrompe.
+ *   2. **Sin tocar el estado real.** Cada prueba monta en `tmpdir` las **dos** variables
+ *      obligatorias —`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`— y su propio
+ *      `EDITORIAL_PIEZAS`. Igual que `PROOF_FEED_DIR` en el sitio: si la unica forma de
+ *      probar algo fuera escribir en el estado de produccion, la prueba seria el
+ *      mecanismo por el que ese estado se corrompe.
+ *
+ *      Las redacciones no tenian variable que apuntar hasta que `EDITORIAL_REDACCIONES_DIR`
+ *      existio (`02-editorial.md` §8.3): no era un descuido de quien escribio las
+ *      pruebas, era que la variable no existia.
  */
 
 import { mkdirSync, mkdtempSync } from 'node:fs';
@@ -24,10 +29,13 @@ export const DIR_EDITORIAL = dirname(dirname(fileURLToPath(import.meta.url)));
 export function nuevoEntorno(nombre) {
   const raiz = mkdtempSync(join(tmpdir(), `editorial-${nombre}-`));
   const estado = join(raiz, 'estado');
+  const redacciones = join(raiz, 'redacciones');
   mkdirSync(estado, { recursive: true });
+  mkdirSync(redacciones, { recursive: true });
   process.env.EDITORIAL_ESTADO_DIR = estado;
+  process.env.EDITORIAL_REDACCIONES_DIR = redacciones;
   process.env.EDITORIAL_PIEZAS = join(raiz, 'piezas.json');
-  return { raiz, estado, piezas: process.env.EDITORIAL_PIEZAS };
+  return { raiz, estado, redacciones, piezas: process.env.EDITORIAL_PIEZAS };
 }
 
 /** Un item tal como lo entrega `detectar()`. Todos los campos, ninguno de mas. */

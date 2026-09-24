@@ -85,7 +85,7 @@
 import { createHash } from 'node:crypto';
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { DIR_ESTADO, ahoraIso } from './comun.mjs';
+import { ahoraIso, dirEstado } from './comun.mjs';
 
 // --- Configuracion -----------------------------------------------------------------
 
@@ -145,13 +145,11 @@ const CAMPOS_ENTRADA = [
 // --- Rutas -------------------------------------------------------------------------
 
 /**
- * Raiz del estado. Se resuelve en cada llamada, nunca se cachea: las pruebas montan su
- * propio directorio en `tmpdir` con `EDITORIAL_ESTADO_DIR` y ninguna escribe en el estado
- * real del repo. Mismo patron que `PROOF_FEED_DIR` en el sitio.
+ * Raiz del estado. Vive en `comun.mjs` y es **obligatoria, sin valor por defecto**: se
+ * re-exporta aqui porque este modulo es el que la usa, no porque la resuelva. Ver el
+ * bloque «Directorios privados» de `comun.mjs` y §8.3.
  */
-export function dirEstado() {
-  return process.env.EDITORIAL_ESTADO_DIR || DIR_ESTADO;
-}
+export { dirEstado };
 
 export function rutaBitacora() {
   return join(dirEstado(), 'bitacora.jsonl');
