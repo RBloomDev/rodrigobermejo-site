@@ -1,7 +1,7 @@
 import type { FeedClaim, FeedProject } from "@/lib/proof/schema";
 
 /**
- * Lo que acompaña a una afirmación que todavía no se puede comprobar.
+ * Lo que acompaña a una afirmación que nadie puede comprobar desde fuera.
  *
  * ## El encuadre, que es la mitad del componente
  *
@@ -32,7 +32,7 @@ const MOTIVO: Record<string, string> = {
   "construyo-sistemas":
     "La mayor parte de estos sistemas vive en repositorios privados. De un repositorio privado no se ingiere nada que se pueda publicar, así que el trabajo existe y la prueba no.",
   "decido-arquitectura":
-    "Las decisiones de arquitectura de este proyecto están escritas y son públicas, pero el motor todavía no las recolecta como evidencia: hoy son documentos, no registros.",
+    "Las decisiones de arquitectura de este proyecto están escritas y son públicas, pero ninguna de las fuentes que este sistema lee produce evidencia de ellas: un documento que explica una decisión no registra que se tomara, ni cuándo, ni quién la sostuvo.",
   "ensino-y-mentoreo":
     "Enseñar no deja artefacto público. Ninguna de las fuentes que este sistema lee produce evidencia de que alguien aprendió algo.",
 };

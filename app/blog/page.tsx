@@ -1,31 +1,41 @@
 import Link from 'next/link';
 import { getSortedPostsData } from '@/lib/posts';
-import { SectionHeader } from '@/components/ui/SectionHeader';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
 import { Metadata } from 'next';
 import { parseISO, format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const metadata: Metadata = {
-  title: 'Blog | Rodrigo Bermejo',
-  description: 'Artículos sobre automatización, productividad y sistemas de negocio.',
+  title: "Escribo",
+  description:
+    "Notas sobre sistemas, decisiones técnicas y lo que se aprende operando lo que uno construye.",
 };
 
 export default function BlogIndex() {
   const allPostsData = getSortedPostsData();
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="flex flex-col flex-grow">
       <main className="flex-grow py-24 bg-gray-50">
         <div className="container mx-auto px-6 max-w-4xl">
-          <SectionHeader
-            eyebrow="Blog"
-            title="Insights de Automatización"
-            subtitle="Guías tácticas y reflexiones sobre cómo operar negocios digitales eficientes."
-            className="mb-16"
-          />
+          {/*
+            Era un SectionHeader, que SIEMPRE renderiza <h2>: esta pagina se quedo sin h1
+            --- la unica de las ocho rutas --- y su encabezado visible seguia diciendo
+            "Insights de Automatizacion" con una bajada sobre "negocios digitales
+            eficientes", copy comercial de la plantilla que contradice el reposicionamiento
+            entero. El `metadata.title` ya decia "Escribo"; lo que se ve, no.
+
+            Se usa el mismo h1 explicito que /proyectos y /evidencia en vez de anadirle un
+            prop `as` a SectionHeader: ese componente lo usan cuatro secciones del funnel,
+            donde <h2> es lo correcto. El texto sale de docs/brand/03-copy-deck.md, que es
+            la autoridad de las etiquetas.
+          */}
+          <div className="mb-16 max-w-3xl">
+            <h1 className="text-4xl leading-tight text-ink-default sm:text-5xl">Escribo</h1>
+            <p className="mt-6 text-lg leading-relaxed text-ink-balance">
+              Notas sobre sistemas, decisiones técnicas y lo que se aprende operando lo que
+              uno construye.
+            </p>
+          </div>
 
           <div className="grid gap-8">
             {allPostsData.map(({ id, date, title, excerpt }) => (
@@ -51,7 +61,6 @@ export default function BlogIndex() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

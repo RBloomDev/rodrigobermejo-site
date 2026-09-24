@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { leerFeed, claimsDeProyecto } from "@/lib/proof/feed";
+import { proyectoAVista } from "@/lib/proof/proyectos-vista";
+import { DIMENSION_COPY, creditoDe, fechaEnProsa } from "@/lib/proof/proyectos-filtros";
 import { ClaimCard } from "@/components/proof/ClaimCard";
 
 /**
@@ -13,6 +15,13 @@ import { ClaimCard } from "@/components/proof/ClaimCard";
  * artefacto: la arista la posee `claims[].project_ids`, y guardar la inversa
  * crearía una segunda fuente de verdad para la misma relación, capaz de discrepar
  * sin que nada fallara.
+ *
+ * ## Contribución y crédito, separados también aquí
+ *
+ * `decisions/0015` §4-ter no distingue superficies: donde se presenta un proyecto
+ * hay que separar lo que el sujeto declara haber hecho de lo que es de un equipo.
+ * Si el índice lo separara y la ficha no, la distinción sería decorativa — la
+ * ficha es justo donde un lector va a buscar «¿y esto lo hizo él?».
  */
 
 export function generateStaticParams(): { slug: string }[] {
@@ -35,24 +44,6 @@ export async function generateMetadata({
     : { title: "Proyecto — Rodrigo Bermejo" };
 }
 
-const KIND_COPY: Record<string, string> = {
-  product: "Producto",
-  tool: "Herramienta",
-  education: "Formación",
-  lab: "Laboratorio",
-  experiment: "Experimento",
-};
-
-const LIFECYCLE_COPY: Record<string, string> = {
-  production: "en producción",
-  maintenance: "en mantenimiento",
-  beta: "en beta",
-  alpha: "en alfa",
-  prototype: "prototipo",
-  discovery: "en exploración",
-  archived: "archivado",
-};
-
 export default async function ProyectoPage({
   params,
 }: {
@@ -65,6 +56,7 @@ export default async function ProyectoPage({
   const proyecto = estado.feed.projects.find((p) => p.id === slug);
   if (!proyecto) notFound();
 
+  const vista = proyectoAVista(estado.feed, proyecto);
   const claims = claimsDeProyecto(estado.feed, proyecto.id);
 
   return (
@@ -76,28 +68,74 @@ export default async function ProyectoPage({
       </p>
 
       <h1 className="mt-3 text-4xl leading-tight text-ink-default sm:text-5xl">
-        {proyecto.title}
+        {vista.titulo}
       </h1>
 
       <p className="mt-4 text-sm uppercase tracking-wide text-ink-muted">
-        {KIND_COPY[proyecto.kind] ?? proyecto.kind},{" "}
-        {LIFECYCLE_COPY[proyecto.lifecycle] ?? proyecto.lifecycle} · desde{" "}
-        {proyecto.timeframe.start}
-        {proyecto.timeframe.end && ` hasta ${proyecto.timeframe.end}`}
+        {vista.tipo}, {vista.estado} · desde {vista.inicioEnProsa}
+        {vista.finEnProsa && ` hasta ${vista.finEnProsa}`}
       </p>
 
       <p className="mt-6 text-lg leading-relaxed text-ink-balance">
         <span className="text-sm uppercase tracking-wide text-ink-muted">
           Propósito declarado:{" "}
         </span>
-        {proyecto.thesis}
+        {vista.tesis}
       </p>
 
-      {proyecto.public_sources.length > 0 && (
-        <section className="mt-8">
+      {/* Artefactos: estado DECLARADO, nunca un espacio en blanco donde iria una
+          captura. Un hueco se lee como que algo fallo; esta frase se lee como lo
+          que es. `docs/03` §7 reserva a un humano publicar un valor nuevo en la
+          superficie publica, y la politica que autorizaria un activo no existe. */}
+      <section className="mt-10" aria-labelledby="h-artefactos">
+        <h2 id="h-artefactos" className="text-sm uppercase tracking-wide text-ink-muted">
+          Artefactos de este proyecto
+        </h2>
+        <p className="mt-3 text-ink-balance">
+          <strong>Ninguno publicado.</strong> Publicar la captura de un proyecto abre
+          superficie pública nueva, y quién autoriza un activo —y contra qué se comprueba esa
+          autorización— no está escrito en la especificación de este sistema. Sin esa
+          decisión no hay imagen, y en el código de esta ficha no existe ninguna ruta capaz
+          de mostrar una.
+        </p>
+      </section>
+
+      {/* Contribucion y credito, SEPARADOS. El contrato no guarda personas ---
+          guarda rol y contexto--- y por eso no hay ningun porcentaje de autoria
+          que publicar: publicarlo revelaria composicion de equipo ajena.
+
+          Y por la misma razon la frase de credito sale de `creditoDe`, la misma
+          que usa el indice: donde `docs/` no declara equipo, esta ficha no lo
+          afirma --- una cota de dos personas sobre la plantilla de un tercero
+          seria inferencia, y `decisions/0015` §5 no autoriza ninguna. */}
+      <section className="mt-10" aria-labelledby="h-participacion">
+        <h2 id="h-participacion" className="font-heading text-2xl text-ink-default">
+          Participación
+        </h2>
+        <dl className="mt-4 space-y-4 border-t border-border-subtle pt-5 text-base">
+          <div className="sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4">
+            <dt className="text-sm uppercase tracking-wide text-ink-muted">
+              Contribución declarada
+            </dt>
+            <dd className="text-ink-default">
+              Rol en el feed: {vista.rol}.{" "}
+              {vista.dimensiones.length > 0
+                ? `Sostiene ${vista.dimensiones.map((d) => DIMENSION_COPY[d]).join(" y ")}.`
+                : "No sostiene ninguna afirmación publicada."}
+            </dd>
+          </div>
+          <div className="sm:grid sm:grid-cols-[11rem_1fr] sm:gap-4">
+            <dt className="text-sm uppercase tracking-wide text-ink-muted">Crédito</dt>
+            <dd className="text-ink-default">{creditoDe(vista.contexto)}</dd>
+          </div>
+        </dl>
+      </section>
+
+      {vista.fuentesPublicas.length > 0 && (
+        <section className="mt-10">
           <h2 className="text-sm uppercase tracking-wide text-ink-muted">Fuentes públicas</h2>
           <ul className="mt-2 space-y-1">
-            {proyecto.public_sources.map((s) => (
+            {vista.fuentesPublicas.map((s) => (
               <li key={s.url}>
                 <a
                   href={s.url}
@@ -109,13 +147,18 @@ export default async function ProyectoPage({
               </li>
             ))}
           </ul>
+          <p className="mt-3 border-l-2 border-border-default pl-4 text-sm text-ink-balance">
+            <strong>Poder abrir un repositorio no es haberlo hecho.</strong> Un enlace prueba
+            que el código existe y es público; lo que dice de la participación es el rol
+            declarado de arriba, y nada más.
+          </p>
         </section>
       )}
 
       {/* `has_private_sources` es la forma correcta de decir "hay mas trabajo del
           que se puede mostrar", sin nombrar nada. Es senal de credibilidad, no de
           carencia, y por eso se escribe en prosa y no como un contador. */}
-      {proyecto.has_private_sources && (
+      {vista.tieneFuentesPrivadas && (
         <p className="mt-6 text-ink-balance">
           Parte del trabajo de este proyecto vive en repositorios privados. Se publica el
           hecho, nunca la identidad de esos repositorios.
@@ -123,11 +166,9 @@ export default async function ProyectoPage({
       )}
 
       <section className="mt-14">
-        <h2 className="font-heading text-2xl text-ink-default">
-          Afirmaciones que sostiene
-        </h2>
+        <h2 className="font-heading text-2xl text-ink-default">Afirmaciones que sostiene</h2>
         {claims.length === 0 ? (
-          /* Nunca una seccion de claims vacia: con once proyectos y tres
+          /* Nunca una seccion de claims vacia: con doce proyectos y tres
              afirmaciones, este caso es mayoritario, no un borde. */
           <p className="mt-3 text-ink-balance">
             Ninguna. Este proyecto está publicado porque existe, no porque respalde una
@@ -147,8 +188,20 @@ export default async function ProyectoPage({
         )}
       </section>
 
+      <section className="mt-14">
+        <h2 className="font-heading text-2xl text-ink-default">Actividad de este proyecto</h2>
+        <p className="mt-3 text-ink-balance">
+          <strong>Sin dato publicado.</strong> La actividad por periodo vive en un archivo
+          propio del feed que el motor de evidencia no emite, así que no hay registro que
+          leer. No hay cifra, y tampoco un cero: un cero afirmaría que no hubo trabajo.
+        </p>
+      </section>
+
       <footer className="mt-16 border-t border-border-subtle pt-6 text-sm text-ink-muted">
-        <p>Publicado el {estado.feed.meta.generated_at.slice(0, 10)}.</p>
+        <p>
+          El feed que sostiene esta ficha se publicó el{" "}
+          {fechaEnProsa(estado.feed.meta.generated_at)}.
+        </p>
         <p className="mt-2">
           <Link href="/evidencia" className="text-brand-primary underline underline-offset-2">
             Cómo decido qué puedo probar

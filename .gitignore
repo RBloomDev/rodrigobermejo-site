@@ -44,3 +44,18 @@ next-env.d.ts
 
 # capturas de revision de los prototipos de marca: se regeneran con browse
 docs/brand/prototipos/_capturas/
+
+# Estado y redacciones del canal editorial. Viven FUERA de todo arbol de git, en
+# $EDITORIAL_ESTADO_DIR y $EDITORIAL_REDACCIONES_DIR, que son obligatorias y no tienen
+# valor por defecto (docs/plataforma/02-editorial.md §8.3).
+#
+# Estas dos rutas son HISTORICAS: es donde el estado estuvo versionado en este
+# repositorio publico hasta que se desrastreo, y donde un `git add` distraido lo
+# devolveria. Ignorarlas es la primera barrera; `npm run guard:estado-editorial` es la
+# que falla si alguien la salta con `git add -f`.
+#
+# Los archivos pueden seguir en disco sin rastrear hasta que se corra la migracion de
+# docs/plataforma/programacion/01-migrar-el-estado-editorial.md. Eso es correcto:
+# desrastrear no es borrar.
+/scripts/editorial/estado/
+/scripts/editorial/redacciones/

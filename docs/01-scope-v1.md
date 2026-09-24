@@ -36,7 +36,7 @@ Read-only, sobre repos allowlisted explícitamente:
 
 ### Redacción y publicación
 - Redacción antes de escribir el artefacto.
-- Publicación de `public/proof/v1/{meta,projects,claims,evidence}.json` **vía pull request** contra el repo del sitio. `activity.json` es **V1.1** (`05-feed-contract.md`); listarlo aquí era una contradicción con ese documento, resuelta el 2026-08-27 (finding ESC-04).
+- Publicación de `public/proof/v1/{meta,projects,claims,evidence,activity}.json` **vía pull request** contra el repo del sitio. `activity.json` está autorizado en V1 por `decisions/0015` §4-A; **hoy todavía no existe en el artefacto** y emitirlo requiere implementar el mecanismo en el motor.
 - `publish-diff` en el cuerpo del PR.
 - Test de denylist que bloquea el merge.
 
@@ -44,6 +44,7 @@ Read-only, sobre repos allowlisted explícitamente:
 - `/proyectos` — listado, agrupable por `kind` y `lifecycle`
 - `/proyectos/[slug]` — proyecto, claims que sostiene y evidencia adherida
 - `/evidencia` — metodología, los dos ejes, y **los límites del sistema** declarados explícitamente
+- `/actividad` — autorizada en V1 por `decisions/0015` §4-A; **todavía no está implementada**
 - Todo estático, leído del filesystem, validado con zod
 
 ---
@@ -63,7 +64,19 @@ Read-only, sobre repos allowlisted explícitamente:
 | Scoring, ranking, niveles | **Nunca.** Contradice `00-product-brief.md` |
 | Exposición pública de repos privados más allá de agregados | **Nunca.** Contradice `03-privacy-and-publication-policy.md` |
 | Rediseño del sitio o del funnel comercial | Fuera de este sistema por completo |
-| `/actividad` | V1.1 — depende de tener suficiente evidencia para que sea informativa |
+
+---
+
+### Correcciones históricas de alcance
+
+Registro original de ESC-04, conservado como histórico y sustituido por la autorización posterior:
+
+> `activity.json` es **V1.1** (`05-feed-contract.md`); listarlo aquí era una contradicción con ese documento, resuelta el 2026-08-27 (finding ESC-04).
+
+- El 2026-08-27, ESC-04 resolvió una contradicción sacando `activity.json` de V1 porque
+  `docs/05-feed-contract.md` todavía lo situaba en V1.1. La autorización A de
+  `decisions/0015`, aceptada el 2026-09-15, revierte esa corrección de calendario y lo
+  incorpora al alcance actual. Esto autoriza el artefacto; **no afirma que ya exista**.
 
 ---
 
@@ -79,7 +92,7 @@ V1 está terminado cuando **todas** se cumplen:
 6. Ninguna afirmación en el sitio se muestra sin sus dos etiquetas (procedencia y verificabilidad).
 7. Ninguna **métrica de evidencia** publicada carece de `claim_ids`. Un test lo verifica sobre el artefacto. La metadata operativa y de presentación de `meta.json` está exenta por definición, y el test debe distinguirlas explícitamente (`02-domain-and-evidence-model.md` §7).
 
-   **Alcance real de este criterio en V1, y hay que nombrarlo.** El único archivo que porta métricas de evidencia es `activity.json`, que es V1.1. Así que en V1 el test **es vacuo por construcción**: pasa porque no hay nada que comprobar. Se implementa igualmente y corre contra un artefacto de prueba con buckets, para que exista y se sepa que falla; declararlo cumplido sobre el vacío sería exactamente el defecto que este documento persigue. Se vuelve no vacuo cuando `activity.json` entre en V1.1.
+   **Alcance real de este criterio en V1, y hay que nombrarlo.** El único archivo que porta métricas de evidencia es `activity.json`, autorizado en V1 pero todavía ausente del artefacto. Por eso el test corre contra un artefacto de prueba con buckets (`tests/feed-schemas.test.ts:293`) y debe demostrar que falla ante una métrica de evidencia sin `claim_ids`; sobre el artefacto real de hoy el criterio sigue siendo vacuo. Se volverá no vacuo sobre ese artefacto cuando el motor emita `activity.json`. Declararlo cumplido sobre el vacío sería exactamente el defecto que este documento persigue.
 8. Un tercero puede tomar cualquier claim con `verifiability: third_party_public` y comprobarlo abriendo una URL. *(Decía «tier», término que no está definido en ningún documento: residuo del modelo de cinco clases planas que `decisions/0004` sustituyó por dos ejes. Corregido el 2026-08-27, finding ESC-07.)*
 9. La página `/evidencia` declara qué no puede probar el sistema, y qué parte de LEAD y TEACH queda fuera de lo instrumentable.
 10. Cero tokens en el repo del sitio. **El sitio no necesita red para consumir el feed publicado.** No se afirma "cero red en el build": `next/font` descarga las tipografías de Google en build (`04-architecture.md` §3).

@@ -37,7 +37,7 @@
 
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { DIR_REDACCIONES, esCli, leerJson, normalizarUrl } from './comun.mjs';
+import { dirRedacciones, esCli, leerJson, normalizarUrl } from './comun.mjs';
 
 const TIPOS_PERMITIDOS = new Set(['noticia', 'analisis']);
 const ESTADOS_MEXICO = new Set([
@@ -88,11 +88,17 @@ function idDesdeTitulo(titulo, huella) {
   return sufijo ? `${base}-${sufijo}` : base;
 }
 
+/**
+ * Los borradores viven en `$EDITORIAL_REDACCIONES_DIR`, fuera de todo repositorio (§8.3).
+ * La constante `DIR_REDACCIONES` que resolvia dentro del repositorio ya no existe: era
+ * una «constante sin variable», el tipo de camino que quitar un `||` no arregla (§8.6).
+ */
 export function cargarRedacciones() {
-  if (!existsSync(DIR_REDACCIONES)) return [];
-  return readdirSync(DIR_REDACCIONES)
+  const dir = dirRedacciones();
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir)
     .filter((n) => n.endsWith('.json'))
-    .map((n) => ({ archivo: n, ...leerJson(join(DIR_REDACCIONES, n), null) }));
+    .map((n) => ({ archivo: n, ...leerJson(join(dir, n), null) }));
 }
 
 /**

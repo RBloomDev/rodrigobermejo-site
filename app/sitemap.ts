@@ -45,6 +45,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 1,
     },
+    // Las dos rutas que separan identidad de comercio. Son puramente aditivas
+    // —ninguna URL existente desaparece— y sin esta entrada no serian
+    // descubribles: `docs/brand/02-arquitectura-y-urls.md` §4 lo marca como
+    // requisito del mismo commit que las crea.
+    //
+    // Con que host salen, medido y no supuesto: el artefacto construido
+    // (`.next/server/app/sitemap.xml.body`) publica 21 <loc>, las 21 sobre
+    // `https://www.rodrigobermejo.com` —el host que SI sirve—, porque el default
+    // de `lib/site.ts` ya es el canonico. `docs/brand/02` §6 y
+    // `docs/brand/05` §7 describen el estado ANTERIOR, cuando el default era el
+    // apex y las 19 URLs de entonces respondian 307: ese defecto ya no existe.
+    //
+    // Lo que sigue abierto es menor y es de Rodrigo: `NEXT_PUBLIC_SITE_URL` no
+    // esta definida en el entorno de Vercel, asi que un deployment de preview no
+    // puede describirse a si mismo. Ningun agente tiene ni debe tener acceso a
+    // ese entorno. Detalle en `lib/site.ts`, seccion «Que NO resuelve».
+    {
+      url: `${baseUrl}/colaborar`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/sobre-mi`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     {
       url: `${baseUrl}/proyectos`,
       lastModified: new Date(),

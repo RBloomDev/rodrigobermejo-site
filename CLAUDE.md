@@ -21,12 +21,26 @@ El motor de evidencia **no vive aquí**. Este repo solo lee y renderiza.
 npm run dev          # desarrollo
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint, cero warnings tolerados
-npm test             # node --test, 73 tests, sin dependencias y sin red
+npm test             # node --test, 273 tests, sin dependencias y sin red
 npm run build        # build de producción
 npm run guard:funnel # el funnel no alcanza el feed (cierre transitivo de imports)
 
+npm run guard:estado-editorial  # git no rastrea el estado del canal editorial
+npm run guard:canal             # canal determinista, sin red y sin inferencia
+
 PROOF_FEED_DIR=<ruta> npm run build   # construir contra un feed que no sea public/proof/v1/
 ```
+
+El canal editorial necesita **`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`**, las dos
+obligatorias y **sin valor por defecto**: sin ellas aborta y no escribe un byte
+(`docs/plataforma/02-editorial.md` §8.3). Para desarrollar o probar, apúntalas a un directorio
+propio fuera de git — igual que `PROOF_FEED_DIR` con el feed. No inventes un default dentro del
+repo: así es exactamente como el estado del canal acabó publicado aquí.
+
+«Fuera de git» tampoco es una recomendación: el canal resuelve la ruta al arrancar y **aborta**
+si cae dentro de un árbol de trabajo de git, sea este repositorio u otro. Apuntarlas a
+`scripts/editorial/estado` para salir del paso no funciona, y es a propósito — con el
+`.gitignore` nuevo ese atajo habría vuelto a escribir dentro del repo sin aparecer en `git status`.
 
 ### Correr un solo test
 

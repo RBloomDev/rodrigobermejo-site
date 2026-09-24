@@ -40,8 +40,26 @@ const FUNNEL_ENTRYPOINTS = [
   // Ojo con lo que esto NO cambia: `app/proyectos` y `app/evidencia` siguen
   // siendo DESTINOS PROHIBIDOS, no entradas. Anadirlos como entradas seria
   // conceptualmente al reves --- son las rutas que SI pueden leer el feed.
+  //
+  // `app/colaborar/page.tsx` entra al mover el funnel entero ahi
+  // (docs/brand/02-arquitectura-y-urls.md §1 y §3). Es tarea obligatoria del
+  // mismo commit que lo mueve: esta lista fija NOMBRES DE ARCHIVO LITERALES y
+  // no se entera sola de que la cadena comercial cambio de casa.
+  //
+  // `app/page.tsx` SE QUEDA, aunque ya no monte el funnel. Sacarla porque "ya
+  // no es el funnel" quitaria la defensa justo cuando empieza a hacer falta:
+  // la portada nueva es copy editorial estatico y sigue siendo el archivo
+  // donde mas tienta importar el feed para "ensenar unos proyectos".
+  //
+  // `app/sobre-mi/page.tsx` NO entra, y es una decision medida, no un olvido.
+  // §3 pide anadirla "si termina montando cualquier componente del funnel"; no
+  // monta ninguno --- es copy editorial de `docs/brand/03` §5 y dos enlaces ---
+  // asi que no es una entrada del funnel comercial y meterla aqui diluiria lo
+  // que esta lista significa. Que tampoco lea el feed lo fija
+  // `tests/portada-sin-feed.test.ts` sobre el cierre de imports de la ruta.
   "app/page.tsx",
   "app/layout.tsx",
+  "app/colaborar/page.tsx",
   "components/Hero.tsx",
   "components/Offers.tsx",
   "components/FinalCTA.tsx",

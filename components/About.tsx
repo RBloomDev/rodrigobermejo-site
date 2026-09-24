@@ -38,8 +38,10 @@ export default function About() {
                 implementados pueden paralizar una empresa en lugar de
                 impulsarla.
               </p>
+              {/* Errata viva corregida por `docs/brand/03-copy-deck.md` §4:
+                * decía «entre, diagnostico». Es una errata, no rediseño. */}
               <p>
-                Mi enfoque es quirúrgico: entre, diagnostico, construyo y opero
+                Mi enfoque es quirúrgico: entro, diagnostico, construyo y opero
                 el sistema para que tú te enfoques en vender, atender y crecer.
               </p>
               <p>

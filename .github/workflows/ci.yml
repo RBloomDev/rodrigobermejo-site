@@ -119,3 +119,29 @@ jobs:
       # resolubles estaticamente, ni acoplamiento por copia de codigo.
       - name: Funnel decoupled from evidence feed (transitive imports)
         run: npm run guard:funnel
+
+      # docs/plataforma/02-editorial.md §8.3 y §8.6: el estado del canal editorial vive
+      # FUERA de todo arbol de git. El 2026-09-17 habia cinco archivos de estado
+      # versionados en este repositorio PUBLICO, y los seis gates de entonces pasaban
+      # con ellos dentro.
+      #
+      # GARANTIZA: que el indice de git no rastrea nada bajo
+      # scripts/editorial/estado/** ni scripts/editorial/redacciones/**. Un `git add`
+      # distraido, o un `git add -f` que salte el .gitignore, ponen esto en rojo.
+      # NO GARANTIZA: que el estado no siga en el historico ya publicado, ni que no
+      # exista en disco sin rastrear (que es lo normal antes de la migracion).
+      - name: Editorial state is not versioned (git index)
+        run: npm run guard:estado-editorial
+
+      # docs/plataforma/02-editorial.md §5.2 y §8.1: la deduplicacion y la maquina de
+      # estados. Corre SIN RED y SIN INFERENCIA --- redactor falso ---, asi que es
+      # determinista y puede correr en cada PR sin coste ni salida variable.
+      #
+      # GARANTIZA: segunda corrida sobre las mismas entradas = 0 nuevos; una corrida
+      # interrumpida por SIGKILL deja la entrada pendiente y la siguiente la recupera sin
+      # duplicar; tres fallos la descartan con motivo escrito.
+      # NO GARANTIZA: nada sobre el comportamiento con inferencia real, que es otra
+      # demostracion y no cabe en un gate determinista.
+      # Su prueba negativa (--sin-deduplicacion debe ponerlo rojo) corre en `npm test`.
+      - name: Editorial channel is deterministic (no network, no inference)
+        run: npm run guard:canal

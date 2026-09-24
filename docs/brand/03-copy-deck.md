@@ -1,8 +1,12 @@
 # 03 — Copy deck
 
-> **Estado: BORRADOR — Fase 1, en revisión.** Este documento no es autoridad sobre nada
-> mientras `docs/decisions/0014-el-sitio-tiene-spec-de-marca-propia.md` siga en PROPUESTA.
-> Nada de lo que aquí se describe está implementado ni publicado.
+> **Estado: Autoridad desde 2026-09-15 (ADR 0014 ACEPTADA).** Gobierna identidad,
+> posicionamiento, tipografía, color, arquitectura de información y copy público del sitio.
+> **Cláusula de precedencia:** en `/evidencia`, `/proyectos`, `/proyectos/[slug]` y
+> `components/proof/**`, `docs/05-feed-contract.md` § Contrato de presentación y
+> `docs/02-domain-and-evidence-model.md` §6–§7
+> ganan sobre la marca, y la divergencia es **FAIL, no deuda**.
+> Esta autoridad no afirma que lo aquí descrito ya esté implementado ni publicado.
 
 > Autoridad única del texto del sitio. Si un componente dice algo distinto, el
 > componente está mal. Cubre titulares, entradillas, navegación, CTAs, microcopy,
@@ -246,6 +250,10 @@ Tampoco cambian: los ocho valores de los dos ejes, las tres filas de alcance, lo
 motivos declarados de `AlcanceDeLaAfirmacion.tsx`, ni la línea de pie con la fecha
 absoluta y los conteos dentro de una oración.
 
+Excepción registrada el 2026-09-23: el motivo de `decido-arquitectura` en `AlcanceDeLaAfirmacion.tsx` se reescribió para cumplir la prohibición de palabras de promesa de futuro de `docs/05-feed-contract.md` §Contrato de presentación, que prevalece sobre este deck por ADR 0014.
+
+Excepción registrada el 2026-09-23 (F-PRY-17): el copy de `/proyectos` y `/proyectos/[slug]` se reescribió bajo la autorización F de ADR 0015; el pie de la ficha pasó a «El feed que sostiene esta ficha se publicó el {fecha en prosa}». Esta excepción cubre el contenido de las páginas, no sustituye los metadatos normativos de §7.
+
 **Lo único que cambia es la envoltura**: jerarquía visual, y que estas rutas por fin
 monten navegación y pie —hoy no lo hacen, y se entra en ellas sin forma de volver.
 
@@ -299,15 +307,28 @@ vez.
 ## 9. Contacto
 
 No hay formulario de contacto y no se añade. La vía es la que ya existe: la cita de
-Calendly, hoy repetida a mano en **siete** lugares del código y que pasa a
-`lib/site-config.ts`.
+Calendly, hoy repetida a mano y que pasa a `lib/site-config.ts`. Dónde vive hoy, contado
+sobre el árbol el 2026-09-21: `components/Hero.tsx`, `components/HowItWorks.tsx`,
+`components/Offers.tsx` **dos veces** y `components/FinalCTA.tsx` —cuatro archivos, cinco
+apariciones—. Va enumerado y no como numeral a propósito: el numeral anterior decía
+«siete» y dejó de ser cierto en cuanto el funnel se movió a `/colaborar` y `Navbar`,
+`Footer` y `MenuMovil` perdieron su botón, sin que nada se pusiera rojo. Una lista de
+archivos se desactualiza igual, pero se ve.
 
 | Dónde | Texto |
 |---|---|
 | Navegación | Trabajar conmigo |
 | `/colaborar`, CTA principal | Agendar diagnóstico |
 | `/colaborar`, pie del CTA | Respuesta en menos de 24 horas hábiles. |
-| Pie de página | Agendar |
+
+**La fila «Pie de página | Agendar» se retiró el 2026-09-21, y no es un olvido.**
+Esta tabla asigna *qué texto* lleva cada aparición; *qué apariciones existen* lo manda
+`docs/brand/02-arquitectura-y-urls.md`, y su §2 (:184-186) mueve el botón de Calendly de
+`Navbar` **y de `Footer`** a `/colaborar` —«la portada de identidad no lleva CTA de agenda
+en el cromo»—. Los dos documentos estuvieron en contradicción desde que se aceptaron, y
+`CLAUDE.md` clasifica eso como FAIL, no como deuda: Rodrigo lo resolvió a favor de `02`,
+porque la fila describía una ubicación que la arquitectura del funnel ya había retirado.
+Las otras tres filas quedan intactas.
 
 «Respuesta en menos de 24 horas hábiles» se conserva del sitio actual. **Es un compromiso
 de servicio, no copy de diseño**: si dejara de ser cierto, lo cambia Rodrigo, no el
@@ -343,7 +364,12 @@ que el prototipo se equivocó.
 
 ## 10. Lo que este documento deja abierto para Rodrigo
 
-1. **El titular**: «Formo talento» o «Doy clase». Se decide viendo las dos maquetadas.
+1. ~~**El titular**: «Formo talento» o «Doy clase».~~ **DECIDIDO el 2026-09-21: «Formo
+   talento».** Rodrigo eligió viendo las dos maquetadas, como pedía este punto. El titular
+   queda «Dirijo tecnología. Construyo sistemas. Formo talento.», que es la propuesta de §1
+   y la que concuerda con el verbo «Formo» de la tabla de las tres dimensiones de §2. Vive
+   en `app/page.tsx`. **No se reabre**: cambiarlo vuelve a ser una decisión de Rodrigo, no
+   una variante a maquetar.
 2. **El descriptor corto** que va en las bios sociales y en `Person.jobTitle`. Hoy
    circulan cuatro versiones distintas —«Consultor Técnico», «Implementador técnico»,
    «.NET and SharePoint», «Technical Consultant»— y hay que quedarse con una. La

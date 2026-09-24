@@ -1,8 +1,12 @@
 # 05 — Identidad declarada: SEO y superficie para LLMs
 
-> **Estado: BORRADOR — Fase 1, en revisión.** Este documento no es autoridad sobre nada
-> mientras `docs/decisions/0014-el-sitio-tiene-spec-de-marca-propia.md` siga en PROPUESTA.
-> Nada de lo que aquí se describe está implementado ni publicado.
+> **Estado: Autoridad desde 2026-09-15 (ADR 0014 ACEPTADA).** Gobierna identidad,
+> posicionamiento, tipografía, color, arquitectura de información y copy público del sitio.
+> **Cláusula de precedencia:** en `/evidencia`, `/proyectos`, `/proyectos/[slug]` y
+> `components/proof/**`, `docs/05-feed-contract.md` § Contrato de presentación y
+> `docs/02-domain-and-evidence-model.md` §6–§7
+> ganan sobre la marca, y la divergencia es **FAIL, no deuda**.
+> Esta autoridad no afirma que lo aquí descrito ya esté implementado ni publicado.
 
 > Documento de diseño de marca. Es **subordinado** a `docs/03-privacy-and-publication-policy.md` y a `docs/02-domain-and-evidence-model.md`: donde este documento y una regla de publicación discrepen, manda la regla de publicación.
 > Todo lo que aquí se llama «medido» se midió contra producción el 2026-09-12 con `curl` sobre `https://www.rodrigobermejo.com`, o leyendo el archivo del repo que se cita con su línea. Nada sale de memoria.
@@ -471,7 +475,26 @@ La 3 es la más peligrosa y conviene decir por qué aquí: los 3 claims del feed
 
 ## 5. `public/llms.txt` reescrito
 
-Contenido completo propuesto, listo para copiar y sustituir el archivo actual:
+Contenido completo propuesto, listo para copiar y sustituir el archivo actual.
+
+**Implementado el 2026-09-21 en `public/llms.txt`, con una corrección medida.** El
+bloque de abajo apuntaba los planes y precios a `https://www.rodrigobermejo.com/#ofertas`,
+y esa URL describe la arquitectura ANTERIOR: el funnel comercial —`Offers` incluido, con
+su `id="ofertas"`— se trasladó íntegro a `/colaborar`
+(`docs/brand/02-arquitectura-y-urls.md` §1). Un fragmento de URL no se puede redirigir
+desde el servidor (§4 de ese mismo documento), así que `/#ofertas` ya no lleva a ninguna
+parte. La URL vigente, y la que está escrita en el archivo, es
+`https://www.rodrigobermejo.com/colaborar#ofertas`. El reparto de autoridad es el de
+siempre: el texto lo manda este documento, los destinos los manda `02`.
+
+La afirmación «todas las afirmaciones del feed son `declared`/`unverifiable`» se midió
+antes de publicarla, no se supuso: `public/proof/v1/claims.json` tiene hoy 3 afirmaciones
+y las 3 llevan `provenance: "declared"` y `verifiability: "unverifiable"`. Si el motor
+publica una que no lo sea, esta frase deja de ser cierta y hay que reescribirla.
+
+El «punto a confirmar antes de publicar» del final de esta sección —«CTO en Inadaptados»
+no declarado en el repo— quedó resuelto por `docs/brand/03-copy-deck.md` §2, ya aceptado:
+la portada dice «Soy CTO en Inadaptados» y `app/layout.tsx` lo emite en sus metadatos.
 
 ```markdown
 # Rodrigo Bermejo
@@ -499,8 +522,8 @@ más importante.
 Consultoría y operación de sistemas de automatización para negocios, bajo un
 modelo de servicio gestionado: yo construyo el sistema, lo alojo y lo opero.
 Los planes, alcances y precios vigentes están en
-https://www.rodrigobermejo.com/#ofertas — esa página es la fuente, no este
-archivo.
+https://www.rodrigobermejo.com/colaborar#ofertas — esa página es la fuente, no
+este archivo.
 
 ## Temas sobre los que escribo y trabajo
 
@@ -565,7 +588,7 @@ Lo que cambia respecto del archivo actual, y por qué:
 | Del inglés al español | El sitio es `es_MX` (`app/layout.tsx:58`). Un archivo de identidad en otro idioma que el sitio es una cuarta declaración que tampoco coincide. |
 | Tres dimensiones en vez de una | `docs/00-product-brief.md` §«Las tres dimensiones»: BUILD, LEAD y TEACH no son excluyentes. |
 | `www` en todas las URLs | El ápex responde 307 (§1.2). |
-| Fuera las tarifas | «One-time Setup Fee / Monthly Retainer» convierte la ficha de identidad en ficha comercial, y duplica un dato que cambia sin avisarle a este archivo. Se apunta a `#ofertas`, que es la fuente. |
+| Fuera las tarifas | «One-time Setup Fee / Monthly Retainer» convierte la ficha de identidad en ficha comercial, y duplica un dato que cambia sin avisarle a este archivo. Se apunta a `/colaborar#ofertas`, que es la fuente. |
 | El feed declarado como fuente citable | Es el activo diferencial del sitio, y hoy `llms.txt` no lo menciona. |
 | La advertencia de procedencia | `docs/02` §6: *«nunca se presenta lo declarable con la estética de lo verificable»*. Publicar un feed citable sin decir que sus afirmaciones son `declared`/`unverifiable` es exactamente eso, con el agravante de que aquí el lector es una máquina que no va a inferir el matiz. |
 | Instrucción de citación sustituida | Ver §2. La actual fija un descriptor único y una URL que redirige. |
