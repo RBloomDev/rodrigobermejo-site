@@ -16,8 +16,14 @@
  *                                                                     `pendiente_verificacion`
  *   3. REINTENTO            fallo una etapa, se puede reintentar   -> `fallida_reintentable`
  *   4. BORRADOR TERMINADO   hay pieza; reprocesar no duplica       -> `terminada`
+ *   5. DECISION HUMANA      un humano autorizo publicar            -> `autorizada`
  *
- * Y un quinto estado para lo que no debe volver: `descartada`.
+ * Y un sexto estado para lo que no debe volver: `descartada`.
+ *
+ * `terminada` y `autorizada` NO son lo mismo y la distancia entre las dos es el producto:
+ * `terminada` es «hay borrador verificado, sin publicar»; `autorizada` es «un humano
+ * decidio publicarlo». Solo el segundo escribe en `content/noticias/`
+ * (`docs/plataforma/02-editorial.md` §8.1, §8.2).
  *
  * ================================ TABLA DE TRANSICIONES ================================
  *
@@ -39,7 +45,8 @@
  * | fallida_reintentable   | fallo            | fallida_reintentable   | vuelve a fallar; `intentos` sube en uno                   |
  * | fallida_reintentable   | fallo (agotado)  | descartada             | `intentos` alcanzo MAX_INTENTOS                           |
  * | fallida_reintentable   | descartada       | descartada             | decision explicita                                        |
- * | terminada              | (ninguno)        | terminada              | TERMINAL. Reprocesar una terminada no hace nada.          |
+ * | terminada              | autorizada       | autorizada             | un humano autorizo la publicacion (§8.2). Unica salida    |
+ * | autorizada             | (ninguno)        | autorizada             | TERMINAL. Una correccion posterior va en `correcciones[]` |
  * | descartada             | reabierta        | detectada              | unica salida, y es explicita: `reabrir(id, motivo)`       |
  *
  * Cualquier par (estado, evento) que no aparezca en esta tabla es ilegal y `aplicar()`
@@ -102,6 +109,7 @@ export const ESTADOS = [
   'fallida_reintentable',
   'descartada',
   'terminada',
+  'autorizada',
 ];
 
 /**
@@ -132,7 +140,11 @@ export const TRANSICIONES = Object.freeze({
     fallo: 'fallida_reintentable',
     descartada: 'descartada',
   },
-  terminada: {},
+  // `terminada` gana EXACTAMENTE una salida, y ninguna otra (§8.2). `expediente_listo`,
+  // `redactada` y `fallo` siguen siendo ilegales desde aqui: autorizar no redacta ni
+  // reverifica, y una pieza publicada no vuelve a la cola.
+  terminada: { autorizada: 'autorizada' },
+  autorizada: {},
   descartada: { reabierta: 'detectada' },
 });
 
@@ -281,6 +293,13 @@ function nuevaEntrada(id, datos, ts) {
     redaccion_id: null,
     modelo: null,
     pieza_id: null,
+    // La decision humana de §8.8. `null` mientras nadie haya autorizado, que es el estado
+    // correcto de una entrada sobre la que no se ha decidido nada.
+    autorizado_por: null,
+    autorizado_en: null,
+    version_borrador: null,
+    pendientes_aceptados: null,
+    acepta_limites: null,
     detectada_en: ts,
     actualizada_en: ts,
   };
@@ -337,6 +356,16 @@ export function aplicar(entrada, evento) {
     sig.pieza_id = evento.pieza_id ?? null;
     sig.etapa_fallida = null;
     sig.ultimo_error = null;
+  }
+  if (evento.evento === 'autorizada') {
+    // Los cinco campos del registro de §8.8, tal cual llegaron. `aplicar()` es pura y no
+    // valida: quien emite el evento es `marcarAutorizada()`, y ahi estan las exigencias.
+    sig.pieza_id = evento.pieza_id ?? sig.pieza_id;
+    sig.autorizado_por = evento.autorizado_por ?? null;
+    sig.autorizado_en = evento.autorizado_en ?? null;
+    sig.version_borrador = evento.version_borrador ?? null;
+    sig.pendientes_aceptados = evento.pendientes_aceptados ?? null;
+    sig.acepta_limites = evento.acepta_limites ?? null;
   }
   if (evento.evento === 'expediente_listo') sig.etapa_fallida = null;
   if (evento.evento === 'descartada') sig.motivo_descarte = evento.motivo ?? 'sin motivo declarado';
@@ -513,6 +542,50 @@ export function marcarVerificada(id, { pieza_id = null, corrida = null } = {}) {
 }
 
 /**
+ * Un humano autorizo la publicacion. `terminada -> autorizada`, la unica transicion que
+ * acompaña a una escritura en `content/noticias/` (§8.2).
+ *
+ * **Sin el nombre del humano no se emite, y esa negativa es el mecanismo entero.** Un
+ * `autorizado_por: "agente"` no existe: si el canal pudiera emitir este evento solo, esto
+ * seria autopublicacion con otro nombre (§1, §8.2). Los otros cuatro campos —cuando, sobre
+ * que version exacta, que pendientes se aceptan y si se aceptan limites— se exigen por la
+ * misma razon: cuatro datos que faltan convierten el registro en una firma en blanco
+ * (§8.8).
+ *
+ * No valida el contenido de los campos contra el borrador —eso lo hace `autorizar.mjs`
+ * antes de escribir nada—; exige que esten, que es lo que la maquina de estados puede
+ * sostener sola.
+ *
+ * @param {string} id  entrada de la bitacora, no el id de la pieza
+ * @param {{pieza_id: string, autorizado_por: string, autorizado_en: string,
+ *   version_borrador: string, pendientes_aceptados: string[], acepta_limites: boolean,
+ *   corrida?: string}} registro
+ * @returns {object} la entrada tras la transicion
+ */
+export function marcarAutorizada(id, registro = {}) {
+  const faltantes = ['pieza_id', 'autorizado_por', 'autorizado_en', 'version_borrador']
+    .filter((c) => typeof registro[c] !== 'string' || registro[c].trim() === '');
+  if (!Array.isArray(registro.pendientes_aceptados)) faltantes.push('pendientes_aceptados');
+  if (typeof registro.acepta_limites !== 'boolean') faltantes.push('acepta_limites');
+  if (faltantes.length) {
+    throw new Error(
+      `marcarAutorizada: falta ${faltantes.join(', ')}. Un registro incompleto no es un `
+      + 'registro: es una firma en blanco (docs/plataforma/02-editorial.md §8.8)',
+    );
+  }
+  return transicionar(id, {
+    evento: 'autorizada',
+    pieza_id: registro.pieza_id,
+    autorizado_por: registro.autorizado_por,
+    autorizado_en: registro.autorizado_en,
+    version_borrador: registro.version_borrador,
+    pendientes_aceptados: registro.pendientes_aceptados,
+    acepta_limites: registro.acepta_limites,
+    corrida: registro.corrida ?? null,
+  });
+}
+
+/**
  * Una etapa fallo. La entrada queda **reintentable**, no perdida: la proxima corrida la
  * vuelve a tomar. Al llegar a `MAX_INTENTOS` cae a `descartada`, y el log dice por que.
  *
@@ -587,6 +660,26 @@ export function porUrlCanonica(url) {
   return id ? entradas.get(id) : null;
 }
 
+/**
+ * La entrada cuya pieza tiene ese id. Es la puerta que `autorizar.mjs` necesita: el
+ * comando recibe el id de la PIEZA —el kebab-case de §3— y la bitacora indexa por el id
+ * del HECHO, que es otra cosa.
+ *
+ * Mira `pieza_id` y tambien `redaccion_id`, y no es laxitud: `pieza_id` solo se escribe al
+ * verificar, asi que buscando solo por el una entrada a medio camino seria invisible y
+ * `autorizar` diria «no existe» donde la verdad es «todavia no esta verificada». Decir el
+ * estado real es justo lo que §8.4 paso 1 exige del mensaje.
+ *
+ * @param {string} id  id de la pieza (kebab-case de §3)
+ * @returns {object|null}
+ */
+export function porIdDePieza(id) {
+  const entradas = [...plegar().entradas.values()];
+  return entradas.find((e) => e.pieza_id === id)
+    ?? entradas.find((e) => e.redaccion_id === id)
+    ?? null;
+}
+
 /** @returns {object|null} la entrada con esa huella (titulo + dominio del medio) */
 export function porHuellaDeEntrada(huella) {
   const { entradas, porHuella } = plegar();
@@ -623,7 +716,9 @@ export function conciliarConCorpus(piezas, { corrida = null } = {}) {
     const id = porHuella.get(p.huella);
     if (!id) continue;
     const e = entradas.get(id);
-    if (!e || e.estado === 'terminada' || e.estado === 'descartada') continue;
+    // `autorizada` es terminal y esta AGUAS ABAJO de `terminada`: conciliar una ya
+    // autorizada intentaria `autorizada --redactada--> (nada)` y lanzaria.
+    if (!e || ['terminada', 'autorizada', 'descartada'].includes(e.estado)) continue;
     // Se llega a `terminada` por el camino legal de la tabla, no saltandoselo.
     if (e.estado === 'detectada') emitir({ id, evento: 'expediente_listo', corrida });
     if (e.estado !== 'pendiente_verificacion') {

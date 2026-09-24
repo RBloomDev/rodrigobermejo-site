@@ -35,8 +35,10 @@ Declarar variables de entorno no proporciona ninguna de las dos: solo dice a dó
 no la propone.** Este repositorio es público: versionar la bitácora y las redacciones publica
 trabajo que todavía no es una decisión, y lo hace en silencio, sin que nadie autorice nada.
 La política es que el árbol público lo escriba **únicamente** el comando de autorización, y
-solo en `content/noticias/` (`02-editorial.md` §8.3). Hoy no se cumple: ese comando no existe
-y `content/noticias/` tampoco —ver el estado medido más abajo—, y cerrarlo es T-E1.
+solo en `content/noticias/` (`02-editorial.md` §8.3). **El comando existe desde el
+2026-09-24** —`scripts/editorial/autorizar.mjs`, §8.4 y §8.8— y es la única ruta al árbol
+público. `content/noticias/` sigue sin existir porque nadie ha autorizado nada todavía, que
+es el estado correcto de un corpus vacío, no un pendiente.
 
 La propuesta no requiere contratar un servicio para *ejecutar*. Sí requiere resolver **dónde
 persiste el estado con respaldo** cuando el canal deje de correr en la máquina de Rodrigo.
@@ -131,8 +133,9 @@ escribe `autorizar` en `content/noticias/`.
 **Lo que T-E1 cerró de esa fila y lo que no.** T-E1 quitó el respaldo al repositorio:
 `rutaPiezas()` devuelve `null` sin la variable y la corrida no escribe corpus en ningún
 sitio, así que el `||` ya no existe. La **eliminación** de la función y la variable queda
-para la tarea que parta el comando en `generar`/`autorizar`, porque necesita
-`content/noticias/`, que no existe. Está declarado así en `02-editorial.md` §8.6, al cierre
+para la tarea que parta `ejecutar` en `generar` y `verificar`: añadir `autorizar` (2026-09-24)
+no la toca, porque el corpus intermedio que `rutaPiezas()` resuelve sigue siendo el que esa
+corrida escribe. Está declarado así en `02-editorial.md` §8.6, al cierre
 de la sección, y en el comentario de `ejecutar.mjs` sobre la propia función.
 
 Hay además una compuerta que no estaba en la lista: `auditoria-exposicion.mjs`. Este

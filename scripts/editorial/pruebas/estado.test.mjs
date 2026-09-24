@@ -43,7 +43,11 @@ test('la tabla de transiciones solo apunta a estados que existen', () => {
       assert.ok(ESTADOS.includes(hacia), `${desde} apunta a un estado inexistente: ${hacia}`);
     }
   }
-  assert.deepEqual(TRANSICIONES.terminada, {}, '`terminada` es terminal');
+  // §8.2: `terminada` deja de ser terminal y gana EXACTAMENTE una salida. El terminal
+  // ahora es `autorizada`, y ninguna otra transicion se vuelve legal desde `terminada`.
+  assert.deepEqual(TRANSICIONES.terminada, { autorizada: 'autorizada' },
+    'de `terminada` solo se sale autorizando, y autorizar es una decision humana');
+  assert.deepEqual(TRANSICIONES.autorizada, {}, '`autorizada` es terminal');
   assert.deepEqual(Object.keys(TRANSICIONES.descartada), ['reabierta'],
     'de `descartada` solo se sale reabriendo, y es explicito');
 });
@@ -58,7 +62,7 @@ test('el camino feliz recorre los cuatro estados en orden', () => {
   assert.equal(marcarVerificada(id, { pieza_id: 'p1' }).estado, 'terminada');
   assert.deepEqual(instantanea(), {
     detectada: 0, pendiente_redaccion: 0, pendiente_verificacion: 0,
-    fallida_reintentable: 0, descartada: 0, terminada: 1,
+    fallida_reintentable: 0, descartada: 0, terminada: 1, autorizada: 0,
   });
 });
 
