@@ -711,6 +711,28 @@ queda para **la tarea que parta el comando en `generar`/`autorizar`**. La fila 5
 (`reverificar-corpus.mjs`) sí está cerrada: resuelve desde `$EDITORIAL_REDACCIONES_DIR` y
 aborta sin ella, que es la primera de las dos salidas que esa fila autoriza.
 
+**Y mientras las dos filas coexistan, los dos comandos resuelven corpus por caminos
+distintos.** `ejecutar.mjs` escribe en `$EDITORIAL_PIEZAS` —una ruta de archivo completa, que
+no se deriva de nada—; `reverificar-corpus.mjs` lee y resella
+`$EDITORIAL_REDACCIONES_DIR/piezas.json`. Para que operen sobre **el mismo** corpus,
+`EDITORIAL_PIEZAS` tiene que apuntar a `$EDITORIAL_REDACCIONES_DIR/piezas.json`; apuntada a
+otro sitio son dos corpus y `reverificar` resella uno que `ejecutar` nunca escribió, sin que
+ninguno de los dos avise. **No se deriva sola a propósito**: derivarla sería fabricar otra
+vez el valor por defecto que esta tarea existe para quitar, y la fila 2 no pide renombrar la
+variable sino eliminarla. Queda declarado en la cabecera de los dos comandos, y lo pone quien
+los corre.
+
+**Un estado terminal solo se escribe con el hecho ya en disco.** `terminada` afirma, literal,
+que la pieza entró al corpus, y §8.1 lo hace TERMINAL: una entrada marcada así no vuelve a la
+cola de deduplicación nunca. Por eso `ejecutar.mjs` la marca **releyendo el corpus
+persistido**, no el resultado del upsert en memoria: sin `EDITORIAL_PIEZAS` no se escribe
+corpus en ningún sitio, y marcar `terminada` ahí cerraba para siempre una pieza que nadie
+guardó. Lo que no se guardó se queda donde estaba —`pendiente_verificacion`— y la corrida
+siguiente lo recupera. **No se registra como fallo**: no tener corpus configurado no es culpa
+de la entrada, y contarlo como intento la descartaría a las tres corridas, que es cambiar una
+pérdida silenciosa por otra. La prueba es `pruebas/canal.test.mjs` caso 6, con su receta de
+cómo ponerla roja.
+
 ### 8.7 La frontera con la evidencia, que la autorización no mueve
 
 Autorizar una pieza la vuelve **contenido publicado**; no la vuelve evidencia. Como §8.4,

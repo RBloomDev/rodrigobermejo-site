@@ -10,7 +10,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -371,4 +371,74 @@ test('5. dos noticias distintas que citan un mismo documento no se descartan por
   //   for (const f of [p.fuente_primaria, ...(p.fuentes ?? [])]) urlsVistas.add(f.url)
   // Comprobado: 5b falla con `nuevos.length` 0 en vez de 2 — las dos entradas se
   // descartan en silencio por compartir una referencia con una pieza publicada.
+});
+
+// =====================================================================================
+test('6. una pieza que no se guardo en el corpus NO se marca terminada, y se recupera', async (t) => {
+  const entorno = nuevoEntorno('p6');
+
+  // Sin corpus configurado. Es la corrida real de quien pone las dos variables
+  // obligatorias y no `EDITORIAL_PIEZAS`: se redacta, se verifica, y no se escribe nada.
+  const piezas = entorno.piezas;
+  delete process.env.EDITORIAL_PIEZAS;
+
+  const noticia = item({
+    titulo: 'Un consejo publica su guia de evaluacion de tutores',
+    url: 'https://medio-uno.mx/guia-evaluacion-tutores',
+  });
+  const redacciones = new Map([[noticia.url_canonica, borrador({
+    id: 'guia-evaluacion-tutores',
+    titulo: 'Un consejo publica su guia de evaluacion de tutores',
+    fuentes: [
+      referencia({ titulo: 'Guia', medio: 'Consejo', url: 'https://consejo.example/guia' }),
+      referencia({
+        titulo: 'Un consejo publica su guia de evaluacion de tutores',
+        medio: 'Medio Uno',
+        url: noticia.url_canonica,
+        tipo: 'secundaria',
+      }),
+    ],
+  })]]);
+
+  await t.test('6a. sin corpus donde guardarla, la entrada queda PENDIENTE', async () => {
+    const r = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+
+    // La pieza se verifico: lo que falta no es el trabajo, es donde guardarlo.
+    assert.equal(r.sinCorpus.length, 1, 'la corrida tiene que decir que verifico una pieza y no la guardo');
+    assert.equal(r.sinCorpus[0].pieza_id, 'guia-evaluacion-tutores');
+    // Se mide el DISCO, no el conteo que devuelve la corrida: `insertadas` cuenta el
+    // upsert en memoria, y lo que este defecto tiene que distinguir es si algo quedo
+    // guardado de verdad.
+    assert.equal(existsSync(piezas), false, 'sin EDITORIAL_PIEZAS no se escribe corpus en ningun sitio');
+
+    const tras1 = porUrlCanonica(noticia.url_canonica);
+    assert.notEqual(
+      tras1.estado, 'terminada',
+      '`terminada` es TERMINAL y afirma que la pieza entro al corpus: sin corpus escrito seria declarar hecho lo que no se hizo',
+    );
+    assert.equal(tras1.estado, 'pendiente_verificacion');
+    assert.equal(tras1.pieza_id, null, 'no hay pieza_id que registrar: ninguna pieza quedo guardada');
+  });
+
+  await t.test('6b. al configurar el corpus, la corrida siguiente la recupera y la cierra', async () => {
+    process.env.EDITORIAL_PIEZAS = piezas;
+
+    const r = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+
+    assert.equal(r.sinCorpus.length, 0);
+    assert.equal(r.insertadas.length, 1, 'la entrada recuperada tiene que llegar al corpus esta vez');
+    assert.equal(corpus().length, 1, 'y sin duplicar: una pieza, no dos');
+
+    const tras2 = porUrlCanonica(noticia.url_canonica);
+    assert.equal(tras2.estado, 'terminada', 'ahora si existe la pieza en el corpus, y el estado lo puede afirmar');
+    assert.equal(tras2.pieza_id, 'guia-evaluacion-tutores');
+  });
+
+  // COMO SE PONE ROJA: en `ejecutar.mjs`, quitar el filtro por `idsEnDisco` y volver a
+  // llamar a `marcarVerificada()` para toda `verificadas`, que es como estaba:
+  //   for (const { entrada, pieza } of verificadas) marcarVerificada(entrada.id, {...})
+  // Comprobado: 6a falla en la primera asercion —`r.sinCorpus.length` es 0 porque la lista
+  // deja de existir— y, con esa linea quitada tambien, en `tras1.estado`, que pasa a ser
+  // `terminada` con el corpus vacio. 6b queda entonces sin nada que recuperar: la entrada
+  // ya esta en un estado TERMINAL y la corrida siguiente no la vuelve a mirar.
 });

@@ -21,6 +21,14 @@
  * estuvieran bien puestas. No se resuelve por `rutaPiezas()` a proposito: esa funcion se
  * elimina cuando el comando se parta en `generar`/`autorizar` (§8.6 fila 2).
  *
+ * POR ESO MISMO, ESTA RUTA Y LA DE `ejecutar.mjs` PUEDEN SER DOS CORPUS DISTINTOS. Aquel
+ * escribe en `$EDITORIAL_PIEZAS`, que es una ruta de archivo completa y no se deriva de
+ * nada. **Para que los dos comandos operen sobre el mismo corpus, `EDITORIAL_PIEZAS` tiene
+ * que apuntar a `$EDITORIAL_REDACCIONES_DIR/piezas.json`**, que es la ruta que este resuelve.
+ * Apuntada a otro sitio, este comando resella un corpus que `ejecutar` nunca escribio y
+ * ninguno de los dos avisa. No se unifica derivandola aqui porque eso seria volver a
+ * fabricar un valor por defecto; se declara, y la pone quien corre los comandos.
+ *
  * Uso: node scripts/editorial/reverificar-corpus.mjs [--seco]
  *   --seco  solo informa, no escribe.
  *

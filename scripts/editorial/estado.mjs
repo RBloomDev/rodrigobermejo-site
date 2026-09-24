@@ -496,6 +496,14 @@ export function pendientesDeVerificacion({ limite = Infinity } = {}) {
 /**
  * La pieza paso §5.4 y entro al corpus.
  * `pendiente_verificacion | fallida_reintentable -> terminada`.
+ *
+ * QUIEN LLAMA A ESTO SE COMPROMETE A QUE LA PIEZA ESTA EN EL CORPUS **PERSISTIDO**, no a
+ * que haya pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no
+ * vuelve a la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo
+ * verificada —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
+ * `ejecutar.mjs` lo resuelve releyendo el corpus del disco antes de llamar; una entrada sin
+ * pieza guardada se queda donde estaba y la corrida siguiente la recupera.
+ *
  * @param {string} id
  * @param {{pieza_id?: string, corrida?: string}} [datos]
  * @returns {object}

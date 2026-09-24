@@ -40,10 +40,29 @@
  *   EDITORIAL_ESTADO_DIR       OBLIGATORIA. Raiz de la bitacora, los fallos y los errores.
  *   EDITORIAL_REDACCIONES_DIR  OBLIGATORIA. Raiz de los borradores.
  *   EDITORIAL_PIEZAS           ruta del corpus intermedio `piezas.json`. SIN RESPALDO: si
- *                              no esta, la corrida no escribe corpus (ver `rutaPiezas()`).
+ *                              no esta, la corrida no escribe corpus (ver `rutaPiezas()`)
+ *                              y ninguna entrada llega a `terminada`.
  *
  * Las dos primeras no tienen valor por defecto y sin ellas la corrida ABORTA antes de
  * escribir nada (`docs/plataforma/02-editorial.md` §8.3).
+ *
+ * ================== LOS DOS CORPUS, Y COMO SE HACEN UNO ==================
+ *
+ * Hoy hay DOS comandos que resuelven su corpus por caminos distintos, y conviene decirlo
+ * en vez de que alguien lo descubra con dos corpus divergentes:
+ *
+ *   - este comando escribe en `$EDITORIAL_PIEZAS`, la ruta completa de un archivo;
+ *   - `reverificar-corpus.mjs` lee y resella `$EDITORIAL_REDACCIONES_DIR/piezas.json`,
+ *     porque reverificar es sellar un borrador y los borradores viven ahi (§8.6 fila 5).
+ *
+ * **Para que los dos operen sobre el MISMO corpus, `EDITORIAL_PIEZAS` tiene que apuntar a
+ * `$EDITORIAL_REDACCIONES_DIR/piezas.json`.** Apuntada a otro sitio, las dos rutas son dos
+ * corpus distintos y `reverificar` resella uno que este comando nunca escribio.
+ *
+ * No se deriva sola de `$EDITORIAL_REDACCIONES_DIR` A PROPOSITO: derivarla seria fabricar
+ * otra vez el valor por defecto que T-E1 existe para quitar, y ademas §8.6 fila 2 no pide
+ * renombrar esta variable sino ELIMINARLA, cuando el comando se parta en `generar` y
+ * `autorizar`. Mientras tanto se declara la relacion y la pone quien corre el comando.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -321,10 +340,35 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
     escribirJson(rutaCorpus, corpus);
   }
 
-  // `terminada` tanto si se inserto como si el corpus ya la tenia: en ambos casos existe
-  // la pieza, que es lo que este estado afirma. Omitida por duplicado no es un fallo.
+  // --- 6. cerrar SOLO lo que quedo guardado ------------------------------------
+  //
+  // `terminada` es TERMINAL —`estado.mjs`, tabla de transiciones— y afirma, literal, «la
+  // pieza paso §5.4 y entro al corpus». Marcarla sin que el corpus se haya escrito declara
+  // hecho lo que no se hizo, y como no tiene vuelta atras, la deduplicacion no la vuelve a
+  // mirar NUNCA: la pieza se pierde en silencio y la entrada queda cerrada para siempre.
+  // Ocurria en toda corrida sin `EDITORIAL_PIEZAS`, que es exactamente la corrida en la que
+  // no se escribe corpus en ningun sitio.
+  //
+  // Se mide releyendo el DISCO, no la variable `corpus` en memoria ni `insertadas`. Medir
+  // contra el registro de la escritura en vez de contra el archivo escrito es la misma
+  // clase de error que este arreglo cierra.
+  const idsEnDisco = new Set(rutaCorpus ? leerJson(rutaCorpus, []).map((p) => p?.id) : []);
+  const sinCorpus = [];
   for (const { entrada, pieza } of verificadas) {
+    // Vale igual insertada ahora que ya presente de antes: en los dos casos la pieza existe
+    // en el corpus persistido, que es lo que `terminada` afirma. Omitida por duplicado no
+    // es un fallo.
+    if (!idsEnDisco.has(pieza.id)) { sinCorpus.push({ entrada, pieza }); continue; }
     marcarVerificada(entrada.id, { pieza_id: pieza.id, corrida });
+  }
+  // Lo que no se guardo NO se registra como fallo, y es deliberado: no tener corpus
+  // configurado no es culpa de la entrada, y `marcarFallida()` le subiria `intentos` hasta
+  // descartarla a las tres corridas —cambiar una perdida silenciosa por otra—. La entrada
+  // se queda donde estaba, sigue en la cola de `pendientesDeVerificacion()`, y la corrida
+  // siguiente con corpus configurado la recupera. Por la misma razon no da salida 2: es
+  // trabajo pendiente, como el expediente que espera redactor, no un fallo de etapa.
+  for (const { entrada, pieza } of sinCorpus) {
+    linea(`corpus: NO GUARDADA ${pieza.id} — ${entrada.id} sigue PENDIENTE, no terminada`);
   }
 
   linea(`corpus: +${insertadas.length} insertadas, ${omitidas.length} omitidas por ya existir`);
@@ -349,6 +393,10 @@ export async function ejecutar(banderas = {}, inyeccion = {}) {
     repetidos: repetidos.length,
     insertadas: insertadas.map((p) => p.id),
     omitidas,
+    // Piezas verificadas que NO quedaron en el corpus persistido, y cuyas entradas por
+    // tanto siguen pendientes. Se reporta en vez de esconderse: una corrida que verifica
+    // tres piezas y guarda cero tiene que poder distinguirse de una que guarda tres.
+    sinCorpus: sinCorpus.map(({ entrada, pieza }) => ({ entrada_id: entrada.id, pieza_id: pieza.id })),
     rechazadas: rechazadas.map((e) => ({ id: e.id, estado: e.estado, intentos: e.intentos })),
     errores: [...erroresDeteccion, ...erroresRedaccion],
     pendientes: sinRedaccion.length,
