@@ -52,6 +52,7 @@ function superficies(): string[] {
   return [
     ...readdirSync(join(RAIZ, "components/proof")).map((f) => `components/proof/${f}`),
     "app/evidencia/page.tsx",
+    "app/actividad/page.tsx",
     "app/proyectos/page.tsx",
     "app/proyectos/[slug]/page.tsx",
   ];

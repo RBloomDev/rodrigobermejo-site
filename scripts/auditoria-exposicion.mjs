@@ -19,7 +19,7 @@
  *   node scripts/auditoria-exposicion.mjs --gh           # los pide a `gh` (no los escribe a disco)
  *   node scripts/auditoria-exposicion.mjs --json          # salida legible por maquina
  *
- * Exit 0 = limpio. Exit 1 = hay exposicion.
+ * Exit 0 = limpio. Exit 1 = hay exposicion. Exit 2 = comprobacion no realizada.
  */
 
 import { readFileSync, existsSync, statSync, readdirSync } from "node:fs";
@@ -206,6 +206,12 @@ function* recorrer(dir) {
 }
 
 const privados = cargarNombresPrivados();
+if (privados === null) {
+  const mensaje = "Comprobación de nombres privados NO REALIZADA: sin gh autenticado o disponible.";
+  if (comoJson) console.log(JSON.stringify({ estado: "no_realizada", mensaje }));
+  else console.error(mensaje);
+  process.exit(2);
+}
 const hallazgos = [];
 
 for (const abs of recorrer(RAIZ)) {

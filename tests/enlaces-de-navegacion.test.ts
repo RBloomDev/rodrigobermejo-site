@@ -101,10 +101,10 @@ test("AC-NAV-03: la bandera `disponible` sigue discriminando, y el guard la resp
   // siendo falsable: aquí se ejercita con una tabla sintética.
   const { DESTINOS, DESTINOS_VISIBLES } = await import("../lib/navegacion.ts");
 
-  const inexistente = { etiqueta: "Actividad", href: "/actividad", disponible: true };
+  const inexistente = { etiqueta: "Destino sintético", href: "/ruta-inexistente-del-fixture", disponible: true };
   assert.deepEqual(
     destinosRotos([inexistente]),
-    ["Actividad → /actividad (no existe app/actividad/page.tsx)"],
+    ["Destino sintético → /ruta-inexistente-del-fixture (no existe app/ruta-inexistente-del-fixture/page.tsx)"],
     "marcar disponible una ruta que no existe tiene que ponerse rojo; si no, la bandera " +
       "no protege de nada",
   );
