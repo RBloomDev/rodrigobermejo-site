@@ -114,6 +114,8 @@ export default function ProyectosPage() {
         </p>
       </section>
 
+      <p className="mt-6"><Link href="/actividad" className="underline underline-offset-2">Explorar la actividad registrada y sus límites</Link></p>
+
       {/* METODOLOGIA: extensa, al detalle y fuera de la pantalla principal. Los
           avisos de cobertura y de límites NO bajan aquí --- siguen pegados al
           contenido que califican, arriba. */}

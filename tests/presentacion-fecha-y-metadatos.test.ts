@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import ts from "typescript";
 import { leer } from "./navegacion-helpers.ts";
 import { fechaEnProsa } from "../lib/proof/proyectos-filtros.ts";
+import { pantalla } from "./actividad-fixture.ts";
 
 function metadatos(fuente: string): Record<string, string> {
   const ast = ts.createSourceFile("page.tsx", fuente, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -22,9 +23,9 @@ function metadatos(fuente: string): Record<string, string> {
   return valores;
 }
 
-test("F-PRY-18: las cinco rutas usan los metadatos del deck sin duplicar el nombre", () => {
+test("F-PRY-18: las rutas usan los metadatos del deck sin duplicar el nombre", () => {
   const tabla = leer("docs/brand/03-copy-deck.md");
-  for (const ruta of ["/proyectos", "/evidencia", "/sobre-mi", "/colaborar", "/blog"]) {
+  for (const ruta of ["/proyectos", "/evidencia", "/sobre-mi", "/colaborar", "/blog", "/actividad"]) {
     const fila = tabla.split("\n").find((l) => l.startsWith(`| \`${ruta}\` |`));
     assert.ok(fila, `Falta la fila normativa de ${ruta}`);
     const celdas = fila.split("|").map((c) => c.trim());
@@ -33,6 +34,15 @@ test("F-PRY-18: las cinco rutas usan los metadatos del deck sin duplicar el nomb
     assert.equal(actual.description, celdas[3], ruta);
   }
   assert.match(leer("app/layout.tsx"), /template: "%s \| Rodrigo Bermejo"/);
+});
+
+test("ACT-F02: actividad presenta la fecha del feed en prosa", () => {
+  const { texto } = pantalla(undefined, { schema_version: "1.0.0", buckets: [{
+    period: "2026-01", claim_ids: ["construyo"], visibility_scope: "public",
+    counts: { commits: 5, pull_requests: 2, reviews: 0, releases: 0, deployments: 1 },
+  }] });
+  assert.match(texto, /Fecha de generación del feed: \d{1,2} de [a-z]+ de \d{4}\./);
+  assert.doesNotMatch(texto, /\d{4}-\d{2}-\d{2}T/);
 });
 
 function comprobarPie(fuente: string) {

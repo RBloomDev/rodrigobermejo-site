@@ -271,6 +271,7 @@ monten navegación y pie —hoy no lo hacen, y se entra en ellas sin forma de vo
 | `/sobre-mi` | Trayectoria | Dirección tecnológica en Inadaptados, sistemas en producción y docencia universitaria. |
 | `/colaborar` | Trabajar conmigo | Diseño, construyo y opero sistemas de automatización para negocios que sostienen su operación a mano. |
 | `/blog` | Escribo | Notas sobre sistemas, decisiones técnicas y lo que se aprende operando lo que uno construye. |
+| `/actividad` | Actividad registrada | Qué volumen de trabajo quedó registrado por periodo, de qué fuente sale y qué parte del trabajo no cubre. |
 
 **`keywords`**: hoy las ocho de `app/layout.tsx` son todas de automatización. Se
 reorientan a las tres dimensiones —dirección tecnológica, CTO, arquitectura de software,
