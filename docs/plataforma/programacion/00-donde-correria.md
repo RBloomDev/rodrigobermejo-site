@@ -52,7 +52,7 @@ Se midieron cinco opciones. Cada fila lleva el comando que la produjo.
 
 | Opción | Qué hay ya | Qué falta | ¿La credencial es el bloqueo? |
 |---|---|---|---|
-| **GitHub Actions, este repo** | 4 workflows activos (`gh workflow list`), ya sobre **Node 24** (`ci.yml:39`), red saliente. **Cero `schedule`** hoy. T-E1 y T-E3 **cerrados** el 2026-09-24 | **Un almacén externo con respaldo** para el estado y los borradores, que el tope de llamadas ate, que el registro lea el almacén, y —lo que un agente no puede aportar— el movimiento del archivo a `.github/workflows/` y el secret | **No solo la credencial: falta el almacén, y faltan los dos arreglos del canal** |
+| **GitHub Actions, este repo** | 4 workflows activos (`gh workflow list`), ya sobre **Node 24** (`ci.yml:39`), red saliente. **Cero `schedule`** hoy. T-E1 y T-E3 **cerrados** el 2026-09-24, y el registro ya lee el almacén el 2026-09-25 | **Un almacén externo con respaldo** para el estado y los borradores, que el tope de llamadas ate, y —lo que un agente no puede aportar— el movimiento del archivo a `.github/workflows/` y el secret | **No solo la credencial: falta el almacén, y falta que el tope de llamadas ate** |
 | VPS propio | Corre crons hoy (`/etc/cron.d/vps-monitor`, cada 5 min) y tiene secrets de acceso vivos | Runtime de Node —sin evidencia de que exista ahí— y acceso SSH para el agente | Sí, más un segundo hueco |
 | n8n autoalojado | Crons corriendo hoy, varios workflows activos | Dispara, **no ejecuta Node**. Habría que reescribir la redacción como nodos | Parcialmente |
 | n8n personal | 137 workflows, **todos los listados inactivos** | Todo | Sí |
@@ -117,10 +117,10 @@ intentara hoy no tendría ni permiso ni credencial. Lo comprueba
 árbol de trabajo quedó intacto al final de la corrida —en vez de confiar en que no hay un
 paso que lo ensucie— lo vigila `workflow-preparado.test.mjs`, en el mismo directorio.
 
-**Lo que sigue abierto son los prerrequisitos 3, 4 y 5 de *Activar*** —el almacén externo, el
-tope de llamadas que no ata, y el registro que lee el directorio equivocado—. Ninguno publica
-nada sin autorización; los tres hacen que una corrida programada no sirva para lo que dice
-servir.
+**Lo que sigue abierto son los prerrequisitos 3 y 4 de *Activar*** —el almacén externo y el
+tope de llamadas que no ata—. El 5, el registro que leía el directorio equivocado, se cerró el
+2026-09-25. Ninguno de los dos publica nada sin autorización; los dos hacen que una corrida
+programada no sirva para lo que dice servir.
 
 Consecuencia directa sobre este documento: un runner **no debe commitear nada**. Ni estado,
 ni borradores, ni corpus. Lo que produce lo deja en el almacén externo; lo que ese almacén
@@ -139,7 +139,7 @@ workflow no está instalado y el bloque de medición que sigue a la tabla dice q
 | **Exclusión de ejecuciones simultáneas** | `concurrency.group` nativo de Actions, con un group **fijo**: no lleva `github.ref` ni `github.run_id`, porque el recurso que se disputa es uno solo —la bitácora— y un group por rama daría dos corridas simultáneas sobre el mismo estado. `cancel-in-progress: false` a propósito: **se encola, no se mata**. Matar a mitad deja trabajo en un estado que nadie cerró | bloque `concurrency` |
 | **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `ejecutar.mjs` |
 | **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. El que **no ata**: `EDITORIAL_MAX_LLAMADAS` está declarado con su valor, pero ningún `.mjs` lo lee —medido el 2026-09-24—, así que hoy no protege de nada. Se deja escrito porque es el contrato, y dicho así para que nadie lo cuente como protección: prerrequisito 4 de *Activar* | `env` y pasos *límites de la corrida* y *corrida* |
-| **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. Se escribe en la ruta que devuelve `ruta-estado.mjs` —`$EDITORIAL_ESTADO_DIR` ya **validada**, no la variable cruda: el almacén externo, fuera de todo árbol de git— con el número de corrida en el nombre, y un paso verifica que no lleva URLs. **No se sube como artefacto, y eso es la decisión**: en un repositorio público los artefactos de Actions los descarga cualquiera que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna opción de ACL. Sanear el contenido no vuelve privado el artefacto: vuelve publicable su contenido, que es otra cosa. Ver *El registro no se publica* | pasos *registro de la corrida* y *el registro no lleva URLs* |
+| **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. **Lee** la bitácora de `$EDITORIAL_ESTADO_DIR` resuelta con `dirEstado()` —desde el 2026-09-25; antes usaba una constante del repositorio y devolvía «0 corrida(s)» sin que nada fallara— y **se escribe** en la ruta que devuelve `ruta-estado.mjs` —`$EDITORIAL_ESTADO_DIR` ya **validada**, no la variable cruda: el almacén externo, fuera de todo árbol de git— con el número de corrida en el nombre, y un paso verifica que no lleva URLs. **No se sube como artefacto, y eso es la decisión**: en un repositorio público los artefactos de Actions los descarga cualquiera que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna opción de ACL. Sanear el contenido no vuelve privado el artefacto: vuelve publicable su contenido, que es otra cosa. Ver *El registro no se publica* | pasos *registro de la corrida* y *el registro no lleva URLs* |
 | **Credencial y forma segura de suministrarla** | Secret del repositorio, leído del entorno. Nunca en el archivo, nunca en la línea de comandos | `env.ANTHROPIC_API_KEY` |
 
 **Estado real, vuelto a medir el 2026-09-24.** Las tres primeras mediciones de esta lista
@@ -171,13 +171,16 @@ que decían tachado, porque una lista que se reescribe borra la evidencia de qu�
   corpus y `estado.mjs` ya tiene la transición `terminada → autorizada`. El corpus
   publicado sigue **vacío**, que es otra cosa: el mecanismo existe y nadie ha autorizado
   nada todavía.
-- **Lo que sí sigue roto, y es nuevo en esta medición:** `registro-de-corridas.mjs:22`
-  resuelve su directorio con la constante `scripts/editorial/estado` y **no** consulta
-  `EDITORIAL_ESTADO_DIR`. Ese directorio ya no existe, así que el comando imprime
-  «0 corrida(s)» y sale 0. Es el defecto de *un cero medido y un cero por falta de dato se
-  ven igual*: el registro que el workflow escribe en el almacén estaría vacío, y un canal que
-  no corrió se leería exactamente igual que uno que corrió bien. Es del canal, no del
-  workflow; es el prerrequisito 5 de *Activar*.
+- ~~`registro-de-corridas.mjs:22` resuelve su directorio con la constante
+  `scripts/editorial/estado` y **no** consulta `EDITORIAL_ESTADO_DIR`. Ese directorio ya no
+  existe, así que el comando imprime «0 corrida(s)» y sale 0.~~ **Arreglado el 2026-09-25.**
+  Lo encontró la revisión de T-E3 y se cerró en la misma entrega en vez de dejarlo como
+  salvedad: el comando resuelve ahora con `dirEstado()` —la validación canónica del canal— y
+  **aborta con código 1** si falta la variable, con el error saneado de `ruta-estado.mjs`
+  (variable y código, nunca la ruta). Era el defecto de *un cero medido y un cero por falta
+  de dato se ven igual*: el registro que el workflow escribía en el almacén salía vacío, un
+  canal que no corrió se leía igual que uno que corrió bien, y los dos pasos del workflow que
+  dependen de este comando eran compuertas verdes sobre un archivo vacío.
 
 Sacar los archivos del repositorio y hacer obligatorias —sin fallback—
 `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` lo hizo **T-E1**; partir el canal en los
@@ -237,10 +240,61 @@ paso publica algo, su `if` tiene que depender de que las compuertas hayan **PASA
 (`steps.exposicion.outcome == 'success'`), nunca de `always()`. El paso retirado compartía
 condición con las tres compuertas, así que habría subido el archivo igual aunque *el registro no
 lleva URLs* acabara de fallar: una compuerta que no puede detener lo que viene después no es una
-compuerta, es un mensaje de log. Los pasos que quedan sí pueden usar `always()` porque ninguno
-publica nada —miden, y una corrida que falló a mitad es justo la que hay que medir—.
+compuerta, es un mensaje de log.
 `scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba las dos mitades: que hoy no hay
 ningún paso que publique, y que un paso repuesto con `always()` pone la prueba roja.
+
+> **Esta formulación está SUPERADA, y se conserva sólo como el primer intento.** Decía
+> «los pasos que quedan sí pueden usar `always()` porque ninguno publica nada», y eso es
+> falso por estrecho: lo que hace peligroso a `always()` no es publicar, es escribir después
+> de un rechazo. Manda la sección *La regla, en su forma general*, aquí abajo.
+
+**Publicar no es solo subir un artefacto**, y la corrección vale para todos los canales que son
+públicos por defecto, no solo para el que se encontró primero. El resumen del job
+—`$GITHUB_STEP_SUMMARY`— se renderiza en la página de la corrida, y en un repositorio público esa
+página la ve cualquiera: es la misma clase que el artefacto por otra puerta. Cuenta como
+publicación en la prueba, y hoy ningún paso escribe ahí.
+
+### La regla, en su forma general: todo paso con `always()`, no el del registro
+
+Las dos formas de arriba son estrechas —una mira los pasos que publican, la otra los que nombran
+la ruta validada— y entre las dos quedaba un hueco: **un paso con `always()` que escribiera en
+cualquier otro sitio no lo miraba ninguna**. Y ese es el hueco por el que vuelve F-01 con otro
+destino, porque lo que hace peligroso a `always()` no es dónde escribe: es que corre **después**
+de que una compuerta haya dicho que no. La regla, entonces, no es sobre el paso del registro:
+
+> **Todo paso con `always()` cumple una de tres: no escribe, o exige que una compuerta anterior
+> haya PASADO (`steps.<id>.outcome == 'success'`), o revalida por su cuenta lo que esa compuerta
+> rechazó.**
+
+Los cuatro pasos con `always()` del archivo se comprobaron uno por uno, no el que el enunciado
+nombraba, y la cuenta real es **tres que no escriben y uno que escribe**:
+
+| Paso | ¿Escribe? | Su `if`, y por qué |
+|---|---|---|
+| *compuerta de exposición* | No: corre un script de sólo lectura | `!= 'skipped'` sobre la corrida |
+| *el registro no lleva URLs* | No: es un `grep -Eq` | cuelga de `dirs_privados` por la ruta que lee |
+| *el árbol de trabajo quedó intacto* | **No**: `git status --porcelain`, un `[ -e ]` y dos `echo` a stdout | `!= 'skipped'`, **no** `== 'success'`, y es deliberado: tiene que medir el árbol **también cuando la validación falló** —el caso F-01, justo cuando alguien pudo escribir donde no debía—. «Alinearlo» a `== 'success'` sería la regresión, no el arreglo |
+| *registro de la corrida* | **Sí**, y es el único | `steps.dirs_privados.outcome == 'success'` |
+
+**Su límite, dicho para no venderla por más de lo que mide:** la prueba lee la **forma del
+shell**. Un paso cuyo `run` sea `node algo.mjs` y cuyo `algo.mjs` escriba pasa por «no escribe»,
+porque el analizador no entra en el script. De los tres que se acogen a esa rama —el script de
+exposición, el `grep` y el `git status`—, el único cuyo cuerpo es código de este repositorio, y
+por tanto el único que hay que medir, es `auditoria-exposicion.mjs`: sus únicos usos de `node:fs`
+son `readFileSync`, `existsSync`, `statSync` y `readdirSync`, y **tampoco escribe por
+subproceso** —sus tres `execFileSync` de `node:child_process` son `gh api` y `gh repo list`,
+lectura pura, y además sólo se alcanzan con `--gh`, bandera que el workflow no pasa—. Decirlo
+sólo de `node:fs` dejaba fuera media superficie: un subproceso puede escribir y ningún grep de
+`node:fs` lo vería. Lo que respalda esa rama por ejecución es el último paso del job, *el árbol
+de trabajo quedó intacto*, que corre después de todos. Es una mitigación acotada, como las de
+`04-architecture.md` §4.1, y no una garantía.
+
+**Y la rama «espera a una compuerta» no acepta cualquier paso.** La prueba restringe el `if` a
+una allowlist de compuertas —`dirs_privados`, `exposicion`, `registro_sin_urls`— y exige que el
+paso nombrado **aparezca antes** en el mismo job. Sin las dos cosas, `steps.corrida.outcome ==
+'success'` habría pasado por autorización y la corrida no comprueba ni destino ni exposición; y
+una compuerta posterior no puede detener lo que ya se escribió.
 
 ### El destino de una escritura se valida antes de escribir, no después
 
@@ -352,7 +406,7 @@ Detalles para tomarla con la información completa:
 
 ## Activar, cuando se decida
 
-**Cinco prerrequisitos, y ninguno es la credencial. Los dos primeros están cerrados:**
+**Cinco prerrequisitos, y ninguno es la credencial. Tres están cerrados; quedan el 3 y el 4:**
 
 1. ~~**Cerrar T-E1, con la compuerta de CI que lo sostiene**~~ (`02-editorial.md` §8.6).
    **Cerrado.** El estado y los borradores salieron del repositorio, las dos variables son
@@ -372,11 +426,11 @@ Detalles para tomarla con la información completa:
    en el workflow y ningún `.mjs` lo lee: `invocar-redactor.mjs` tiene que contar sus
    llamadas y abortar al llegar al tope. **Abierto.** Mientras siga así, el único freno a un
    bucle inesperado es `--limite` y el tope de 25 minutos.
-5. **Arreglar `registro-de-corridas.mjs` para que lea `$EDITORIAL_ESTADO_DIR`.** Hoy resuelve
-   `scripts/editorial/estado` por constante (`registro-de-corridas.mjs:22`), directorio que
-   ya no existe: imprime «0 corrida(s)» y sale 0. **Abierto.** Activar con esto roto deja un
-   registro vacío en el que una corrida que no hizo nada y una corrida que falló entera se
-   leen exactamente igual.
+5. ~~**Arreglar `registro-de-corridas.mjs` para que lea `$EDITORIAL_ESTADO_DIR`.**~~
+   **Cerrado el 2026-09-25**, en la misma entrega que lo encontró. Resuelve con `dirEstado()`
+   —la validación canónica— y aborta con código 1 si falta la variable, con el error saneado:
+   la variable y el código, nunca la ruta. Ya no hay forma de que un registro vacío por falta
+   de configuración se lea igual que una corrida que no hizo nada.
 
 Después, cuatro movimientos en este orden:
 
@@ -397,5 +451,5 @@ Que no autorice **ya sí es lo mismo que no publicar nada**, y decirlo exige nom
 cambió: mientras existió el paso *persistir estado y corpus* eran dos cosas distintas, porque
 ese paso empujaba estado y corpus a este repositorio público sin pasar por ninguna
 autorización. T-E3 lo eliminó el 2026-09-24. El resto de los prerrequisitos va **antes** que
-estos cuatro movimientos por una razón distinta —una corrida sin almacén, sin tope efectivo
-de llamadas y con el registro roto no publicaría nada, pero tampoco serviría para nada—.
+estos cuatro movimientos por una razón distinta —una corrida sin almacén y sin tope efectivo
+de llamadas no publicaría nada, pero tampoco serviría para nada—.

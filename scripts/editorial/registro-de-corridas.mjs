@@ -12,6 +12,20 @@
  *   - ningun nombre de repositorio ni de organizacion.
  * Un registro de operacion tiene que poder pegarse en un ticket sin revisarlo.
  *
+ * DONDE LEE, y por que no es una constante. `$EDITORIAL_ESTADO_DIR` resuelta con la
+ * validacion CANONICA del canal (`dirEstado()` de `comun.mjs`), igual que el resto de los
+ * comandos. Hasta el 2026-09-25 esta ruta era `join(process.cwd(), "scripts", "editorial",
+ * "estado")`: una constante del repositorio que tras T-E1 ya no existe. El efecto no era
+ * un error, que es lo que lo hacia peligroso: `leerJsonl` devolvia `[]`, el comando
+ * imprimia «0 corrida(s)» y salia 0, asi que un canal que no corrio y un canal que corrio
+ * bien se leian IGUAL —«un cero medido y un cero por falta de dato se ven igual»,
+ * `AGENTS.md`—, y los dos pasos del workflow preparado que dependen de este comando eran
+ * compuertas verdes sobre un archivo vacio. Sin la variable, ahora ABORTA.
+ *
+ * El error sale SANEADO, por la misma razon que en `ruta-estado.mjs`: la variable y el
+ * codigo, nunca la ruta. El mensaje de `DirectorioVersionado` la lleva, y la salida de una
+ * corrida de Actions en un repositorio publico la lee cualquiera.
+ *
  * Uso:
  *   node scripts/editorial/registro-de-corridas.mjs [--ultimas N] [--json]
  */
@@ -19,7 +33,23 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const DIR = join(process.cwd(), "scripts", "editorial", "estado");
+import { dirEstado } from "./comun.mjs";
+
+function resolverDirEstado() {
+  try {
+    return dirEstado();
+  } catch (error) {
+    const variable = error.variable ?? "EDITORIAL_ESTADO_DIR";
+    const codigo = error.codigo ?? error.name ?? "DESCONOCIDO";
+    process.stderr.write(
+      `::error::${variable}: ${codigo}. La ruta NO se imprime: este registro es publico. ` +
+        "Ver docs/plataforma/02-editorial.md §8.3. No se leyo nada.\n",
+    );
+    process.exit(1);
+  }
+}
+
+const DIR = resolverDirEstado();
 const args = process.argv.slice(2);
 const comoJson = args.includes("--json");
 const iN = args.indexOf("--ultimas");

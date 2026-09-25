@@ -11,9 +11,12 @@
  *              publico; NINGUN paso publica nada —mientras el repositorio sea publico no
  *              existe el «artefacto privado»: `actions/upload-artifact` no tiene opcion de
  *              ACL y lo descarga cualquiera que pueda ver el repositorio—; el registro se
- *              queda en `$EDITORIAL_ESTADO_DIR`, fuera de git; y si alguien repone un paso
- *              que publique, su `if` tiene que exigir que las compuertas hayan PASADO,
- *              nunca `always()`.
+ *              queda en `$EDITORIAL_ESTADO_DIR`, fuera de git; y —en su forma GENERAL, que
+ *              es la que vale— TODO paso con `always()` cumple una de tres: no escribe, o
+ *              exige que una compuerta anterior haya PASADO, o revalida por su cuenta. Se
+ *              comprueban los cuatro pasos con `always()` del archivo uno por uno, no solo
+ *              el del registro: lo que hace peligroso a `always()` no es donde escribe, es
+ *              que corre DESPUES de que una compuerta haya dicho que no.
  *
  * AC-PRG-03 —ningun paso commitea— vive aparte, en `workflow-no-commitea-estado.test.mjs`:
  * un archivo por criterio de aceptacion, para que cada uno se pueda correr solo.
@@ -24,13 +27,16 @@
  * PASADO, y el arbol se mide tambien por lo que git IGNORA —`git status --porcelain` no
  * lista lo ignorado, y las dos rutas historicas del canal estan en `.gitignore`—.
  *
- * LA PRUEBA PUEDE FALLAR, y se demuestra: el ultimo test aplica quince mutaciones al archivo
- * real —descomentar el cron, poner `cancel-in-progress: true`, quitar el tope de llamadas,
- * mover la compuerta al final, adelantar la medicion del arbol al paso que escribe, reponer
- * el paso que subia el artefacto, devolver el destino del registro a la variable cruda,
- * quitarle al paso que escribe la exigencia de que la validacion haya pasado— y exige que
- * cada una ponga roja la comprobacion que le toca. Una prueba verde que no puede fallar no
- * prueba nada (`AGENTS.md`, principio de verificacion, punto 4).
+ * LA PRUEBA PUEDE FALLAR, y se demuestra: el ultimo test aplica veinte mutaciones al
+ * archivo real —descomentar el cron, poner `cancel-in-progress: true`, quitar el tope de
+ * llamadas, mover la compuerta al final, adelantar la medicion del arbol al paso que
+ * escribe, reponer el paso que subia el artefacto, devolver el destino del registro a la
+ * variable cruda, quitarle al paso que escribe la exigencia de que la validacion haya
+ * pasado, añadir un paso con `always()` que escriba en el checkout, otro colgado de un paso
+ * que no es compuerta, otro colgado de una compuerta POSTERIOR, y otro que vuelque el
+ * resumen en la pagina publica del job— y exige que cada una ponga roja la comprobacion que
+ * le toca. Una prueba verde que no puede fallar no prueba nada (`AGENTS.md`, principio de
+ * verificacion, punto 4).
  *
  * La regla sobre el `if` de un paso que publique es, por construccion, una regla sobre algo
  * que hoy no existe: se comprueba sobre los pasos que publican, y hoy no hay ninguno. Para
@@ -298,11 +304,20 @@ const ACCIONES_QUE_PUBLICAN = [
   'softprops/action-gh-release',
 ];
 
-/** Lo mismo desde un `run`. */
+/**
+ * Lo mismo desde un `run`.
+ *
+ * `$GITHUB_STEP_SUMMARY` esta en esta lista y no en la de escrituras: el resumen de un job
+ * se RENDERIZA en la pagina de la corrida, y en un repositorio publico esa pagina la ve
+ * cualquiera. Es la misma clase que el artefacto por otra puerta, y esta aqui porque la
+ * correccion del 2026-09-24 valia para todos los canales publicos por defecto, no solo para
+ * el que la revision nombro.
+ */
 const PUBLICACION_EN_SHELL = [
   /\bgh\s+release\s+create\b/,
   /\bgh\s+gist\s+create\b/,
   /\bgh\s+pr\s+create\b/,
+  />>?\s*"?\$\{?GITHUB_STEP_SUMMARY\b/,
 ];
 
 const etiquetaDe = (paso) =>
@@ -348,6 +363,132 @@ export function comprobarPublicacionCondicionada(fuente) {
 }
 
 // ---------------------------------------------------------------------------------------
+// AC-PRG-04, forma GENERAL — la regla no es «el paso del registro», es TODO paso con
+// `always()`.
+//
+// Las dos comprobaciones de arriba son las dos formas ESTRECHAS de una misma regla:
+// `comprobarPublicacionCondicionada` mira los pasos que publican, y
+// `comprobarEscrituraValidada` mira los que nombran `$RUTA_ESTADO_VALIDADA`. Entre las dos
+// queda un hueco por el que cabe exactamente el defecto F-01 otra vez con otro destino: un
+// paso con `always()` que escriba en cualquier OTRO sitio —un archivo dentro del checkout,
+// pongamos— no lo mira ninguna. Y un paso con `always()` corre DESPUES de que una compuerta
+// haya dicho que no; si ademas escribe, escribe justo lo que la compuerta existia para
+// impedir.
+//
+// La regla en su forma general, entonces, y es la que se comprueba aqui:
+//
+//   TODO paso con `always()` cumple una de tres: no escribe, o exige que una compuerta
+//   anterior haya PASADO (`steps.<id>.outcome == 'success'`), o revalida por su cuenta.
+//
+// LO QUE ESTA COMPROBACION NO PUEDE VER, dicho para no venderla por mas de lo que mide:
+//
+//  1. Lee la FORMA DEL SHELL. Un paso cuyo `run` sea `node algo.mjs` y cuyo `algo.mjs`
+//     escriba pasa por «no escribe», porque el analizador no entra en el script. Los TRES
+//     pasos que se acogen hoy a la rama «no escribe» son `auditoria-exposicion.mjs`, un
+//     `grep -Eq` y un `git status --porcelain`; de los tres, el unico cuyo cuerpo es codigo
+//     de este repositorio —y por tanto el unico que hay que medir— es el primero. Medido:
+//     sus unicos usos de `node:fs` son `readFileSync`, `existsSync`, `statSync` y
+//     `readdirSync`, y TAMPOCO escribe por subproceso: sus tres `execFileSync` de
+//     `node:child_process` son `gh api` y `gh repo list`, lectura pura, y ademas solo se
+//     alcanzan con `--gh`, bandera que el workflow no pasa. Decirlo solo de `node:fs`
+//     dejaba fuera media superficie: un subproceso puede escribir y ningun grep de
+//     `node:fs` lo veria.
+//  2. La lista de compuertas es una ALLOWLIST escrita a mano (`COMPUERTAS`). Una compuerta
+//     nueva que nadie añada ahi pone la prueba roja —que es el lado seguro—, pero un id
+//     renombrado en el workflow y no aqui tambien.
+//
+// Lo que respalda la rama «no escribe» por ejecucion es el ultimo paso del job, «el arbol de
+// trabajo quedo intacto»: corre despues de todos y mide el arbol por lo rastreado Y por las
+// dos rutas que git ignora. Una mitigacion acotada, como las de `04-architecture.md` §4.1.
+// ---------------------------------------------------------------------------------------
+
+/** Canales del runner: ni son el arbol de trabajo ni los lee nadie desde fuera. */
+const DESTINOS_EXENTOS = /^\$\{?(GITHUB_ENV|GITHUB_OUTPUT|GITHUB_PATH)\}?$|^\/dev\/null$/;
+
+/** Ordenes de shell cuyo efecto es dejar algo escrito en el disco del runner. */
+const ORDENES_QUE_ESCRIBEN = [
+  /\bmkdir\b/,
+  /\btouch\b/,
+  /\btee\b/,
+  /\bcp\b/,
+  /\bmv\b/,
+  /\brm\b/,
+  /\btruncate\b/,
+  /\bsed\s+-i\b/,
+  /\bgit\s+(add|commit|push|checkout|restore|clean)\b/,
+];
+
+/** Lo que un paso deja escrito, hasta donde la forma del shell permite verlo. */
+function escriturasDe(paso) {
+  const guion = typeof paso.run === 'string' ? paso.run : '';
+  const escrituras = [];
+
+  for (const patron of ORDENES_QUE_ESCRIBEN) {
+    const m = patron.exec(guion);
+    if (m !== null) escrituras.push(m[0].trim());
+  }
+
+  for (const m of guion.matchAll(/>>?\s*("[^"]*"|'[^']*'|[^\s;|&]+)/g)) {
+    const destino = m[1].replace(/^["']|["']$/g, '');
+    // `2>&1` y `>&2` redirigen un descriptor, no abren un archivo.
+    if (destino.startsWith('&')) continue;
+    if (DESTINOS_EXENTOS.test(destino)) continue;
+    escrituras.push(`redireccion a ${destino}`);
+  }
+
+  const usa = String(paso.uses ?? '');
+  if (ACCIONES_QUE_PUBLICAN.some((accion) => usa.startsWith(accion))) escrituras.push(usa);
+
+  return escrituras;
+}
+
+/**
+ * Las COMPUERTAS del workflow, por id. La rama «exige que una compuerta haya PASADO» se
+ * restringe a estas, y no a un `steps.<cualquiera>.outcome == 'success'`: la forma sola no
+ * dice nada. `steps.corrida.outcome == 'success'` casa igual de bien y no autoriza nada —la
+ * corrida no comprueba ni el destino ni la exposicion—, asi que un paso futuro colgado de
+ * ella pasaria por autorizado escribiendo donde quisiera.
+ *
+ * Y se exige ademas que el paso referenciado APAREZCA ANTES en el mismo job: una compuerta
+ * posterior no puede detener lo que ya se escribio. Sin esa mitad, un `if` que nombre una
+ * compuerta que corre despues es una condicion que nunca sera `success` cuando importa.
+ */
+const COMPUERTAS = ['dirs_privados', 'exposicion', 'registro_sin_urls'];
+
+const esperaAUnaCompuertaAnterior = (condicion, anteriores) =>
+  COMPUERTAS.some(
+    (id) => anteriores.has(id) && condicion.includes(`steps.${id}.outcome == 'success'`),
+  );
+
+export function comprobarAlwaysNoEscribeSinCompuerta(fuente) {
+  /** ids que ya aparecieron en el mismo job, por job. */
+  const anterioresPorJob = new Map();
+
+  for (const { job, paso } of pasosDe(analizar(fuente))) {
+    if (!anterioresPorJob.has(job)) anterioresPorJob.set(job, new Set());
+    const anteriores = anterioresPorJob.get(job);
+
+    const condicion = typeof paso.if === 'string' ? paso.if : '';
+    const escrituras = /always\s*\(\s*\)/.test(condicion) ? escriturasDe(paso) : [];
+
+    if (escrituras.length > 0) {
+      assert.ok(
+        esperaAUnaCompuertaAnterior(condicion, anteriores),
+        `jobs.${job}, paso «${etiquetaDe(paso)}»: corre con always() y escribe (${escrituras.join('; ')}) ` +
+          'sin exigir que ninguna compuerta ANTERIOR haya PASADO. Un paso con always() corre tambien ' +
+          'despues de que una compuerta haya rechazado la corrida, asi que escribiria justo lo que esa ' +
+          `compuerta existia para impedir (F-01). O no escribe, o su \`if\` lleva ` +
+          `\`steps.<compuerta>.outcome == 'success'\` con una de las compuertas que corren antes que el ` +
+          `(${COMPUERTAS.join(', ')}); no vale un paso cualquiera, que no comprueba nada`,
+      );
+    }
+
+    // Despues de la comprobacion, nunca antes: un paso no puede ser su propia compuerta.
+    if (typeof paso.id === 'string') anteriores.add(paso.id);
+  }
+}
+
+// ---------------------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------------------
 
@@ -361,6 +502,32 @@ const pasoQuePublica = (condicion) =>
     '        with:',
     '          name: registro-canal',
     '          path: registro-corrida.txt',
+    '',
+  ].join('\n');
+
+/**
+ * Un paso que ESCRIBE y no publica —el hueco que dejaban las dos comprobaciones estrechas—,
+ * para reponerlo en un mutante con la `if` que se quiera.
+ */
+const pasoQueEscribe = (condicion) =>
+  [
+    '',
+    '      - name: nota de la corrida',
+    `        if: ${condicion}`,
+    '        run: |',
+    '          mkdir -p nota',
+    '          echo "hubo corrida" > nota/corrida.txt',
+    '',
+  ].join('\n');
+
+/** Un paso que publica por la otra puerta: el resumen del job, publico en un repo publico. */
+const pasoQueResume = (condicion) =>
+  [
+    '',
+    '      - name: resumen de la corrida',
+    `        if: ${condicion}`,
+    '        run: |',
+    '          echo "corrida terminada" >> "$GITHUB_STEP_SUMMARY"',
     '',
   ].join('\n');
 
@@ -402,6 +569,32 @@ test('AC-PRG-04: la regla del `if` acepta un paso que SI espera a las compuertas
     () => comprobarNadaSePublica(fuente + condicionado),
     /artefacto privado/,
     'condicionarlo bien no lo vuelve publicable: hoy no puede haber NINGUN paso que publique',
+  );
+});
+
+test('AC-PRG-04: NINGUN paso con always() escribe sin que una compuerta lo haya autorizado', () => {
+  // Se comprueban los cuatro pasos con `always()` del archivo, uno por uno, no el que el
+  // enunciado nombra. Hoy la cuenta es TRES que no escriben —«compuerta de exposicion»
+  // (script de solo lectura), «el registro no lleva URLs» (`grep`) y «el arbol de trabajo
+  // quedo intacto» (`git status --porcelain`)— y UNO que escribe, «registro de la corrida»,
+  // que es el que cuelga de `dirs_privados`. El del arbol cuelga de `!= 'skipped'` a
+  // proposito: tiene que medir tambien cuando la validacion fallo.
+  comprobarAlwaysNoEscribeSinCompuerta(fuente);
+});
+
+test('AC-PRG-04: la regla general acepta un paso con always() que SI espera a la compuerta', () => {
+  // La otra mitad de la falsabilidad. Sin este test, «ningun paso con always() escribe sin
+  // compuerta» podria estar implementado como «ningun paso escribe», o como una funcion que
+  // no mira nada, y las mutaciones de abajo no lo distinguirian.
+  const condicionado = pasoQueEscribe("${{ always() && steps.dirs_privados.outcome == 'success' }}");
+  comprobarAlwaysNoEscribeSinCompuerta(fuente + condicionado);
+
+  // Y que el paso repuesto es de verdad uno que escribe: sin esto, el test de arriba pasaria
+  // igual si `escriturasDe` devolviera siempre la lista vacia.
+  assert.throws(
+    () => comprobarAlwaysNoEscribeSinCompuerta(fuente + pasoQueEscribe('${{ always() }}')),
+    /nota de la corrida/,
+    'el paso repuesto tiene que contar como escritura: si no, la comprobacion pasa en vacio',
   );
 });
 
@@ -528,6 +721,51 @@ test('las comprobaciones pueden fallar: cada mutacion pone roja la suya', () => 
       motivo: /always\(\)/,
       mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQuePublica("${{ always() }}")}`,
       comprobar: comprobarPublicacionCondicionada,
+    },
+    // --- Las tres que siguen son la forma GENERAL de la regla: no el paso del registro,
+    //     sino CUALQUIER paso con `always()` que escriba o publique. ---
+    {
+      nombre: 'un paso con always() que escribe un archivo cualquiera del checkout',
+      motivo: /sin exigir que ninguna compuerta/,
+      mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQueEscribe('${{ always() }}')}`,
+      comprobar: comprobarAlwaysNoEscribeSinCompuerta,
+    },
+    {
+      // El mismo defecto sobre un paso que YA existe, no sobre uno añadido: quitarle al
+      // registro la exigencia de que la validacion haya pasado lo deja escribiendo con
+      // `always()` sobre una ruta que nadie autorizo.
+      nombre: 'el paso del registro escribiendo con always() sin ninguna compuerta',
+      motivo: /sin exigir que ninguna compuerta/,
+      mutar: (f) => f.replaceAll(" && steps.dirs_privados.outcome == 'success' }}", ' }}'),
+      comprobar: comprobarAlwaysNoEscribeSinCompuerta,
+    },
+    {
+      // La rama «espera a una compuerta» no puede ser «nombra un paso cualquiera»: la
+      // corrida no comprueba ni destino ni exposicion, asi que colgarse de su exito no
+      // autoriza nada. Sin la allowlist esta mutacion pasaba.
+      nombre: 'un paso con always() que escribe colgado de un paso que NO es compuerta',
+      motivo: /compuerta ANTERIOR/,
+      mutar: (f) =>
+        `${f.replace(/\s*$/, '')}\n${pasoQueEscribe("${{ always() && steps.corrida.outcome == 'success' }}")}`,
+      comprobar: comprobarAlwaysNoEscribeSinCompuerta,
+    },
+    {
+      // Y la compuerta tiene que correr ANTES: una que viene despues no puede detener lo
+      // que ya se escribio. El paso se inserta delante de la compuerta que nombra.
+      nombre: 'un paso con always() que escribe colgado de una compuerta POSTERIOR',
+      motivo: /compuerta ANTERIOR/,
+      mutar: (f) =>
+        f.replace(
+          /^ {6}- name: compuerta de exposicion$/m,
+          `${pasoQueEscribe("${{ always() && steps.registro_sin_urls.outcome == 'success' }}").trimEnd()}\n      - name: compuerta de exposicion`,
+        ),
+      comprobar: comprobarAlwaysNoEscribeSinCompuerta,
+    },
+    {
+      nombre: 'un paso que vuelca el resumen de la corrida en la pagina publica del job',
+      motivo: /artefacto privado/,
+      mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQueResume('${{ always() }}')}`,
+      comprobar: comprobarNadaSePublica,
     },
     {
       nombre: 'la compuerta de exposicion movida al final, despues de publicar',

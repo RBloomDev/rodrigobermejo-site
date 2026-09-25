@@ -239,17 +239,25 @@ jobs:
       # `ejecutar.mjs`; el paso existe para dejar constancia del estado de
       # ENTRADA, que es lo que permite auditar una recuperacion.
       #
-      # ATENCION, medido el 2026-09-24: `registro-de-corridas.mjs:22` resuelve
-      # su directorio con una constante del repositorio
-      # (`scripts/editorial/estado`) y NO consulta `EDITORIAL_ESTADO_DIR`. Tras
-      # T-E1 ese directorio ya no existe, asi que hoy este paso imprime
-      # «0 corrida(s)» y sale 0: un paso verde que no comprueba nada. El
-      # registro que se escribe mas abajo esta vacio por el mismo
-      # motivo. Es un defecto del canal, no de este archivo, y cerrarlo es
-      # prerrequisito 5 de la activacion: un registro vacio y un canal que no
-      # corrio se leen igual.
+      # LEE EL ALMACEN EXTERNO, no una constante del repositorio. Hasta el
+      # 2026-09-25 `registro-de-corridas.mjs` resolvia su directorio con
+      # `scripts/editorial/estado`, que tras T-E1 ya no existe: imprimia
+      # «0 corrida(s)» y salia 0, asi que este paso y el registro de mas abajo
+      # eran verdes sobre un archivo vacio —un canal que no corrio y uno que
+      # corrio bien se leian igual—. Ahora resuelve con `dirEstado()`, la
+      # validacion canonica, y sin `EDITORIAL_ESTADO_DIR` ABORTA con exit 1 en
+      # vez de fingir un cero. No cuelga de `dirs_privados` porque no escribe.
+      #
+      # LA TUBERIA SE TRAGABA ESE exit 1. `node ... | tail -5` devuelve el codigo
+      # de `tail`, que es 0 siempre, asi que el paso quedaba verde aunque el
+      # script abortara --- y el comentario prometia justo lo contrario. Una
+      # compuerta que no puede fallar no vigila nada, y esta ademas AFIRMABA que
+      # vigilaba. Se acota con la bandera que el propio script ya soporta, en vez
+      # de con una tuberia; y `set -euo pipefail` por si alguien la reintroduce.
       - name: estado antes de la corrida
-        run: node scripts/editorial/registro-de-corridas.mjs | tail -5
+        run: |
+          set -euo pipefail
+          node scripts/editorial/registro-de-corridas.mjs --ultimas 5
 
       - name: corrida
         id: corrida
@@ -409,20 +417,48 @@ jobs:
       # tendria por que leerlo.
       #
       # ------------------------------------------------------------------------
-      # LA REGLA QUE SOBREVIVE AL PASO RETIRADO, y que es la parte reutilizable:
+      # LA REGLA QUE SOBREVIVE AL PASO RETIRADO, y que es la parte reutilizable.
+      # Va escrita en su forma GENERAL a proposito: estrecharla a «el paso que
+      # publica» fue el error, y despues estrecharla a «el paso del registro»
+      # tambien. Lo que hace peligroso a `always()` no es donde escribe, es que
+      # corre DESPUES de que una compuerta haya dicho que no.
       #
-      #   SI ALGUN DIA UN PASO PUBLICA ALGO, SU `if` TIENE QUE DEPENDER DE QUE
-      #   LAS COMPUERTAS HAYAN **PASADO** —`steps.exposicion.outcome == 'success'`
-      #   y `steps.registro_sin_urls.outcome == 'success'`—, NUNCA DE `always()`.
+      #   TODO PASO CON `always()` CUMPLE UNA DE TRES: NO ESCRIBE, O EXIGE QUE UNA
+      #   COMPUERTA ANTERIOR HAYA **PASADO** (`steps.<id>.outcome == 'success'`),
+      #   O REVALIDA POR SU CUENTA LO QUE ESA COMPUERTA RECHAZO.
+      #
+      #   Y UN PASO QUE PUBLIQUE EXIGE ADEMAS LAS DOS COMPUERTAS DEL CONTENIDO
+      #   —`steps.exposicion.outcome == 'success'` y
+      #   `steps.registro_sin_urls.outcome == 'success'`—, NUNCA `always()`.
       #
       # Es literalmente el defecto que tenia el paso retirado: compartia condicion
       # con las tres compuertas (`always() && steps.corrida.outcome != 'skipped'`),
       # asi que subia el archivo IGUAL aunque «el registro no lleva URLs» acabara
       # de fallar. Una compuerta que no puede detener lo que viene despues no es
-      # una compuerta: es un mensaje de log. Los pasos de arriba pueden usar
-      # `always()` porque ninguno publica nada —miden, y una corrida que fallo a
-      # mitad es justo la que hay que medir—; un paso que publique, no.
+      # una compuerta: es un mensaje de log.
+      #
+      # Los cuatro pasos con `always()` de arriba se comprobaron UNO POR UNO, y
+      # la cuenta real es TRES que no escriben y UNO que escribe:
+      #   - «compuerta de exposicion»: no escribe. Corre un script de solo
+      #     lectura —ver el limite declarado mas abajo—.
+      #   - «el registro no lleva URLs»: no escribe. Es un `grep -Eq`.
+      #   - «el arbol de trabajo quedo intacto»: NO escribe —`git status
+      #     --porcelain`, un `[ -e ]` y dos `echo` a stdout—, y por eso su `if`
+      #     es `!= 'skipped'` y NO `== 'success'`. La diferencia es deliberada y
+      #     no hay que «alinearla»: tiene que medir el arbol TAMBIEN cuando la
+      #     validacion fallo, que es justo el caso F-01, cuando alguien pudo
+      #     escribir donde no debia. Ponerle `== 'success'` seria la regresion.
+      #     Lo explica el bloque de ese paso, mas arriba.
+      #   - «registro de la corrida»: es el UNICO que escribe, y es el que
+      #     cuelga de `steps.dirs_privados.outcome == 'success'`.
+      #
+      # PUBLICAR NO ES SOLO SUBIR UN ARTEFACTO. `$GITHUB_STEP_SUMMARY` se renderiza
+      # en la pagina de la corrida, y en un repositorio PUBLICO esa pagina la ve
+      # cualquiera: misma clase, otra puerta. No se escribe ahi, y la prueba lo
+      # cuenta como publicacion.
+      #
       # `scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba las dos
-      # mitades: que hoy no hay ningun paso que publique, y que si alguien repone
-      # uno con `always()` la prueba se pone roja.
+      # mitades de cada regla: que hoy ningun paso publica ni escribe sin compuerta,
+      # y que reponer uno —con `always()`, o quitandole la exigencia al del
+      # registro— pone la prueba roja.
       # ========================================================================
