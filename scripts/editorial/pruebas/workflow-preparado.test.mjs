@@ -8,16 +8,35 @@
  *              `concurrency` tiene group fijo y `cancel-in-progress: false`, y estan
  *              declarados el tope de duracion y el de llamadas al redactor.
  *   AC-PRG-04  la compuerta de exposicion corre ANTES de cualquier escritura al arbol
- *              publico, y el registro sale como artefacto escrito fuera del checkout.
+ *              publico; NINGUN paso publica nada —mientras el repositorio sea publico no
+ *              existe el «artefacto privado»: `actions/upload-artifact` no tiene opcion de
+ *              ACL y lo descarga cualquiera que pueda ver el repositorio—; el registro se
+ *              queda en `$EDITORIAL_ESTADO_DIR`, fuera de git; y si alguien repone un paso
+ *              que publique, su `if` tiene que exigir que las compuertas hayan PASADO,
+ *              nunca `always()`.
  *
  * AC-PRG-03 —ningun paso commitea— vive aparte, en `workflow-no-commitea-estado.test.mjs`:
  * un archivo por criterio de aceptacion, para que cada uno se pueda correr solo.
  *
- * LA PRUEBA PUEDE FALLAR, y se demuestra: el ultimo test aplica ocho mutaciones al archivo
+ * Y una comprobacion que no es de un criterio sino del hallazgo F-01 de la revision:
+ * ninguna escritura del workflow sale de una ruta SIN VALIDAR, la validacion canonica corre
+ * ANTES de la corrida, todo paso que escriba en el almacen exige que esa validacion haya
+ * PASADO, y el arbol se mide tambien por lo que git IGNORA —`git status --porcelain` no
+ * lista lo ignorado, y las dos rutas historicas del canal estan en `.gitignore`—.
+ *
+ * LA PRUEBA PUEDE FALLAR, y se demuestra: el ultimo test aplica quince mutaciones al archivo
  * real —descomentar el cron, poner `cancel-in-progress: true`, quitar el tope de llamadas,
- * mover la compuerta al final— y exige que cada una ponga roja la comprobacion que le toca.
- * Una prueba verde que no puede fallar no prueba nada (`AGENTS.md`, principio de
- * verificacion, punto 4).
+ * mover la compuerta al final, adelantar la medicion del arbol al paso que escribe, reponer
+ * el paso que subia el artefacto, devolver el destino del registro a la variable cruda,
+ * quitarle al paso que escribe la exigencia de que la validacion haya pasado— y exige que
+ * cada una ponga roja la comprobacion que le toca. Una prueba verde que no puede fallar no
+ * prueba nada (`AGENTS.md`, principio de verificacion, punto 4).
+ *
+ * La regla sobre el `if` de un paso que publique es, por construccion, una regla sobre algo
+ * que hoy no existe: se comprueba sobre los pasos que publican, y hoy no hay ninguno. Para
+ * que no sea una comprobacion vacua —el defecto que `AGENTS.md` llama «gate verde que no
+ * mira nada»— se ejercita en los dos sentidos sobre mutantes: un paso que publica con
+ * `always()` la pone roja, y el mismo paso condicionado a las compuertas la deja verde.
  */
 
 import assert from 'node:assert/strict';
@@ -107,8 +126,8 @@ export function comprobarPreparado(fuente) {
 }
 
 // ---------------------------------------------------------------------------------------
-// AC-PRG-04 — la compuerta de exposicion corre ANTES de cualquier escritura o publicacion,
-// y el registro sale como artefacto, nunca al arbol de trabajo.
+// AC-PRG-04 — la compuerta de exposicion corre ANTES de cualquier escritura, y el registro
+// se escribe en el almacen externo, nunca en el arbol de trabajo.
 //
 // Esta comprobacion existe ademas por una segunda razon: prueba que el analisis LLEGO a los
 // pasos. Si el analizador se quedara corto y devolviera un arbol vacio, las comprobaciones
@@ -138,13 +157,9 @@ export function comprobarCompuertaAntesDeEscribir(fuente) {
     'la compuerta tiene que correr DESPUES de la corrida: audita lo que la corrida escribio',
   );
 
-  // Todo lo que produce o publica algo va despues de la compuerta.
+  // Todo lo que produce algo va despues de la compuerta.
   const posteriores = [
     ['el registro de la corrida', indiceDe((g) => g.includes('registro-de-corridas.mjs >'))],
-    [
-      'la publicacion del artefacto',
-      indiceDe((_g, paso) => String(paso.uses ?? '').startsWith('actions/upload-artifact')),
-    ],
     ['la comprobacion del arbol intacto', indiceDe((g) => g.includes('git status --porcelain'))],
   ];
   for (const [nombre, indice] of posteriores) {
@@ -155,26 +170,199 @@ export function comprobarCompuertaAntesDeEscribir(fuente) {
     );
   }
 
-  // El registro se escribe FUERA del checkout, y el artefacto lo lee de ahi.
+  // El arbol se mide DESPUES del ultimo paso que puede escribir. Una medicion que precede
+  // al escritor no lo mide: el destino del registro sale de una variable, y un
+  // `EDITORIAL_ESTADO_DIR` mal apuntado escribiria dentro del checkout.
+  const arbol = indiceDe((g) => g.includes('git status --porcelain'));
+  const registro = indiceDe((g) => g.includes('registro-de-corridas.mjs >'));
+  assert.ok(
+    arbol > registro,
+    'la medicion del arbol de trabajo corre ANTES del paso que escribe el registro, asi que no lo mide',
+  );
+
+  // El registro se escribe en el ALMACEN EXTERNO, que es el unico destino que no publica y
+  // que ademas conserva: `$RUNNER_TEMP` no tocaria el arbol publico, pero se va con el
+  // runner y dejaria el registro sin existir. Y se escribe en la ruta YA VALIDADA, no en la
+  // variable cruda: ese es el hallazgo F-01 y lo comprueba `comprobarEscrituraValidada`.
   const escritura = guiones.find((g) => g.includes('registro-de-corridas.mjs >')) ?? '';
   assert.match(
     escritura,
-    />\s*"?\$(RUNNER_TEMP|\{RUNNER_TEMP\})/,
-    'el registro tiene que escribirse en $RUNNER_TEMP, fuera del arbol de trabajo publico',
+    />\s*"?\$\{?RUTA_ESTADO_VALIDADA\}?\//,
+    'el registro tiene que escribirse en la ruta validada del almacen externo, fuera de todo arbol de git',
   );
-  const subida = pasos.find(({ paso }) =>
-    String(paso.uses ?? '').startsWith('actions/upload-artifact'),
+}
+
+// ---------------------------------------------------------------------------------------
+// F-01 — ninguna escritura sale de una ruta sin validar, y la validacion precede a todo.
+//
+// El defecto que cierra esta comprobacion: los pasos del registro corren con `always()`
+// —tienen que correr aunque la corrida falle— y escribian con `mkdir -p` sobre
+// `$EDITORIAL_ESTADO_DIR` CRUDA. Con la variable apuntando dentro del checkout, la corrida
+// abortaba por `02-editorial.md` §8.3 y el registro escribia igual dentro del repositorio
+// PUBLICO; como las dos rutas historicas del canal estan en `.gitignore`, «el arbol de
+// trabajo quedo intacto» tampoco lo veia, porque `git status --porcelain` no lista lo
+// ignorado. La mitigacion tapaba el defecto en vez de detectarlo.
+//
+// Que el rechazo ocurre de verdad —y que no se escribe un solo byte— lo prueba por
+// ejecucion `directorio-fuera-de-git.test.mjs`, contra un arbol de git real montado en
+// `tmpdir`. Aqui se comprueba la otra mitad: que el workflow use ese mecanismo.
+// ---------------------------------------------------------------------------------------
+
+const VALIDACION = 'dirs_privados';
+
+export function comprobarEscrituraValidada(fuente) {
+  const pasos = pasosDe(analizar(fuente));
+  const guionDe = ({ paso }) => (typeof paso.run === 'string' ? paso.run : '');
+
+  const iValidacion = pasos.findIndex(({ paso }) => paso.id === VALIDACION);
+  assert.ok(
+    iValidacion >= 0,
+    `falta el paso que valida los directorios privados (id: ${VALIDACION}): sin el, el destino del registro no lo comprueba nadie`,
   );
-  const ruta = comoTexto(
-    comoMapa(subida?.paso.with, 'upload-artifact.with').path,
-    'upload-artifact.with.path',
+  assert.match(
+    guionDe(pasos[iValidacion]),
+    /ruta-estado\.mjs/,
+    `el paso «${VALIDACION}» tiene que resolver el destino con la validacion CANONICA del canal (ruta-estado.mjs), no con una copia de la regla`,
   );
-  assert.match(ruta, /runner\.temp/, 'el artefacto tiene que salir de $RUNNER_TEMP, no del arbol de trabajo');
+
+  const iCorrida = pasos.findIndex((p) => guionDe(p).includes('ejecutar.mjs'));
+  assert.ok(iCorrida >= 0, 'no se encontro el paso de la corrida');
+  assert.ok(
+    iValidacion < iCorrida,
+    'la validacion de los directorios privados tiene que correr ANTES de la corrida: una corrida que arranca con un destino invalido ya escribio cuando alguien lo mira',
+  );
+
+  for (const { paso } of pasos) {
+    const guion = typeof paso.run === 'string' ? paso.run : '';
+    const etiqueta = etiquetaDe(paso);
+
+    // 1. Ningun paso escribe sobre la variable CRUDA.
+    assert.ok(
+      !/\bmkdir\b[^\n]*\$\{?EDITORIAL_ESTADO_DIR\b/.test(guion) &&
+        !/>\s*"?\$\{?EDITORIAL_ESTADO_DIR\b/.test(guion),
+      `paso «${etiqueta}»: escribe sobre $EDITORIAL_ESTADO_DIR sin validar. El shell no comprueba §8.3, y una ruta dentro del checkout se escribiria igual (F-01)`,
+    );
+
+    // 2. Todo paso que escriba en el almacen exige que la validacion haya PASADO. No basta
+    //    con que hoy la validacion preceda a la corrida: estos pasos corren con `always()`,
+    //    asi que corren tambien cuando algo de antes fallo.
+    //    El paso de validacion se excluye porque es quien PRODUCE la ruta, no quien escribe
+    //    con ella; exigirse a si mismo su propio exito seria una condicion imposible.
+    if (paso.id === VALIDACION) continue;
+    if (!guion.includes('$RUTA_ESTADO_VALIDADA')) continue;
+    const condicion = typeof paso.if === 'string' ? paso.if : '';
+    assert.ok(
+      condicion.includes(`steps.${VALIDACION}.outcome == 'success'`),
+      `paso «${etiqueta}»: escribe en el almacen sin exigir que «${VALIDACION}» haya PASADO. Con always() escribiria tambien cuando la validacion dijo que no`,
+    );
+  }
+}
+
+/**
+ * La segunda cerradura: el arbol se mide tambien por lo que git IGNORA.
+ *
+ * `git status --porcelain` no lista lo ignorado y `/scripts/editorial/estado/` y
+ * `/scripts/editorial/redacciones/` estan en el `.gitignore` de este repositorio: sin esta
+ * comprobacion, un archivo escrito ahi deja el arbol «limpio».
+ */
+export function comprobarArbolMideLoIgnorado(fuente) {
+  const guion =
+    pasosDe(analizar(fuente))
+      .map(({ paso }) => (typeof paso.run === 'string' ? paso.run : ''))
+      .find((g) => g.includes('git status --porcelain')) ?? '';
+  assert.ok(guion.length > 0, 'falta el paso que mide el arbol de trabajo');
+  for (const ruta of ['scripts/editorial/estado', 'scripts/editorial/redacciones']) {
+    assert.ok(
+      guion.includes(ruta),
+      `el paso que mide el arbol no comprueba «${ruta}», que git ignora: un archivo escrito ahi no aparece en git status --porcelain`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// AC-PRG-04, segunda mitad — NADA se publica mientras este repositorio sea publico, y la
+// regla que sobrevive al paso retirado.
+//
+// El paso `actions/upload-artifact` que estuvo aqui hasta el 2026-09-24 se describia como
+// «artefacto privado». Eso no existe: en un repositorio publico los artefactos de Actions
+// los descarga cualquiera que pueda ver el repositorio, y la accion no tiene ninguna opcion
+// de ACL. Sanear el contenido no vuelve privado el artefacto —vuelve publicable su
+// contenido, que es otra cosa—.
+// ---------------------------------------------------------------------------------------
+
+/** Acciones cuyo efecto es dejar algo descargable fuera de la corrida. */
+const ACCIONES_QUE_PUBLICAN = [
+  'actions/upload-artifact',
+  'actions/upload-pages-artifact',
+  'actions/deploy-pages',
+  'softprops/action-gh-release',
+];
+
+/** Lo mismo desde un `run`. */
+const PUBLICACION_EN_SHELL = [
+  /\bgh\s+release\s+create\b/,
+  /\bgh\s+gist\s+create\b/,
+  /\bgh\s+pr\s+create\b/,
+];
+
+const etiquetaDe = (paso) =>
+  typeof paso.name === 'string' ? paso.name : typeof paso.uses === 'string' ? paso.uses : '(sin nombre)';
+
+function pasosQuePublican(fuente) {
+  return pasosDe(analizar(fuente)).filter(({ paso }) => {
+    const usa = String(paso.uses ?? '');
+    const guion = typeof paso.run === 'string' ? paso.run : '';
+    return (
+      ACCIONES_QUE_PUBLICAN.some((accion) => usa.startsWith(accion)) ||
+      PUBLICACION_EN_SHELL.some((patron) => patron.test(guion))
+    );
+  });
+}
+
+export function comprobarNadaSePublica(fuente) {
+  const publican = pasosQuePublican(fuente).map(({ job, paso }) => `jobs.${job} «${etiquetaDe(paso)}»`);
+  assert.equal(
+    publican.length,
+    0,
+    `este repositorio es PUBLICO y no existe el artefacto privado: ningun paso puede publicar, y publican ${publican.join(', ')}. ` +
+      'Un registro descargable exige repositorio privado o destino externo con credencial (prerrequisito 3, abierto)',
+  );
+}
+
+export function comprobarPublicacionCondicionada(fuente) {
+  for (const { job, paso } of pasosQuePublican(fuente)) {
+    const donde = `jobs.${job}, paso «${etiquetaDe(paso)}»`;
+    const condicion = typeof paso.if === 'string' ? paso.if : '';
+    assert.ok(
+      !/always\s*\(\s*\)/.test(condicion),
+      `${donde}: publica con always(), asi que publicaria aunque una compuerta acabara de fallar. ` +
+        'Es el defecto exacto del paso retirado el 2026-09-24',
+    );
+    for (const compuerta of ['exposicion', 'registro_sin_urls']) {
+      assert.ok(
+        condicion.includes(`steps.${compuerta}.outcome == 'success'`),
+        `${donde}: no exige que la compuerta «${compuerta}» haya PASADO antes de publicar`,
+      );
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------------------
+
+/** El paso retirado, tal cual estaba, para reponerlo en un mutante con la `if` que se pida. */
+const pasoQuePublica = (condicion) =>
+  [
+    '',
+    '      - name: publicar el registro como artefacto',
+    `        if: ${condicion}`,
+    '        uses: actions/upload-artifact@v4',
+    '        with:',
+    '          name: registro-canal',
+    '          path: registro-corrida.txt',
+    '',
+  ].join('\n');
 
 const fuente = leerFuente();
 
@@ -194,11 +382,35 @@ test('AC-PRG-02: YAML valido, manual primero, cron comentado, concurrency y tope
   comprobarPreparado(fuente);
 });
 
-test('AC-PRG-04: la compuerta de exposicion precede a toda escritura, y el registro sale como artefacto', () => {
+test('AC-PRG-04: la compuerta de exposicion precede a toda escritura, y el registro va al almacen externo', () => {
   comprobarCompuertaAntesDeEscribir(fuente);
 });
 
-test('las comprobaciones pueden fallar: ocho mutaciones y cada una pone roja la suya', () => {
+test('AC-PRG-04: ningun paso publica nada mientras este repositorio sea publico', () => {
+  comprobarNadaSePublica(fuente);
+  comprobarPublicacionCondicionada(fuente);
+});
+
+test('AC-PRG-04: la regla del `if` acepta un paso que SI espera a las compuertas', () => {
+  // La otra mitad de la falsabilidad. Sin este test, «ningun paso publica con always()»
+  // podria estar implementado como «ningun paso publica», y nadie lo notaria.
+  const condicionado = pasoQuePublica(
+    "${{ steps.exposicion.outcome == 'success' && steps.registro_sin_urls.outcome == 'success' }}",
+  );
+  comprobarPublicacionCondicionada(fuente + condicionado);
+  assert.throws(
+    () => comprobarNadaSePublica(fuente + condicionado),
+    /artefacto privado/,
+    'condicionarlo bien no lo vuelve publicable: hoy no puede haber NINGUN paso que publique',
+  );
+});
+
+test('F-01: ninguna escritura sale de una ruta sin validar, y el arbol se mide tambien por lo ignorado', () => {
+  comprobarEscrituraValidada(fuente);
+  comprobarArbolMideLoIgnorado(fuente);
+});
+
+test('las comprobaciones pueden fallar: cada mutacion pone roja la suya', () => {
   exigirQueCadaMutacionFalle(fuente, [
     {
       nombre: 'el cron descomentado',
@@ -243,9 +455,79 @@ test('las comprobaciones pueden fallar: ocho mutaciones y cada una pone roja la 
     },
     {
       nombre: 'el registro escrito dentro del arbol de trabajo',
-      motivo: /RUNNER_TEMP/,
-      mutar: (f) => f.replace('> "$RUNNER_TEMP/registro-corrida.txt"', '> registro-corrida.txt'),
+      motivo: /ruta validada/,
+      mutar: (f) =>
+        f.replace(
+          '> "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"',
+          '> registro-corrida.txt',
+        ),
       comprobar: comprobarCompuertaAntesDeEscribir,
+    },
+    // --- Las cuatro que siguen son el hallazgo F-01, una por cada mitad del arreglo. ---
+    {
+      nombre: 'el registro escrito sobre la variable CRUDA, sin validar',
+      motivo: /sin validar/,
+      mutar: (f) =>
+        f
+          .replace('mkdir -p "$RUTA_ESTADO_VALIDADA"', 'mkdir -p "$EDITORIAL_ESTADO_DIR"')
+          .replace(
+            '> "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"',
+            '> "$EDITORIAL_ESTADO_DIR/registro-corrida-$GITHUB_RUN_NUMBER.txt"',
+          ),
+      comprobar: comprobarEscrituraValidada,
+    },
+    {
+      // Solo la primera ocurrencia: basta con que UN paso que escribe deje de exigirlo.
+      nombre: 'el paso del registro sin exigir que la validacion haya PASADO',
+      motivo: /dirs_privados/,
+      mutar: (f) => f.replace(" && steps.dirs_privados.outcome == 'success' }}", ' }}'),
+      comprobar: comprobarEscrituraValidada,
+    },
+    {
+      nombre: 'la validacion de los directorios movida despues de la corrida',
+      motivo: /ANTES de la corrida/,
+      mutar: (f) => {
+        const bloque = /^ {6}- name: los directorios privados estan fuera de git\n(?: {8}.*\n)+/m;
+        const m = bloque.exec(f);
+        assert.ok(m !== null, 'no se pudo aislar el paso de validacion para moverlo');
+        return `${f.replace(bloque, '').replace(/\s*$/, '')}\n${m[0]}`;
+      },
+      comprobar: comprobarEscrituraValidada,
+    },
+    {
+      nombre: 'el arbol medido solo con git status, sin mirar lo que git ignora',
+      motivo: /que git ignora/,
+      mutar: (f) => f.replace(/^ {10}for ruta in scripts\/editorial\/estado[\s\S]*?^ {10}done\n/m, ''),
+      comprobar: comprobarArbolMideLoIgnorado,
+    },
+    {
+      nombre: 'la medicion del arbol movida antes del paso que escribe el registro',
+      motivo: /medicion del arbol/,
+      mutar: (f) => {
+        const bloque = /^ {6}- name: el arbol de trabajo quedo intacto\n(?: {8}.*\n)+/m;
+        const m = bloque.exec(f);
+        assert.ok(m !== null, 'no se pudo aislar el paso del arbol intacto para moverlo');
+        return f
+          .replace(bloque, '')
+          .replace(/^ {6}- name: registro de la corrida$/m, `${m[0].trimEnd()}\n      - name: registro de la corrida`);
+      },
+      comprobar: comprobarCompuertaAntesDeEscribir,
+    },
+    {
+      // Las dos mutaciones que siguen reponen EL MISMO paso retirado y exigen dos cosas
+      // distintas: que hoy no pueda existir, y que si algun dia existe no pueda publicar
+      // ignorando las compuertas. La segunda es la unica forma de que esa regla no sea una
+      // comprobacion vacua sobre un conjunto vacio de pasos.
+      nombre: 'repuesto el paso que sube el registro como artefacto',
+      motivo: /artefacto privado/,
+      mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQuePublica("${{ always() }}")}`,
+      comprobar: comprobarNadaSePublica,
+    },
+    {
+      nombre: 'un paso que publica con always() en vez de esperar a las compuertas',
+      motivo: /always\(\)/,
+      mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQuePublica("${{ always() }}")}`,
+      comprobar: comprobarPublicacionCondicionada,
     },
     {
       nombre: 'la compuerta de exposicion movida al final, despues de publicar',

@@ -57,6 +57,11 @@
 #     trabajo de T-E3. `permissions` pide solo lectura y el checkout se hace
 #     SIN credenciales persistidas, asi que un paso que lo intentara no tendria
 #     ni permiso ni credencial. La prueba lo comprueba sobre este archivo.
+#   - NO SUBE NINGUN ARTEFACTO. Mientras este repositorio sea PUBLICO no existe
+#     el «artefacto privado»: los artefactos de Actions los descarga cualquiera
+#     que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna
+#     opcion de ACL. El paso de subida que estaba aqui se retiro el 2026-09-24;
+#     el porque completo esta al final del archivo, donde estaba el paso.
 #   - NO AUTORIZA. Una corrida programada jamas publica: deja las piezas en
 #     `terminada` —borrador verificado— y ahi se detiene. Lo unico que escribe
 #     en `content/noticias/` es `autorizar.mjs`, que corre Rodrigo a mano
@@ -200,6 +205,33 @@ jobs:
       - name: instalar dependencias
         run: npm ci
 
+      # --- LOS DIRECTORIOS PRIVADOS, VALIDADOS ANTES DE ESCRIBIR NADA ---------
+      # El preflight de arriba solo puede comprobar que las variables no vienen
+      # vacias: corre antes del checkout y no tiene el canal a mano. Aqui se aplica
+      # la validacion CANONICA (`exigirDirectoriosPrivados()`): aborta si falta una
+      # y RECHAZA la ruta si resuelve dentro de un arbol de trabajo de git.
+      #
+      # POR QUE ES UN PASO PROPIO Y NO BASTA CON QUE LA CORRIDA VALIDE. Los pasos que
+      # escriben el registro corren con `always()` —tienen que correr aunque la corrida
+      # falle, que es justo cuando hay algo que registrar—, asi que se ejecutan DESPUES
+      # de que la corrida haya abortado. Hasta el 2026-09-24 hacian `mkdir -p` sobre la
+      # variable CRUDA: con `EDITORIAL_ESTADO_DIR` apuntando dentro del checkout, la
+      # corrida abortaba por §8.3 y el registro escribia igual dentro del repositorio
+      # publico. Y como esa ruta esta en `.gitignore`, «el arbol de trabajo quedo
+      # intacto» tampoco lo veia: `git status --porcelain` no lista lo ignorado. Es el
+      # hallazgo F-01 de la revision.
+      #
+      # De aqui sale la ruta RESUELTA y validada, y es la UNICA que usan los pasos de
+      # abajo. La variable cruda no vuelve a aparecer como destino de nada.
+      - name: los directorios privados estan fuera de git
+        id: dirs_privados
+        run: |
+          set -euo pipefail
+          # Asignacion, no `echo "X=$(...)"`: con la segunda forma el `echo` tiene
+          # exito aunque el comando de dentro falle, y `set -e` no ve nada.
+          ruta="$(node scripts/editorial/ruta-estado.mjs)"
+          echo "RUTA_ESTADO_VALIDADA=$ruta" >> "$GITHUB_ENV"
+
       # --- RECUPERACION -------------------------------------------------------
       # La corrida NO arranca del feed: arranca de la bitacora. Lo que quedo a
       # medias en la corrida anterior —por fallo, por timeout o porque el runner
@@ -212,7 +244,7 @@ jobs:
       # (`scripts/editorial/estado`) y NO consulta `EDITORIAL_ESTADO_DIR`. Tras
       # T-E1 ese directorio ya no existe, asi que hoy este paso imprime
       # «0 corrida(s)» y sale 0: un paso verde que no comprueba nada. El
-      # registro que sube como artefacto mas abajo esta vacio por el mismo
+      # registro que se escribe mas abajo esta vacio por el mismo
       # motivo. Es un defecto del canal, no de este archivo, y cerrarlo es
       # prerrequisito 5 de la activacion: un registro vacio y un canal que no
       # corrio se leen igual.
@@ -258,16 +290,83 @@ jobs:
       # checkout y el guard pasaria en vacio, que es el verde que no significa
       # nada de `AGENTS.md`.
       - name: compuerta de exposicion
+        id: exposicion
         if: ${{ always() && steps.corrida.outcome != 'skipped' }}
         run: node scripts/auditoria-exposicion.mjs
+
+      # --- REGISTRO CONSULTABLE, SIN CONTENIDO SENSIBLE ----------------------
+      # `registro-de-corridas.mjs` deriva la bitacora a una tabla de contadores
+      # y marcas de tiempo. Por construccion no emite titulos, URLs, prompts ni
+      # nombres de repositorio: solo agrupa eventos por id de corrida.
+      #
+      # Se escribe en la ruta que devolvio el paso «los directorios privados estan
+      # fuera de git» —`$RUTA_ESTADO_VALIDADA`, el almacen externo ya resuelto y
+      # comprobado— y no sale de ahi. El destino NO es la variable cruda, y la `if`
+      # exige ademas que esa validacion haya PASADO: un paso con `always()` que
+      # escribe sobre una variable sin validar escribe tambien cuando la validacion
+      # dijo que no (F-01). Dos razones para que el destino sea ese, y las dos importan:
+      #   1. El arbol publico no se toca ni con un archivo temporal, y el ultimo
+      #      paso del job lo comprueba.
+      #   2. Es el unico destino que hoy existe y que no publica. `$RUNNER_TEMP`
+      #      serviria para lo primero pero no para conservar nada: el runner es
+      #      efimero y el archivo se va con el. El registro vive donde vive el
+      #      resto del estado del canal.
+      # El nombre lleva el numero de corrida: un registro que se sobreescribe a
+      # si mismo cada corrida es un registro que pierde justo la corrida que se
+      # quiere revisar.
+      - name: registro de la corrida
+        if: ${{ always() && steps.corrida.outcome != 'skipped' && steps.dirs_privados.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUTA_ESTADO_VALIDADA"
+          node scripts/editorial/registro-de-corridas.mjs > "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"
+
+      # El grep comprueba lo unico que un grep puede comprobar: que no hay URLs
+      # ni rutas de repositorio. Que no lleve titulos ni prompts lo garantiza la
+      # forma del script, no este paso; se dice asi para no vender la compuerta
+      # por mas de lo que mide.
+      #
+      # Sigue aqui aunque el registro ya no se publique, y no es un resto: la
+      # afirmacion «el registro no lleva contenido sensible» es del contrato
+      # (`00-donde-correria.md`, fila «Registros consultables»), y una afirmacion
+      # que nadie mide se vuelve falsa en silencio en cuanto el script cambie.
+      # Lo que este paso NO hace es volver publicable el archivo: eso es lo que
+      # explica el bloque de abajo.
+      - name: el registro no lleva URLs
+        id: registro_sin_urls
+        if: ${{ always() && steps.corrida.outcome != 'skipped' && steps.dirs_privados.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          if grep -Eq '(https?://|www\.|github\.com/)' "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"; then
+            echo "::error::El registro contiene URLs. No se conserva ni se comparte."
+            exit 1
+          fi
 
       # --- NINGUNA ESCRITURA AL ARBOL PUBLICO --------------------------------
       # La garantia de que este workflow no escribe en el repositorio no puede
       # ser «no hay un paso que lo haga»: eso lo desmiente el primer paso que
-      # alguien añada. Se mide. Si la corrida dejo cualquier cosa en el arbol
-      # —trackeada o no—, el job falla aqui y no publica nada.
+      # alguien añada. Se mide.
+      #
+      # VA AL FINAL, y es deliberado: una medicion del arbol solo vale si corre
+      # DESPUES del ultimo paso que puede escribir. Estuvo antes del registro
+      # hasta el 2026-09-24, y era el mismo defecto que el paso de subida con
+      # `always()`: el destino del registro sale de una variable, asi que un
+      # `EDITORIAL_ESTADO_DIR` mal apuntado habria escrito dentro del checkout
+      # sin que nada lo mirara. Una compuerta que corre antes del escritor no
+      # mide al escritor.
+      #
+      # Y MIDE DOS COSAS, no una. `git status --porcelain` NO lista lo ignorado, y
+      # las dos rutas historicas del canal estan en `.gitignore`: un archivo escrito
+      # ahi daba un arbol «limpio». Esa es la mitad del hallazgo F-01 que la
+      # validacion de arriba cierra por delante; el bucle de abajo la cierra por
+      # detras, que es lo que hace que no dependa de un solo mecanismo.
+      #
+      # La condicion cuelga de `dirs_privados` y no de `corrida`: si la validacion
+      # fallo, la corrida queda `skipped` y el arbol se tiene que medir IGUAL —es
+      # justo el caso en que alguien pudo escribir donde no debia—.
       - name: el arbol de trabajo quedo intacto
-        if: ${{ always() && steps.corrida.outcome != 'skipped' }}
+        id: arbol_intacto
+        if: ${{ always() && steps.dirs_privados.outcome != 'skipped' }}
         run: |
           set -euo pipefail
           sucio="$(git status --porcelain)"
@@ -277,45 +376,53 @@ jobs:
             git status --porcelain
             exit 1
           fi
+          for ruta in scripts/editorial/estado scripts/editorial/redacciones; do
+            if [ -e "$ruta" ]; then
+              echo "::error::La corrida escribio en $ruta, que git IGNORA: git status no lo lista."
+              echo "::error::El estado y los borradores viven fuera de git (02-editorial.md §8.3)."
+              exit 1
+            fi
+          done
 
-      # --- REGISTRO CONSULTABLE, SIN CONTENIDO SENSIBLE ----------------------
-      # `registro-de-corridas.mjs` deriva la bitacora a una tabla de contadores
-      # y marcas de tiempo. Por construccion no emite titulos, URLs, prompts ni
-      # nombres de repositorio: solo agrupa eventos por id de corrida.
+      # ========================================================================
+      # POR QUE AQUI NO HAY UN PASO QUE SUBA EL REGISTRO COMO ARTEFACTO
       #
-      # Se escribe en `$RUNNER_TEMP`, FUERA del checkout, por dos razones: el
-      # arbol publico no se toca ni con un archivo temporal, y el paso anterior
-      # —que exige el arbol intacto— seguiria siendo cierto.
-      - name: registro de la corrida
-        if: ${{ always() && steps.corrida.outcome != 'skipped' }}
-        run: node scripts/editorial/registro-de-corridas.mjs > "$RUNNER_TEMP/registro-corrida.txt"
-
-      # El grep comprueba lo unico que un grep puede comprobar: que no hay URLs
-      # ni rutas de repositorio. Que no lleve titulos ni prompts lo garantiza la
-      # forma del script, no este paso; se dice asi para no vender la compuerta
-      # por mas de lo que mide.
-      - name: el registro no lleva URLs
-        if: ${{ always() && steps.corrida.outcome != 'skipped' }}
-        run: |
-          set -euo pipefail
-          if grep -Eq '(https?://|www\.|github\.com/)' "$RUNNER_TEMP/registro-corrida.txt"; then
-            echo "::error::El registro contiene URLs y no se publica."
-            exit 1
-          fi
-
-      # ARTEFACTO, NO COMMIT: el registro se sube como artefacto de la corrida y
-      # no entra al repositorio.
+      # Hasta el 2026-09-24 este archivo terminaba en un `actions/upload-artifact`
+      # descrito como «artefacto privado». ESO NO EXISTE, y el error es del tipo
+      # que hay que dejar escrito en vez de borrar:
       #
-      # DICHO CON PRECISION: en un repositorio PUBLICO los artefactos de Actions
-      # los puede descargar cualquiera que pueda ver el repositorio, o sea
-      # cualquiera. Lo que hace publicable este archivo NO es un permiso: es que
-      # su contenido esta saneado por construccion y verificado por el paso de
-      # arriba. Llamarlo «privado» por subirlo como artefacto seria falso, y por
-      # eso se deja escrito aqui.
-      - name: publicar el registro como artefacto
-        if: ${{ always() && steps.corrida.outcome != 'skipped' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: registro-canal-${{ github.run_number }}
-          path: ${{ runner.temp }}/registro-corrida.txt
-          retention-days: 30
+      #   - En un repositorio PUBLICO, los artefactos de una corrida de Actions
+      #     los puede descargar cualquiera que pueda ver el repositorio — o sea,
+      #     cualquiera. `actions/upload-artifact` no tiene ninguna opcion de ACL:
+      #     no hay forma de subir un artefacto y restringir quien lo baja.
+      #   - SANEAR EL CONTENIDO NO VUELVE PRIVADO EL ARTEFACTO. Vuelve publicable
+      #     su contenido, que es otra cosa. El paso «el registro no lleva URLs»
+      #     mide lo segundo y no puede dar lo primero; confundirlos era el
+      #     defecto.
+      #
+      # Tener un registro descargable exigiria una de dos cosas, y ninguna es
+      # este archivo: o el repositorio es privado, o el registro va a un destino
+      # externo con credencial. Las dos caen dentro del prerrequisito 3 de
+      # `00-donde-correria.md` —elegir el almacen externo—, que sigue ABIERTO.
+      # Mientras tanto el registro se queda en `$EDITORIAL_ESTADO_DIR`: quien lo
+      # necesite lo lee de ahi, y quien no tenga acceso a ese almacen tampoco
+      # tendria por que leerlo.
+      #
+      # ------------------------------------------------------------------------
+      # LA REGLA QUE SOBREVIVE AL PASO RETIRADO, y que es la parte reutilizable:
+      #
+      #   SI ALGUN DIA UN PASO PUBLICA ALGO, SU `if` TIENE QUE DEPENDER DE QUE
+      #   LAS COMPUERTAS HAYAN **PASADO** —`steps.exposicion.outcome == 'success'`
+      #   y `steps.registro_sin_urls.outcome == 'success'`—, NUNCA DE `always()`.
+      #
+      # Es literalmente el defecto que tenia el paso retirado: compartia condicion
+      # con las tres compuertas (`always() && steps.corrida.outcome != 'skipped'`),
+      # asi que subia el archivo IGUAL aunque «el registro no lleva URLs» acabara
+      # de fallar. Una compuerta que no puede detener lo que viene despues no es
+      # una compuerta: es un mensaje de log. Los pasos de arriba pueden usar
+      # `always()` porque ninguno publica nada —miden, y una corrida que fallo a
+      # mitad es justo la que hay que medir—; un paso que publique, no.
+      # `scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba las dos
+      # mitades: que hoy no hay ningun paso que publique, y que si alguien repone
+      # uno con `always()` la prueba se pone roja.
+      # ========================================================================

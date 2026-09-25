@@ -139,7 +139,7 @@ workflow no está instalado y el bloque de medición que sigue a la tabla dice q
 | **Exclusión de ejecuciones simultáneas** | `concurrency.group` nativo de Actions, con un group **fijo**: no lleva `github.ref` ni `github.run_id`, porque el recurso que se disputa es uno solo —la bitácora— y un group por rama daría dos corridas simultáneas sobre el mismo estado. `cancel-in-progress: false` a propósito: **se encola, no se mata**. Matar a mitad deja trabajo en un estado que nadie cerró | bloque `concurrency` |
 | **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `ejecutar.mjs` |
 | **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. El que **no ata**: `EDITORIAL_MAX_LLAMADAS` está declarado con su valor, pero ningún `.mjs` lo lee —medido el 2026-09-24—, así que hoy no protege de nada. Se deja escrito porque es el contrato, y dicho así para que nadie lo cuente como protección: prerrequisito 4 de *Activar* | `env` y pasos *límites de la corrida* y *corrida* |
-| **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. Se escribe en `$RUNNER_TEMP` —fuera del checkout, para no tocar el árbol público ni con un temporal—, un paso verifica que no lleva URLs, y se sube como artefacto con retención de 30 días. **Dicho con precisión: en un repositorio público los artefactos de Actions los puede descargar cualquiera que pueda ver el repositorio, o sea cualquiera.** Lo que hace publicable ese archivo no es un permiso, es que su contenido está saneado por construcción y verificado antes de subirlo | pasos *registro de la corrida*, *el registro no lleva URLs* y *publicar el registro como artefacto* |
+| **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. Se escribe en la ruta que devuelve `ruta-estado.mjs` —`$EDITORIAL_ESTADO_DIR` ya **validada**, no la variable cruda: el almacén externo, fuera de todo árbol de git— con el número de corrida en el nombre, y un paso verifica que no lleva URLs. **No se sube como artefacto, y eso es la decisión**: en un repositorio público los artefactos de Actions los descarga cualquiera que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna opción de ACL. Sanear el contenido no vuelve privado el artefacto: vuelve publicable su contenido, que es otra cosa. Ver *El registro no se publica* | pasos *registro de la corrida* y *el registro no lleva URLs* |
 | **Credencial y forma segura de suministrarla** | Secret del repositorio, leído del entorno. Nunca en el archivo, nunca en la línea de comandos | `env.ANTHROPIC_API_KEY` |
 
 **Estado real, vuelto a medir el 2026-09-24.** Las tres primeras mediciones de esta lista
@@ -175,7 +175,7 @@ que decían tachado, porque una lista que se reescribe borra la evidencia de qu�
   resuelve su directorio con la constante `scripts/editorial/estado` y **no** consulta
   `EDITORIAL_ESTADO_DIR`. Ese directorio ya no existe, así que el comando imprime
   «0 corrida(s)» y sale 0. Es el defecto de *un cero medido y un cero por falta de dato se
-  ven igual*: el registro que el workflow sube como artefacto estaría vacío, y un canal que
+  ven igual*: el registro que el workflow escribe en el almacén estaría vacío, y un canal que
   no corrió se leería exactamente igual que uno que corrió bien. Es del canal, no del
   workflow; es el prerrequisito 5 de *Activar*.
 
@@ -212,6 +212,72 @@ no necesitan conocer los nombres privados. Con `--gh` los pediría a la API, y e
 `GITHUB_TOKEN` de un runner no puede enumerar las organizaciones del usuario: devolvería
 exit 2 —«comprobación no realizada»—, que es peor que el modo reducido porque parece una
 comprobación. Es una mitigación acotada, como las demás de `04-architecture.md` §4.1.
+
+### El registro no se publica, y «artefacto privado» no existe
+
+Hasta el 2026-09-24 este documento y el workflow describían el registro de la corrida como un
+**artefacto privado**. Eso no existe, y conviene dejar escrito por qué en vez de corregirlo en
+silencio:
+
+- En un repositorio **público**, los artefactos de una corrida de Actions los puede descargar
+  cualquiera que pueda ver el repositorio —o sea, cualquiera—. `actions/upload-artifact` no
+  tiene ninguna opción de ACL: no hay forma de subir un artefacto y restringir quién lo baja.
+- **Sanear el contenido no vuelve privado el artefacto.** Vuelve publicable su contenido, que
+  es otra cosa. El paso *el registro no lleva URLs* mide lo segundo y no puede dar lo primero;
+  confundir las dos cosas era el defecto.
+
+Así que el paso de subida se retiró y el registro se queda en `$EDITORIAL_ESTADO_DIR`, fuera de
+todo árbol de git, con el número de corrida en el nombre. Tener un registro descargable exigiría
+una de dos cosas: **o el repositorio es privado, o el registro va a un destino externo con
+credencial**. Las dos caen dentro del prerrequisito 3 —elegir el almacén externo—, que sigue
+abierto.
+
+**Y una regla que sobrevive al paso retirado, porque es la parte reutilizable:** si algún día un
+paso publica algo, su `if` tiene que depender de que las compuertas hayan **PASADO**
+(`steps.exposicion.outcome == 'success'`), nunca de `always()`. El paso retirado compartía
+condición con las tres compuertas, así que habría subido el archivo igual aunque *el registro no
+lleva URLs* acabara de fallar: una compuerta que no puede detener lo que viene después no es una
+compuerta, es un mensaje de log. Los pasos que quedan sí pueden usar `always()` porque ninguno
+publica nada —miden, y una corrida que falló a mitad es justo la que hay que medir—.
+`scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba las dos mitades: que hoy no hay
+ningún paso que publique, y que un paso repuesto con `always()` pone la prueba roja.
+
+### El destino de una escritura se valida antes de escribir, no después
+
+La regla de arriba tenía una segunda mitad que faltaba, y la encontró la revisión del
+2026-09-24 (hallazgo F-01). Un paso con `always()` no publicaba nada —eso estaba bien— pero
+**escribía**: el registro salía de `mkdir -p "$EDITORIAL_ESTADO_DIR"` y una redirección del
+shell. Y el shell no sabe nada de §8.3. Con `EDITORIAL_ESTADO_DIR` apuntando dentro del
+checkout, el canal rechazaba la ruta y abortaba —`ejecutar.mjs` sí valida—, pero el paso del
+registro corría igual, **después** del rechazo, y creaba el directorio dentro del
+repositorio público.
+
+Lo que hacía el defecto difícil de ver es que la mitigación que debía detectarlo no podía:
+`/scripts/editorial/estado/` está en el `.gitignore`, y `git status --porcelain` **no lista
+lo ignorado**. El paso *el árbol de trabajo quedó intacto* habría dado verde sobre un
+archivo recién escrito en el árbol público.
+
+Se cierra con dos cerraduras, por delante y por detrás, porque una sola vuelve a ser una
+promesa:
+
+1. **Por delante.** El paso *los directorios privados están fuera de git* resuelve el
+   destino con `scripts/editorial/ruta-estado.mjs`, que aplica la validación **canónica**
+   del canal (`exigirDirectoriosPrivados()`, no una copia) y solo imprime la ruta si la
+   acepta. Los pasos que escriben usan esa ruta ya resuelta, y su `if` exige además que esa
+   validación haya **PASADO** —`steps.dirs_privados.outcome == 'success'`—, que es la misma
+   regla que ya regía para publicar, aplicada ahora a escribir. El mensaje de error nombra
+   la variable y el código, **nunca la ruta**: el registro de una corrida de Actions en un
+   repositorio público lo lee cualquiera.
+2. **Por detrás.** El paso que mide el árbol comprueba también, por nombre, que no existan
+   `scripts/editorial/estado` ni `scripts/editorial/redacciones` —lo que `git status` no
+   puede ver—.
+
+Las dos se prueban, y en dos planos distintos: `workflow-preparado.test.mjs` comprueba sobre
+el archivo que ninguna escritura sale de una ruta sin validar, y que quitar cualquiera de las
+dos cerraduras pone la prueba roja; `directorio-fuera-de-git.test.mjs` lo comprueba **por
+ejecución**, contra un árbol de git real montado en `tmpdir` con el destino ignorado: el
+script sale distinto de 0, no imprime destino, no crea el directorio —y de paso demuestra que
+`git status --porcelain` no habría visto el archivo, que es por qué hace falta la segunda—.
 
 ---
 
@@ -299,7 +365,9 @@ Detalles para tomarla con la información completa:
    puede fallar.
 3. **Elegir el almacén externo con respaldo** y probar una restauración. Un runner no tiene
    persistencia local ni respaldo; sin almacén, cada corrida arranca sin bitácora y vuelve a
-   procesar como nuevo todo lo ya visto. **Abierto**, y es la decisión que queda.
+   procesar como nuevo todo lo ya visto. **Abierto**, y es la decisión que queda. Es también
+   lo único que podría dar un registro descargable sin publicarlo: mientras este repositorio
+   sea público, subirlo como artefacto es publicarlo —ver *El registro no se publica*—.
 4. **Hacer que el tope de llamadas al redactor ate.** `EDITORIAL_MAX_LLAMADAS` está declarado
    en el workflow y ningún `.mjs` lo lee: `invocar-redactor.mjs` tiene que contar sus
    llamadas y abortar al llegar al tope. **Abierto.** Mientras siga así, el único freno a un
@@ -307,7 +375,7 @@ Detalles para tomarla con la información completa:
 5. **Arreglar `registro-de-corridas.mjs` para que lea `$EDITORIAL_ESTADO_DIR`.** Hoy resuelve
    `scripts/editorial/estado` por constante (`registro-de-corridas.mjs:22`), directorio que
    ya no existe: imprime «0 corrida(s)» y sale 0. **Abierto.** Activar con esto roto deja un
-   artefacto vacío en el que una corrida que no hizo nada y una corrida que falló entera se
+   registro vacío en el que una corrida que no hizo nada y una corrida que falló entera se
    leen exactamente igual.
 
 Después, cuatro movimientos en este orden:
@@ -315,7 +383,9 @@ Después, cuatro movimientos en este orden:
 1. Dar de alta el secret de inferencia y las dos variables del almacén.
 2. Mover `canal-editorial.yml` a `.github/workflows/`. **Ese movimiento no lo puede hacer un
    agente**: hace falta un token con alcance `workflow`, y el del agente no lo tiene.
-3. Correrlo a mano (`workflow_dispatch`) con `con_redactor: false` y mirar el registro.
+3. Correrlo a mano (`workflow_dispatch`) con `con_redactor: false` y leer el registro **en el
+   almacén externo**: no se sube como artefacto, y la bitácora de Actions solo dice si el
+   paso salió verde.
 4. **Sólo si esa corrida sale bien**, descomentar el bloque `schedule`.
 
 Hasta el paso 4 no hay cron. Y **la autorización** sigue desactivada en cualquier caso: una
