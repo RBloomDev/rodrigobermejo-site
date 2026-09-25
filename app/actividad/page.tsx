@@ -67,14 +67,14 @@ export default function ActividadPage() {
             <h3>Periodo: {periodo}</h3>
             {actividad!.buckets.filter(b => b.period === periodo).length === 0 ? <p>Sin dato publicado. El feed no permite distinguir la causa de la ausencia.</p> : actividad!.buckets.filter(b => b.period === periodo).map((bucket, index) => <div key={index} className="mt-4 border-t border-border-subtle pt-4">
               <p>Alcance: {bucket.project_id ? "proyecto del claim" : "proyectos de las afirmaciones vinculadas"}. Fuentes {bucket.visibility_scope === "mixed" ? "públicas y privadas agregadas" : "públicas"}.</p>
-              <ul>{claims.filter(c => bucket.claim_ids.includes(c.id)).map(c => <li key={c.id}><a className="underline" href="/evidencia">{c.statement}</a> (claim_ids: {c.id})</li>)}</ul>
+              <ul>{claims.filter(c => bucket.claim_ids.includes(c.id)).map(c => <li key={c.id}><Link className="underline" href="/evidencia">{c.statement}</Link> (claim_ids: {c.id})</li>)}</ul>
               <ul>{(Object.keys(etiquetas) as (keyof typeof etiquetas)[]).map(key => <li key={key}>{etiquetas[key]}: {bucket.counts[key]} eventos registrados en {periodo}.</li>)}</ul>
               <details className="mt-2"><summary className="cursor-pointer underline">Fuente, cobertura y límites de estas cifras</summary><p>Fuente: activity.json del motor de evidencia. Unidad: eventos registrados en {periodo}. Cobertura: solo los eventos publicables de las afirmaciones vinculadas; el feed no declara una fracción del trabajo total. No cubre trabajo sin registro ni eventos excluidos por la política de publicación. Un cero es un conteo publicado, no una ausencia. El sitio no recalcula ni deduplica estos conteos.</p></details>
             </div>)}
           </li>)}</ul>
         </>}
       </section>
-      <p className="mt-12">El índice canónico del sistema de evidencia está en <a href="/evidencia" className="underline">cómo respaldo lo que afirmo</a>. También puedes explorar <Link href="/proyectos" className="underline">los proyectos</Link>.</p>
+      <p className="mt-12">El índice canónico del sistema de evidencia está en <Link href="/evidencia" className="underline">cómo respaldo lo que afirmo</Link>. También puedes explorar <Link href="/proyectos" className="underline">los proyectos</Link>.</p>
     </main>
   );
 }
