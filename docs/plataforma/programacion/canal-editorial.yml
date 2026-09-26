@@ -154,9 +154,17 @@ jobs:
       # --- LIMITES DE CONSUMO ---------------------------------------------
       EDITORIAL_MAX_PIEZAS: ${{ inputs.limite || '1' }}
 
-      # Tope de llamadas al redactor por corrida. ATENCION, medido el
-      # 2026-09-24: `grep -rn EDITORIAL_MAX_LLAMADAS scripts/` no devuelve
-      # ninguna lectura, asi que HOY ESTE TOPE ESTA DECLARADO Y NO ATA. Se deja
+      # Tope de llamadas al redactor por corrida. ATENCION, vuelto a medir el
+      # 2026-09-25: `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/`
+      # sale VACIO, y `grep -rln EDITORIAL_MAX_LLAMADAS scripts/editorial/*.mjs
+      # scripts/*.mjs` no devuelve ningun archivo: nadie lo lee del entorno y
+      # ningun `.mjs` de produccion lo nombra. Asi que HOY ESTE TOPE ESTA
+      # DECLARADO Y NO ATA.
+      # (El grep suelto `grep -rn EDITORIAL_MAX_LLAMADAS scripts/` SI devuelve
+      # cuatro lineas, todas de `workflow-preparado.test.mjs`, que comprueba que
+      # este YAML lo DECLARA. Esa prueba no es una lectura del tope: citarla como
+      # evidencia de que ata seria justo el error que este comentario evita.)
+      # Se deja
       # escrito con su valor porque es el contrato que el canal tiene que
       # cumplir, y porque un tope invisible no se puede reclamar; pero quien lo
       # lea no debe creer que hoy protege de nada.

@@ -138,7 +138,7 @@ workflow no está instalado y el bloque de medición que sigue a la tabla dice q
 | **Persistencia de pendientes y resultados** | El estado y los borradores viven **fuera de cualquier repositorio**: `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` son **obligatorias, sin valor por defecto**, y sin ellas el canal **aborta** antes de escribir nada (`02-editorial.md` §8.3). En un runner efímero eso obliga además a un **almacén externo con respaldo**: un directorio local da persistencia local, no respaldo, y el runner no da ni eso | entorno de ejecución |
 | **Exclusión de ejecuciones simultáneas** | `concurrency.group` nativo de Actions, con un group **fijo**: no lleva `github.ref` ni `github.run_id`, porque el recurso que se disputa es uno solo —la bitácora— y un group por rama daría dos corridas simultáneas sobre el mismo estado. `cancel-in-progress: false` a propósito: **se encola, no se mata**. Matar a mitad deja trabajo en un estado que nadie cerró | bloque `concurrency` |
 | **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `ejecutar.mjs` |
-| **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. El que **no ata**: `EDITORIAL_MAX_LLAMADAS` está declarado con su valor, pero ningún `.mjs` lo lee —medido el 2026-09-24—, así que hoy no protege de nada. Se deja escrito porque es el contrato, y dicho así para que nadie lo cuente como protección: prerrequisito 4 de *Activar* | `env` y pasos *límites de la corrida* y *corrida* |
+| **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. El que **no ata**: `EDITORIAL_MAX_LLAMADAS` está declarado con su valor, pero **nadie lo lee del entorno** —vuelto a medir el 2026-09-25: `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/` sale vacío, y ningún `.mjs` de producción lo nombra siquiera; las cuatro líneas que devuelve el grep suelto son de `workflow-preparado.test.mjs`, que comprueba que el YAML lo **declara**, no que alguien lo obedezca—, así que hoy no protege de nada. Se deja escrito porque es el contrato, y dicho así para que nadie lo cuente como protección: prerrequisito 4 de *Activar* | `env` y pasos *límites de la corrida* y *corrida* |
 | **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. **Lee** la bitácora de `$EDITORIAL_ESTADO_DIR` resuelta con `dirEstado()` —desde el 2026-09-25; antes usaba una constante del repositorio y devolvía «0 corrida(s)» sin que nada fallara— y **se escribe** en la ruta que devuelve `ruta-estado.mjs` —`$EDITORIAL_ESTADO_DIR` ya **validada**, no la variable cruda: el almacén externo, fuera de todo árbol de git— con el número de corrida en el nombre, y un paso verifica que no lleva URLs. **No se sube como artefacto, y eso es la decisión**: en un repositorio público los artefactos de Actions los descarga cualquiera que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna opción de ACL. Sanear el contenido no vuelve privado el artefacto: vuelve publicable su contenido, que es otra cosa. Ver *El registro no se publica* | pasos *registro de la corrida* y *el registro no lleva URLs* |
 | **Credencial y forma segura de suministrarla** | Secret del repositorio, leído del entorno. Nunca en el archivo, nunca en la línea de comandos | `env.ANTHROPIC_API_KEY` |
 
@@ -401,7 +401,8 @@ Detalles para tomarla con la información completa:
   Eso no es un obstáculo a rodear: es la restricción funcionando.
 - **Coste:** es consumo de API por corrida. Con `--limite 1` es una redacción más
   los juicios de verificación. El tope de `EDITORIAL_MAX_LLAMADAS` **está declarado pero hoy
-  no ata** —ningún `.mjs` lo lee, medido el 2026-09-24—, así que lo que acota de verdad el
+  no ata** —nadie lo lee del entorno y ningún `.mjs` de producción lo nombra, vuelto a medir
+  el 2026-09-25—, así que lo que acota de verdad el
   gasto de una corrida es `--limite`, topado además a 3 por el primer paso del workflow.
 
 ## Activar, cuando se decida
@@ -423,7 +424,7 @@ Detalles para tomarla con la información completa:
    lo único que podría dar un registro descargable sin publicarlo: mientras este repositorio
    sea público, subirlo como artefacto es publicarlo —ver *El registro no se publica*—.
 4. **Hacer que el tope de llamadas al redactor ate.** `EDITORIAL_MAX_LLAMADAS` está declarado
-   en el workflow y ningún `.mjs` lo lee: `invocar-redactor.mjs` tiene que contar sus
+   en el workflow y ningún `.mjs` de producción lo lee: `invocar-redactor.mjs` tiene que contar sus
    llamadas y abortar al llegar al tope. **Abierto.** Mientras siga así, el único freno a un
    bucle inesperado es `--limite` y el tope de 25 minutos.
 5. ~~**Arreglar `registro-de-corridas.mjs` para que lea `$EDITORIAL_ESTADO_DIR`.**~~
