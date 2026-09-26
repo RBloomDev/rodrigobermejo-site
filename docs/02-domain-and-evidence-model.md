@@ -290,6 +290,83 @@ precisamente para que esa inferencia no exista como opción.
 privado es un error humano que el sistema no puede detectar sin red; lo que sí hace es
 obligar a que alguien lo escriba, en lugar de que un algoritmo lo adivine.
 
+### Las tres clases de verificación de fuentes
+
+El párrafo de arriba sigue vigente **del validador**, y solo de él: `validate` corre
+offline y no toca la red, así que no puede desmentir un `public: true`. Lo que sí existe,
+fuera de los gates y precisamente porque usa la red, es un comando aparte del motor que
+mide esa declaración contra la API de GitHub. Ese comando **no clasifica en «verificada» o
+«fallo»** —tuvo esos dos resultados y los corrigió—, y la razón por la que ya no lo hace
+pertenece al modelo de dominio, no a la implementación.
+
+> **Un 404 sin credencial no prueba que el recurso no exista.**
+
+Dicho al derecho, porque es la regla entera y no un lema: **una petición sin credencial que
+recibe 404 no autoriza a afirmar que el recurso no existe.** Ausencia de evidencia no es
+evidencia de ausencia. (En este documento «sin credencial» y «anónimo» son lo mismo: una
+petición que no lleva token alguno.)
+
+La razón es medible, no filosófica: la API de GitHub devuelve **404, y no 403**, sobre un
+repositorio privado al que quien pregunta no tiene acceso — deliberadamente, para no
+revelar que existe. Es decir: ante una petición sin credencial la API se **niega** a
+distinguir «privado» de «inexistente», y devuelve el mismo 404 para los dos casos. Leer ese
+404 como «no existe» fabrica una afirmación negativa a partir de una falta de permiso, y la
+publica con la estética de un hecho medido.
+
+Por eso las clases son **tres**, y cada una se nombra por **lo que midió**:
+
+| Clase | Qué se midió | Qué se puede afirmar |
+|---|---|---|
+| `PUBLICA_CONFIRMADA` | 200 **sin** credencial | es pública; cualquiera la ve |
+| `INDETERMINADA` | 404 **sin** credencial | privada o inexistente, sin saber cuál |
+| `INVISIBLE_CON_CREDENCIAL` | 404 sin credencial **y** 404 con una credencial válida | tampoco la ve esa credencial |
+
+La tercera **no se emite jamás sin haber medido con credencial**: sin esa segunda medición
+no es una clase, es una suposición. Y **no** se llama `INEXISTENTE_CONFIRMADA` —el nombre
+del primer intento, descartado— porque ese nombre habría cometido un escalón más arriba el
+mismo error que la regla de arriba prohíbe: leer el 404 autenticado como ausencia **supone**
+que la credencial alcanzaría el repositorio si existiera, y ese supuesto no lo mide nadie.
+Un PAT *fine-grained* acotado a repositorios concretos devuelve 404 sobre repositorios que
+**sí** existen y quedan fuera de su alcance; bajo esa credencial «confirmada inexistente»
+sería falso, mientras «invisible con esta credencial» sigue siendo exacto. La clase **no
+afirma ausencia**: afirma que ni la lectura anónima ni esa credencial la ven.
+
+La credencial sirve para **una sola cosa**: ascender una `INDETERMINADA` a
+`INVISIBLE_CON_CREDENCIAL`. Nunca para declarar algo público — un repositorio privado
+responde 200 a quien tiene permiso, así que un 200 autenticado es compatible con «privado»
+y no prueba nada sobre el público. `PUBLICA_CONFIRMADA` solo puede salir de una medición
+demostrablemente anónima.
+
+**`INDETERMINADA` bloquea.** No es un estado benigno del que se pueda seguir adelante: es
+la **ausencia de la comprobación** que la declaración necesitaba, y se comporta como un
+error. Sigue siendo un error de declaración que hay que corregir, y **este modelo exige**
+que termine la corrida con un código de salida distinto de cero, igual que hacía el antiguo
+`FALLO`: no es un detalle de implementación que el motor pueda relajar. Cambió cómo se
+nombra, no si bloquea. Renombrar el resultado para que suene más preciso no lo convierte en
+un matiz que se anota al margen y se ignora.
+
+**No hay una cuarta clase.** Cuando lo que falla es el **instrumento** —un 403 por rate
+limit, un token que no autentica, una credencial viajando donde no debía, una petición que
+no llega a ninguna respuesta— no se produce una clase peor: no se produce ninguna, y quien
+lo reciba aborta. Degradar a `INDETERMINADA` una medición que no se hizo sería inventarla,
+que es el mismo defecto una vuelta más abajo.
+
+Medido el 2026-09-26 por Rodrigo en `origin/develop` de `rodrigoBermejo/proof-engine`, y
+citado aquí **de esa medición, no de una lectura propia**: `cli/verificar-fuentes.ts:33-35`
+enumera las tres clases con estos nombres, y `:40` deja escrito que
+`INEXISTENTE_CONFIRMADA` —el nombre del primer intento— habría cometido el error que la
+regla de arriba prohíbe. El `README.md` del motor repite la misma tabla y el mismo descarte
+en `:265-273`.
+
+**Lo que no se comprobó, dicho en vez de omitido.** El motor vive en un repositorio privado
+aparte (`decisions/0001`) y no es legible desde el repositorio del sitio: quien escribió
+este apartado no pudo abrir esos archivos. Esas tres citas son las únicas medidas, y ningún
+otro archivo ni rango del motor respalda este apartado. En un apartado cuyo tema es no
+afirmar lo que no se midió, la diferencia entre «lo leí» y «me lo midieron» se escribe. El
+resto —que las clases son tres, qué mide cada una, que `INDETERMINADA` bloquea y que no hay
+una cuarta— no es una observación del motor sino la regla del modelo, y en el modelo manda
+este documento sobre el código, no al revés.
+
 ### Resolución de un evento a un proyecto
 
 Orden estricto de precedencia. El primero que aplica gana:

@@ -13,6 +13,7 @@ const record = {
   coverage: {
     dias_con_dato: 28,
     dias_del_periodo: 30,
+    periodo_abierto: false,
     del_trabajo: "desconocida",
   },
 };
@@ -25,6 +26,9 @@ test("proceso: forma cerrada, unidad y cobertura obligatorias", () => {
   assert.ok(validate({ schema_version: "1.0.0", records: [], absences: [] }));
   assert.ok(validate(feed({ ...record, seconds: 0, period: "2026-Q4", coverage: { ...record.coverage, dias_del_periodo: 92 } })));
   assert.ok(validate(feed({ ...record, seconds: 0, coverage: { ...record.coverage, dias_con_dato: 0 } })));
+  // Periodo ABIERTO: el denominador son los dias transcurridos, y el registro lo declara.
+  // El caso `23 de 23` es exactamente el que docs/05 §proceso.json separa del `23 de 30`.
+  assert.ok(validate(feed({ ...record, coverage: { ...record.coverage, dias_con_dato: 23, dias_del_periodo: 23, periodo_abierto: true } })), JSON.stringify(validate.errors));
 
   for (const key of Object.keys(record)) {
     const incomplete: Record<string, unknown> = { ...record };
@@ -36,7 +40,9 @@ test("proceso: forma cerrada, unidad y cobertura obligatorias", () => {
     const coverage: Record<string, unknown> = { ...record.coverage };
     delete coverage[key];
     assert.equal(validate(feed({ ...record, coverage })), false, `falta coverage.${key}`);
-    const invalidValues = key === "del_trabajo" ? ["", "  ", null, 0, "conocida"] : ["", "28", null, -1, 1.5];
+    const invalidValues = key === "del_trabajo" ? ["", "  ", null, 0, "conocida"]
+      : key === "periodo_abierto" ? ["", "false", "true", null, 0, 1]
+      : ["", "28", null, -1, 1.5];
     for (const value of invalidValues) {
       assert.equal(validate(feed({ ...record, coverage: { ...record.coverage, [key]: value } })), false);
     }

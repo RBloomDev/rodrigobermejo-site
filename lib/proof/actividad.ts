@@ -12,6 +12,9 @@ const record = z.object({
   seconds: z.number().finite().nonnegative(), unit: z.literal("recorded_activity_seconds"),
   coverage: z.object({
     dias_con_dato: z.number().int().nonnegative(), dias_del_periodo: z.number().int().positive(),
+    // Obligatorio a proposito (docs/05 §proceso.json). Sin el, `dias_del_periodo` no dice si
+    // es el denominador del mes o el de los dias transcurridos, y los dos numeros se ven igual.
+    periodo_abierto: z.boolean(),
     del_trabajo: z.literal("desconocida"),
   }).strict(),
 }).strict();

@@ -36,7 +36,8 @@ Read-only, sobre repos allowlisted explícitamente:
 
 ### Redacción y publicación
 - Redacción antes de escribir el artefacto.
-- Publicación de `public/proof/v1/{meta,projects,claims,evidence,activity}.json` **vía pull request** contra el repo del sitio. `activity.json` está autorizado en V1 por `decisions/0015` §4-A; **hoy todavía no existe en el artefacto** y emitirlo requiere implementar el mecanismo en el motor.
+- Publicación de `public/proof/v1/{meta,projects,claims,evidence,activity,proceso}.json` **vía pull request** contra el repo del sitio. Son los **seis** artefactos que define `05-feed-contract.md`, que es la autoridad sobre la forma del feed: esta lista se le somete, y si alguna vez divergen, la que está mal es esta. `proceso.json` se añadió allí después de que esta línea enumerara cinco.
+- **Definido en el contrato no es emitido en el artefacto**, y los dos últimos son justo el caso. `activity.json` está autorizado en V1 por `decisions/0015` §4-A y `proceso.json` por `decisions/0015` §3 y §4-C; **hoy ninguno de los dos existe en el artefacto**, y emitirlos requiere implementar el mecanismo en el motor. Definir la forma de un archivo no lo produce: `05-feed-contract.md` lo dice de `proceso.json` con todas sus letras —«No se crea el artefacto en este cambio»— y su ausencia es el estado normal de hoy, no un feed parcial.
 - `publish-diff` en el cuerpo del PR.
 - Test de denylist que bloquea el merge.
 
