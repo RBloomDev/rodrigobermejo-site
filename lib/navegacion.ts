@@ -23,8 +23,15 @@
  * - **Las etiquetas** las manda `docs/brand/03-copy-deck.md` §3, que es la
  *   autoridad única del texto del sitio.
  *
- * Ninguna de las dos se inventa en el código. «Noticias» la añadió S-B y solo
- * aparece en §2.
+ * Ninguna de las dos se inventa en el código. «Noticias» la añadió S-B al §2 y
+ * durante un tiempo NO estaba en el copy deck: el triángulo quedó abierto y este
+ * comentario lo decía. S-E lo cerró —`docs/brand/03-copy-deck.md:155`—, así que
+ * ahora las dos autoridades coinciden.
+ *
+ * Se deja escrito el tránsito en vez de borrarlo: un comentario que describe un
+ * estado transitorio y no se actualiza cuando el estado cambia se convierte en
+ * una afirmación falsa dentro del archivo que sirve de mapa. Fue exactamente lo
+ * que pasó aquí durante unos minutos.
  *
  * ## `disponible`: por qué existe y qué NO significa
  *

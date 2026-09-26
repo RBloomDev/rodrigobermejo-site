@@ -346,6 +346,7 @@ obligatorios. No se crea el artefacto en este cambio.
     "coverage": {
       "dias_con_dato": 28,
       "dias_del_periodo": 30,
+      "periodo_abierto": false,
       "del_trabajo": "desconocida"
     }
   }],
@@ -360,7 +361,7 @@ obligatorios. No se crea el artefacto en este cambio.
 El ejemplo es sintético, no un artefacto observado. **Allowlist cerrada** en cada
 nivel: la raíz admite solo `schema_version`, `records` y `absences`; cada registro
 medido admite solo `kind`, `period`, `source`, `seconds`, `unit` y `coverage`;
-`coverage` admite solo `dias_con_dato`, `dias_del_periodo` y `del_trabajo`.
+`coverage` admite solo `dias_con_dato`, `dias_del_periodo`, `periodo_abierto` y `del_trabajo`.
 Cada entrada de `absences` admite solo `period`, `source` y `motivo_de_ausencia`.
 **Todos los campos de cada forma son obligatorios**; no se admite `null` ni
 campos adicionales. Ambos arreglos pueden estar vacíos.
@@ -378,11 +379,52 @@ campos adicionales. Ambos arreglos pueden estar vacíos.
   acumulada no es tiempo transcurrido ni tiempo que estuvo abierto el editor.
 - **`coverage` es obligatoria en el mismo registro**, nunca una nota externa.
   `dias_con_dato` es un entero medido no negativo; `dias_del_periodo`, un entero
-  medido positivo. El primero no supera al segundo, que corresponde a los días
-  del mes o trimestre declarado. `del_trabajo` es el literal `"desconocida"`,
-  nunca un número: la cobertura temporal se mide, la del trabajo no. No incluye
-  trabajo fuera del editor ni dispositivos sin instrumentación. No se estima
-  un denominador. Los tres campos se muestran junto al número, no al pie.
+  medido positivo. El primero no supera al segundo. `del_trabajo` es el literal
+  `"desconocida"`, nunca un número: la cobertura temporal se mide, la del trabajo
+  no. No incluye trabajo fuera del editor ni dispositivos sin instrumentación. No
+  se estima un denominador. Los cuatro campos se muestran junto al número, no al pie.
+
+  **El denominador depende de si el periodo está CERRADO o ABIERTO**, y el registro
+  lo declara: `periodo_abierto` es un booleano obligatorio. No se infiere en el
+  lector comparando el periodo con la fecha de build — inferirlo haría que el mismo
+  artefacto significara cosas distintas según cuándo se lee, que es exactamente lo
+  que un feed estático no puede permitirse.
+
+  | `periodo_abierto` | Qué es `dias_del_periodo` |
+  |---|---|
+  | `false` — el periodo ya había terminado en la fecha de corte | los días del mes o trimestre declarado. **Un periodo cerrado no cambia:** esta es la regla de siempre y sigue igual |
+  | `true` — el periodo seguía en curso en la fecha de corte | los días **transcurridos** del periodo hasta la fecha de corte, ese día incluido |
+
+  El día de corte **cuenta** cuando el periodo está abierto: su dato ya puede estar
+  medido —la fuente lo devuelve— y excluirlo del denominador haría posible un
+  `24 de 23`.
+
+  **Por qué, y esto es lo que nadie puede «simplificar» dentro de seis meses.** Un
+  hueco porque el día **aún no ha pasado** y un hueco porque **no hay dato** se ven
+  **iguales en un cociente y significan lo opuesto**. Medido contra la fuente real
+  el 2026-09-23: con el denominador del mes completo, un `2026-09` en curso
+  publicaba `{ dias_con_dato: 23, dias_del_periodo: 30 }`. Esos siete días de
+  diferencia no eran registro faltante — eran días que todavía no habían ocurrido —,
+  y quien lee «23 de 30» entiende que fallaron siete días de medición. Este contrato
+  existe entero para que un número diga lo que midió y nada más; un denominador que
+  convierte tiempo futuro en cobertura perdida lo contradice en su propio campo de
+  cobertura, que es el peor sitio donde podía pasar.
+
+  **Aquí el documento se alinea con el código, no al revés.** `domain/fechas.ts` del
+  motor ya acota el denominador con `diasTranscurridosDelPeriodo`, y declaró la
+  divergencia con la letra de este contrato en vez de esconderla, dejando la decisión
+  pendiente. Rodrigo la resolvió el 2026-09-24 a favor del código: lo que estaba mal
+  era la definición escrita del campo. Es la única corrección de esta tanda en esa
+  dirección. Lo que el motor todavía **no** emite es `periodo_abierto`: este contrato
+  lo añade para que un denominador más chico se lea como periodo en curso y no como
+  cobertura perdida, que es el mismo defecto por la puerta de atrás.
+
+  `periodo_abierto` es **obligatorio**, y la regla 2 de arriba solo declara compatible
+  añadir un campo *opcional*. No es una violación, por la misma razón que la nota de las
+  eliminaciones del 2026-08-21: `proceso.json` tiene el contrato definido y **ninguna
+  emisión**, así que no hay artefacto ni consumidor al que romper. Hacerlo opcional sí
+  rompería algo: un registro sin el campo no diría si su denominador es el del periodo o
+  el de los días transcurridos, y esos dos números se ven iguales.
 - `motivo_de_ausencia` admite solo `"sin_fuente_registrada"`,
   `"fuera_del_periodo_medido"` o `"fuente_no_respondio"`. Se publica en `absences`,
   sin registro en `records` para el mismo par `period`/`source`. Cada par es único

@@ -152,11 +152,18 @@ del feed. La lista canónica vive en `/proyectos`.
 | Etiqueta | Destino |
 |---|---|
 | Trabajo | `/proyectos` |
+| Noticias | `/noticias` |
 | Inadaptados | `/sobre-mi#inadaptados` |
 | Docencia | `/sobre-mi#docencia` |
 | Escribo | `/blog` |
 | Trayectoria | `/sobre-mi` |
 | **Trabajar conmigo** | `/colaborar` |
+
+Siete filas, las mismas que `02-arquitectura-y-urls.md` §2 y en el mismo orden. La fila
+de «Noticias» faltaba aquí: el destino entró en `02` §2 sin que la etiqueta llegara a este
+documento, y `02` §2 declara que **las etiquetas las manda este deck**. Una etiqueta
+ausente del documento que la manda es una etiqueta sin dueño, y la toma quien escriba el
+menú. Se repone con la palabra que `02` §2 ya usa, sin inventar ninguna.
 
 «Escribo» en vez de «Blog»: es un verbo, como el resto del sitio, y dice qué hay ahí.
 «Trabajar conmigo» en vez de «Contacto»: nombra la acción, no el buzón.

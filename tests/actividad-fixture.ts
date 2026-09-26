@@ -53,7 +53,10 @@ export const fixture = {
   records: periodos.filter((_, i) => !huecos.has(i)).map(period => ({
     kind: "human_editor_activity", period, source: "wakatime", seconds: 3600,
     unit: "recorded_activity_seconds",
-    coverage: { dias_con_dato: 20, dias_del_periodo: new Date(Number(period.slice(0, 4)), Number(period.slice(5)), 0).getDate(), del_trabajo: "desconocida" },
+    // Los trece periodos del fixture (2025-01..2025-12 y 2026-01) están CERRADOS: por eso
+    // `periodo_abierto` es false y `dias_del_periodo` sigue siendo los días del mes. No es
+    // relleno para pasar el schema — con un periodo abierto el denominador sería otro.
+    coverage: { dias_con_dato: 20, dias_del_periodo: new Date(Number(period.slice(0, 4)), Number(period.slice(5)), 0).getDate(), periodo_abierto: false, del_trabajo: "desconocida" },
   })),
   absences: periodos.filter((_, i) => huecos.has(i)).map(period => ({
     period, source: "wakatime", motivo_de_ausencia: "fuente_no_respondio",
