@@ -2,37 +2,72 @@
 # CANAL EDITORIAL — EJECUCION PROGRAMADA
 #
 # ESTE ARCHIVO NO ESTA INSTALADO Y NO CORRE.
+# UNA CONFIGURACION PREPARADA NO ES UN SERVICIO ACTIVO.
 #
 # Vive en `docs/plataforma/programacion/` y no en `.github/workflows/`, que es
-# donde GitHub lo buscaria. Mientras siga aqui, no existe para GitHub: no hay
-# cron, no hay ejecucion, no hay consumo. Activarlo es UNA decision de Rodrigo y
-# UN movimiento de archivo, y las dos cosas son suyas.
+# donde GitHub lo buscaria. Mientras siga aqui no existe para GitHub: no hay
+# cron, no hay ejecucion, no hay consumo y no hay factura. Lo unico que hay es
+# un documento que dice exactamente que haria si alguien lo instalara.
+# Activarlo es UNA decision de Rodrigo y UN movimiento de archivo, y las dos
+# cosas son suyas. La prueba
+# `scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba que este
+# archivo NO esta en `.github/workflows/`.
 #
-# Hay ademas una razon mecanica para que este aqui: el token con el que trabaja
-# el agente tiene alcance `gist, read:org, repo` y NO tiene `workflow`, asi que
-# un commit que tocara `.github/workflows/` seria rechazado al empujar. No es un
-# rodeo a la restriccion: es la restriccion funcionando, y se deja escrito.
+# ---------------------------------------------------------------------------
+# LAS DOS DEPENDENCIAS QUE HOY FALTAN, Y POR QUE NO SE PUEDEN INVENTAR
+#
+# 1. EL TOKEN DEL AGENTE NO TIENE ALCANCE `workflow`.
+#    Su alcance medido es `gist, read:org, repo`. Un commit que tocara
+#    `.github/workflows/` seria rechazado al empujar, asi que el agente **ni
+#    siquiera podria instalar este archivo**. No es un rodeo a la restriccion:
+#    es la restriccion funcionando, y por eso el archivo se entrega aqui.
+#    No se puede inventar porque ampliar el alcance de un token es una decision
+#    de seguridad de su dueño; un agente que se concede permisos es exactamente
+#    lo que esa restriccion existe para impedir.
+#
+# 2. NO EXISTE UNA CREDENCIAL DE INFERENCIA NO INTERACTIVA.
+#    Medido: `gh secret list` devuelve vacio en los tres repos del nucleo. El
+#    redactor se invoca hoy con una sesion interactiva del CLI, que un runner
+#    no tiene. No se puede inventar porque una llave de API es un secreto con
+#    coste: la crea quien paga por su consumo, y no se reutiliza la de otro
+#    servicio ni se extrae de una sesion personal (`00-donde-correria.md`,
+#    «La decision concreta que hace falta»).
+#
+# Con `con_redactor: false` —el valor por defecto— la dependencia 2 no hace
+# falta: esa corrida detecta y deduplica sin invocar al modelo. La dependencia
+# 1 hace falta siempre, porque sin ella el archivo no llega a instalarse.
 #
 # ---------------------------------------------------------------------------
 # POR QUE GITHUB ACTIONS Y NO OTRA COSA
 #
 # Se midieron cinco opciones con lo que YA existe. Actions en este mismo
-# repositorio es la unica donde el entorno cumple los cuatro requisitos sin
-# construir nada: Node 24 ya se usa en `ci.yml`, hay red saliente, el checkout
-# es escribible para la bitacora, y el repo ya tiene CI gobernado.
+# repositorio es la unica donde el entorno cumple los requisitos de ejecucion
+# sin construir nada: Node 24 ya se usa en `ci.yml`, hay red saliente, y el
+# repo ya tiene CI gobernado. El cuadro completo, con el comando que produjo
+# cada fila, esta en `00-donde-correria.md`.
 #
-#   - VPS propio: corre crons hoy, pero faltan runtime de Node y acceso. Dos
-#     huecos en vez de uno.
-#   - n8n (self-hosted): dispara, no ejecuta Node. Habria que reescribir la
-#     etapa de redaccion como nodos.
-#   - n8n personal: nada programado corre ahi.
-#   - Vercel cron: no hay `vercel.json`, invoca una ruta HTTP y no persiste
-#     ficheros. El modelo de ejecucion no encaja.
-#
-# LO QUE FALTA, Y ES UNA SOLA COSA: una credencial de inferencia utilizable sin
-# sesion interactiva. Hoy no existe --- medido: `gh secret list` devuelve vacio
-# en los tres repos del nucleo.
 # ---------------------------------------------------------------------------
+# LO QUE ESTE WORKFLOW NO HACE, Y NO ES UN OLVIDO
+#
+#   - NO COMMITEA NADA A ESTE REPOSITORIO. Ni estado, ni borradores, ni corpus.
+#     El paso «persistir estado y corpus» que estaba aqui hasta el 2026-09-24
+#     hacia `git add` + `git commit` + `git push` de la bitacora y del corpus a
+#     una rama de este repositorio PUBLICO. Eso publicaba trabajo que nadie
+#     habia autorizado, y contradecia `02-editorial.md` §8.3. Se elimino: es el
+#     trabajo de T-E3. `permissions` pide solo lectura y el checkout se hace
+#     SIN credenciales persistidas, asi que un paso que lo intentara no tendria
+#     ni permiso ni credencial. La prueba lo comprueba sobre este archivo.
+#   - NO SUBE NINGUN ARTEFACTO. Mientras este repositorio sea PUBLICO no existe
+#     el «artefacto privado»: los artefactos de Actions los descarga cualquiera
+#     que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna
+#     opcion de ACL. El paso de subida que estaba aqui se retiro el 2026-09-24;
+#     el porque completo esta al final del archivo, donde estaba el paso.
+#   - NO AUTORIZA. Una corrida programada jamas publica: deja las piezas en
+#     `terminada` —borrador verificado— y ahi se detiene. Lo unico que escribe
+#     en `content/noticias/` es `autorizar.mjs`, que corre Rodrigo a mano
+#     (`02-editorial.md` §8.4).
+#   - NO TOCA `public/proof/v1/**`. Zona prohibida, y no aparece en ningun paso.
+# ============================================================================
 
 name: canal editorial
 
@@ -42,7 +77,7 @@ on:
   workflow_dispatch:
     inputs:
       limite:
-        description: "Maximo de piezas a redactar en esta corrida"
+        description: "Piezas a redactar en esta corrida (entero de 0 a 3)"
         required: true
         default: "1"
       con_redactor:
@@ -50,64 +85,126 @@ on:
         type: boolean
         default: false
 
-  # EL CRON VA COMENTADO A PROPOSITO. Descomentarlo es la activacion.
+  # EL CRON VA COMENTADO A PROPOSITO. Descomentarlo es la activacion, y es el
+  # ultimo de los tres movimientos de `00-donde-correria.md` §«Activar»: solo
+  # despues de que una corrida manual haya salido bien.
   # Lunes a viernes, 13:00 UTC = 07:00 en Ciudad de Mexico.
   # schedule:
   #   - cron: "0 13 * * 1-5"
 
-# --- 1. EXCLUSION DE EJECUCIONES SIMULTANEAS -------------------------------
-# La bitacora es append-only y `plegar()` recompone el estado leyendola entera.
-# Dos corridas a la vez escribirian transiciones intercaladas sobre el mismo
-# id, que es exactamente como se corrompe. `cancel-in-progress: false` es
-# deliberado: se ENCOLA, no se mata. Matar una corrida a mitad deja trabajo en
-# un estado intermedio que nadie cerro.
+# --- EXCLUSION DE EJECUCIONES SIMULTANEAS -----------------------------------
+# La bitacora es append-only y el estado se recompone leyendola entera. Dos
+# corridas a la vez escribirian transiciones intercaladas sobre el mismo id,
+# que es exactamente como se corrompe la deduplicacion de §5.2.
+# El `group` es FIJO —no lleva `github.ref` ni `github.run_id`— porque el
+# recurso que se disputa es uno solo: la bitacora. Un group por rama daria dos
+# corridas simultaneas sobre el mismo estado, que es el problema entero.
+# `cancel-in-progress: false` es deliberado: se ENCOLA, no se mata. Matar una
+# corrida a mitad deja trabajo en un estado intermedio que nadie cerro.
 concurrency:
   group: canal-editorial
   cancel-in-progress: false
 
+# Solo lectura. `contents: write` NO aparece, y no es una omision: era lo que
+# sostenia el paso de commitear. Sin `pull-requests`, sin `packages`, sin
+# `id-token`, sin `actions`.
 permissions:
-  contents: write        # para commitear la bitacora y el corpus a su rama
-  pull-requests: write   # para refrescar el PR de revision
-  # Nada mas. Sin `packages`, sin `id-token`, sin `actions`.
+  contents: read
 
 jobs:
   corrida:
     runs-on: ubuntu-latest
 
-    # --- 4. LIMITE DE DURACION ---------------------------------------------
+    # --- LIMITE DE DURACION -------------------------------------------------
     # Un canal que se cuelga consumiendo minutos es peor que uno que no corre.
+    # No verificado: cuanto tarda de verdad una corrida completa en un runner.
     timeout-minutes: 25
 
     env:
-      # --- 6. LA CREDENCIAL --------------------------------------------------
-      # Se suministra como SECRET DEL REPOSITORIO, nunca en el archivo. El CLI
-      # la lee del entorno; `execFileSync` hereda el entorno del proceso, asi
-      # que no hace falta tocar `invocar-redactor.mjs`.
+      # --- LA CREDENCIAL DE INFERENCIA ------------------------------------
+      # Se suministra como SECRET DEL REPOSITORIO, nunca en el archivo y nunca
+      # en la linea de comandos. El CLI la lee del entorno.
       #
       # NO VERIFICADO EN ESTE ENTORNO: que el CLI autentique con API key dentro
-      # de un runner no se ha probado, porque el secret no existe. Es el primer
-      # supuesto que hay que comprobar al activar, y puede que obligue a usar
+      # de un runner. El secret no existe, asi que no se ha podido probar. Es
+      # el primer supuesto a comprobar al activar, y puede obligar a usar
       # `CLAUDE_CODE_OAUTH_TOKEN` (que genera `claude setup-token`) en su lugar.
-      #
-      # De donde sale: de una llave NUEVA que crea Rodrigo. No se reutiliza
-      # ninguna credencial de otro servicio ni de ninguna sesion personal.
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
-      # --- 4. LIMITES DE CONSUMO --------------------------------------------
+      # --- DONDE VIVE EL ESTADO -------------------------------------------
+      # Las dos son OBLIGATORIAS y SIN valor por defecto (`02-editorial.md`
+      # §8.3). Sin ellas el canal aborta antes de abrir un archivo, y ademas
+      # rechaza cualquier ruta que caiga dentro de un arbol de trabajo de git.
+      # Se leen de variables del repositorio: una ruta escrita aqui seria una
+      # ruta publicada.
+      #
+      # NO ESTAN RESUELTAS, y es el prerrequisito 3 de `00-donde-correria.md`:
+      # un runner es efimero, asi que apuntarlas a un directorio del runner da
+      # cero persistencia —cada corrida arrancaria sin bitacora y reprocesaria
+      # como nuevo todo lo ya visto—. Hace falta un almacen externo con
+      # respaldo, y elegirlo no se decide en este archivo.
+      EDITORIAL_ESTADO_DIR: ${{ vars.EDITORIAL_ESTADO_DIR }}
+      EDITORIAL_REDACCIONES_DIR: ${{ vars.EDITORIAL_REDACCIONES_DIR }}
+
+      # `EDITORIAL_PIEZAS` NO se declara, y es deliberado: sin ella la corrida
+      # no escribe corpus en ningun sitio (`ejecutar.mjs`, `rutaPiezas()`).
+      # Declararla aqui reabriria por la puerta de atras la escritura que el
+      # paso de commitear hacia por la de delante.
+
+      # --- LIMITES DE CONSUMO ---------------------------------------------
       EDITORIAL_MAX_PIEZAS: ${{ inputs.limite || '1' }}
-      # Tope duro de llamadas al modelo por corrida. Con `--limite 1` el canal
-      # invoca una vez por pieza mas los juicios de verificacion; este tope
-      # existe para que un bucle inesperado no se coma el presupuesto.
+
+      # Tope de llamadas al redactor por corrida. ATENCION, vuelto a medir el
+      # 2026-09-25: `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/`
+      # sale VACIO, y `grep -rln EDITORIAL_MAX_LLAMADAS scripts/editorial/*.mjs
+      # scripts/*.mjs` no devuelve ningun archivo: nadie lo lee del entorno y
+      # ningun `.mjs` de produccion lo nombra. Asi que HOY ESTE TOPE ESTA
+      # DECLARADO Y NO ATA.
+      # (El grep suelto `grep -rn EDITORIAL_MAX_LLAMADAS scripts/` SI devuelve
+      # cuatro lineas, todas de `workflow-preparado.test.mjs`, que comprueba que
+      # este YAML lo DECLARA. Esa prueba no es una lectura del tope: citarla como
+      # evidencia de que ata seria justo el error que este comentario evita.)
+      # Se deja
+      # escrito con su valor porque es el contrato que el canal tiene que
+      # cumplir, y porque un tope invisible no se puede reclamar; pero quien lo
+      # lea no debe creer que hoy protege de nada.
+      # El limite que SI ata hoy es doble, y los dos son mecanicos: el paso
+      # «limites de la corrida» rechaza un `limite` mayor que 3 antes de gastar
+      # un minuto, y `--limite N` acota las piezas que se redactan. Ademas los
+      # reintentos por entrada estan topados en la maquina de estados
+      # (MAX_INTENTOS = 3): una entrada que falla tres veces se descarta con
+      # motivo, no se reintenta para siempre.
+      # Cerrar la brecha —que `invocar-redactor.mjs` cuente sus llamadas y
+      # aborte al llegar al tope— es prerrequisito 4 de la activacion.
       EDITORIAL_MAX_LLAMADAS: "40"
 
     steps:
+      # --- COMPUERTA DE CONFIGURACION -----------------------------------------
+      # Antes del checkout y antes de `npm ci`: una corrida que va a abortar
+      # debe abortar en segundos y nombrando la decision que falta, no despues
+      # de instalar dependencias.
+      - name: limites de la corrida
+        run: |
+          set -euo pipefail
+          case "$EDITORIAL_MAX_PIEZAS" in
+            0|1|2|3) : ;;
+            *) echo "::error::limite invalido: '$EDITORIAL_MAX_PIEZAS'. Entero de 0 a 3."; exit 1 ;;
+          esac
+          falta=""
+          [ -n "${EDITORIAL_ESTADO_DIR:-}" ] || falta="$falta EDITORIAL_ESTADO_DIR"
+          [ -n "${EDITORIAL_REDACCIONES_DIR:-}" ] || falta="$falta EDITORIAL_REDACCIONES_DIR"
+          if [ -n "$falta" ]; then
+            echo "::error::Sin almacen externo para el estado no hay corrida:$falta"
+            echo "::error::Ver docs/plataforma/programacion/00-donde-correria.md, prerrequisito 3."
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
         with:
-          # La rama de trabajo, NUNCA develop ni main. La publicacion sigue
-          # desactivada y el corpus sigue siendo una propuesta en revision.
-          ref: feat/plataforma-editorial-y-actividad
-          # Historial completo: el commit de estado se hace sobre esta rama.
-          fetch-depth: 0
+          # Sin credencial persistida: aunque alguien añadiera un paso que
+          # intentara empujar, no tendria con que. Es la segunda cerradura,
+          # despues de `permissions: contents: read`.
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -116,25 +213,62 @@ jobs:
       - name: instalar dependencias
         run: npm ci
 
-      # --- 3. RECUPERACION ---------------------------------------------------
+      # --- LOS DIRECTORIOS PRIVADOS, VALIDADOS ANTES DE ESCRIBIR NADA ---------
+      # El preflight de arriba solo puede comprobar que las variables no vienen
+      # vacias: corre antes del checkout y no tiene el canal a mano. Aqui se aplica
+      # la validacion CANONICA (`exigirDirectoriosPrivados()`): aborta si falta una
+      # y RECHAZA la ruta si resuelve dentro de un arbol de trabajo de git.
+      #
+      # POR QUE ES UN PASO PROPIO Y NO BASTA CON QUE LA CORRIDA VALIDE. Los pasos que
+      # escriben el registro corren con `always()` —tienen que correr aunque la corrida
+      # falle, que es justo cuando hay algo que registrar—, asi que se ejecutan DESPUES
+      # de que la corrida haya abortado. Hasta el 2026-09-24 hacian `mkdir -p` sobre la
+      # variable CRUDA: con `EDITORIAL_ESTADO_DIR` apuntando dentro del checkout, la
+      # corrida abortaba por §8.3 y el registro escribia igual dentro del repositorio
+      # publico. Y como esa ruta esta en `.gitignore`, «el arbol de trabajo quedo
+      # intacto» tampoco lo veia: `git status --porcelain` no lista lo ignorado. Es el
+      # hallazgo F-01 de la revision.
+      #
+      # De aqui sale la ruta RESUELTA y validada, y es la UNICA que usan los pasos de
+      # abajo. La variable cruda no vuelve a aparecer como destino de nada.
+      - name: los directorios privados estan fuera de git
+        id: dirs_privados
+        run: |
+          set -euo pipefail
+          # Asignacion, no `echo "X=$(...)"`: con la segunda forma el `echo` tiene
+          # exito aunque el comando de dentro falle, y `set -e` no ve nada.
+          ruta="$(node scripts/editorial/ruta-estado.mjs)"
+          echo "RUTA_ESTADO_VALIDADA=$ruta" >> "$GITHUB_ENV"
+
+      # --- RECUPERACION -------------------------------------------------------
       # La corrida NO arranca del feed: arranca de la bitacora. Lo que quedo a
-      # medias en la corrida anterior --- por fallo, por timeout o porque el
-      # runner murio --- vuelve a la cola antes que lo detectado hoy. Esto ya lo
-      # hace `ejecutar.mjs`; el paso existe para dejar constancia del estado de
-      # entrada, que es lo que permite auditar una recuperacion.
-      # NOTA: `estado.mjs` es una biblioteca y NO tiene CLI. Una version anterior
-      # de este archivo invocaba `estado.mjs --instantanea`, que no existe y no
-      # imprimia nada --- un paso verde que no comprobaba nada. Se usa el
-      # registro de corridas, que si es ejecutable y ya esta saneado.
+      # medias en la corrida anterior —por fallo, por timeout o porque el runner
+      # murio— vuelve a la cola antes que lo detectado hoy. Esto ya lo hace
+      # `ejecutar.mjs`; el paso existe para dejar constancia del estado de
+      # ENTRADA, que es lo que permite auditar una recuperacion.
+      #
+      # LEE EL ALMACEN EXTERNO, no una constante del repositorio. Hasta el
+      # 2026-09-25 `registro-de-corridas.mjs` resolvia su directorio con
+      # `scripts/editorial/estado`, que tras T-E1 ya no existe: imprimia
+      # «0 corrida(s)» y salia 0, asi que este paso y el registro de mas abajo
+      # eran verdes sobre un archivo vacio —un canal que no corrio y uno que
+      # corrio bien se leian igual—. Ahora resuelve con `dirEstado()`, la
+      # validacion canonica, y sin `EDITORIAL_ESTADO_DIR` ABORTA con exit 1 en
+      # vez de fingir un cero. No cuelga de `dirs_privados` porque no escribe.
+      #
+      # LA TUBERIA SE TRAGABA ESE exit 1. `node ... | tail -5` devuelve el codigo
+      # de `tail`, que es 0 siempre, asi que el paso quedaba verde aunque el
+      # script abortara --- y el comentario prometia justo lo contrario. Una
+      # compuerta que no puede fallar no vigila nada, y esta ademas AFIRMABA que
+      # vigilaba. Se acota con la bandera que el propio script ya soporta, en vez
+      # de con una tuberia; y `set -euo pipefail` por si alguien la reintroduce.
       - name: estado antes de la corrida
-        run: node scripts/editorial/registro-de-corridas.mjs | tail -5
+        run: |
+          set -euo pipefail
+          node scripts/editorial/registro-de-corridas.mjs --ultimas 5
 
       - name: corrida
         id: corrida
-        # `--limite` acota cuantas piezas se redactan. Los reintentos por
-        # entrada estan topados en el propio estado (MAX_INTENTOS = 3): una
-        # entrada que falla tres veces se descarta con motivo, no se reintenta
-        # para siempre.
         run: |
           set +e
           if [ "${{ inputs.con_redactor }}" = "true" ]; then
@@ -151,48 +285,188 @@ jobs:
           [ "$codigo" = "1" ] && exit 1
           exit 0
 
-      # --- 5. REGISTROS CONSULTABLES, SIN CONTENIDO SENSIBLE -----------------
-      # `registro-de-corridas.mjs` deriva la bitacora a un registro que NO lleva
-      # titulos, URLs, prompts ni nombres de repositorio. Es lo que se puede
-      # mirar para saber si el canal corre, sin publicar lo que leyo.
-      - name: registro de la corrida
-        if: always()
-        run: node scripts/editorial/registro-de-corridas.mjs > registro-corrida.txt
-
-      - name: publicar el registro como artefacto
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: registro-canal-${{ github.run_number }}
-          path: registro-corrida.txt
-          retention-days: 30
-
-      # --- 0. LA COMPUERTA DE EXPOSICION -------------------------------------
-      # Antes de commitear NADA. Este repositorio es publico y la corrida acaba
-      # de escribir en disco: si algo de lo que entro nombra un repositorio
-      # privado, se para aqui y no se commitea.
+      # --- LA COMPUERTA DE EXPOSICION ----------------------------------------
+      # VA AQUI Y NO MAS ABAJO. Corre inmediatamente despues de la corrida y
+      # ANTES de cualquier paso que escriba o publique algo: ningun paso
+      # posterior toca el arbol de trabajo, y el unico que produce un archivo lo
+      # escribe fuera del checkout. Este repositorio es publico y la corrida
+      # acaba de escribir en disco; si algo de lo que entro nombra un
+      # repositorio privado, se para aqui.
+      #
+      # LIMITE MEDIDO: corre SIN `--gh`, asi que solo aplica los patrones que no
+      # necesitan conocer los nombres privados. Con `--gh` los pediria a la API,
+      # y el `GITHUB_TOKEN` de un runner no puede enumerar las organizaciones
+      # del usuario: devolveria exit 2 («comprobacion no realizada»), que es
+      # peor que el modo reducido porque parece una comprobacion. Es una
+      # mitigacion acotada, como las demas de `04-architecture.md` §4.1.
+      #
+      # `always()` y no el defecto: una corrida que falla a mitad ya escribio, y
+      # esa es precisamente la que hay que auditar. Se excluye el caso en que la
+      # corrida ni siquiera empezo —preflight rojo—, porque entonces no hay
+      # checkout y el guard pasaria en vacio, que es el verde que no significa
+      # nada de `AGENTS.md`.
       - name: compuerta de exposicion
+        id: exposicion
+        if: ${{ always() && steps.corrida.outcome != 'skipped' }}
         run: node scripts/auditoria-exposicion.mjs
 
-      # --- 1 y 2. PERSISTENCIA DE PENDIENTES Y RESULTADOS --------------------
-      # La bitacora y el corpus se commitean a la MISMA rama de trabajo. Asi el
-      # trabajo pendiente sobrevive al runner, que es efimero, y cada cambio
-      # queda en el historial con su corrida.
+      # --- REGISTRO CONSULTABLE, SIN CONTENIDO SENSIBLE ----------------------
+      # `registro-de-corridas.mjs` deriva la bitacora a una tabla de contadores
+      # y marcas de tiempo. Por construccion no emite titulos, URLs, prompts ni
+      # nombres de repositorio: solo agrupa eventos por id de corrida.
       #
-      # Solo estas dos rutas. Nunca `public/proof/v1/**`, que es zona prohibida.
-      - name: persistir estado y corpus
-        if: always()
+      # Se escribe en la ruta que devolvio el paso «los directorios privados estan
+      # fuera de git» —`$RUTA_ESTADO_VALIDADA`, el almacen externo ya resuelto y
+      # comprobado— y no sale de ahi. El destino NO es la variable cruda, y la `if`
+      # exige ademas que esa validacion haya PASADO: un paso con `always()` que
+      # escribe sobre una variable sin validar escribe tambien cuando la validacion
+      # dijo que no (F-01). Dos razones para que el destino sea ese, y las dos importan:
+      #   1. El arbol publico no se toca ni con un archivo temporal, y el ultimo
+      #      paso del job lo comprueba.
+      #   2. Es el unico destino que hoy existe y que no publica. `$RUNNER_TEMP`
+      #      serviria para lo primero pero no para conservar nada: el runner es
+      #      efimero y el archivo se va con el. El registro vive donde vive el
+      #      resto del estado del canal.
+      # El nombre lleva el numero de corrida: un registro que se sobreescribe a
+      # si mismo cada corrida es un registro que pierde justo la corrida que se
+      # quiere revisar.
+      - name: registro de la corrida
+        if: ${{ always() && steps.corrida.outcome != 'skipped' && steps.dirs_privados.outcome == 'success' }}
         run: |
-          git config user.name  "canal-editorial[bot]"
-          git config user.email "canal-editorial@users.noreply.github.com"
-          git add scripts/editorial/estado/ docs/plataforma/prototipo/datos/piezas.json
-          if git diff --cached --quiet; then
-            echo "sin cambios de estado: nada que persistir"
-            exit 0
-          fi
-          git commit -m "chore(canal): corrida ${{ github.run_number }} — estado y corpus
+          set -euo pipefail
+          mkdir -p "$RUTA_ESTADO_VALIDADA"
+          node scripts/editorial/registro-de-corridas.mjs > "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"
 
-          Corrida automatica. Codigo de salida: ${{ steps.corrida.outputs.codigo }}.
-          Publicacion desactivada: las piezas siguen en borrador y con revision
-          humana pendiente."
-          git push origin HEAD:feat/plataforma-editorial-y-actividad
+      # El grep comprueba lo unico que un grep puede comprobar: que no hay URLs
+      # ni rutas de repositorio. Que no lleve titulos ni prompts lo garantiza la
+      # forma del script, no este paso; se dice asi para no vender la compuerta
+      # por mas de lo que mide.
+      #
+      # Sigue aqui aunque el registro ya no se publique, y no es un resto: la
+      # afirmacion «el registro no lleva contenido sensible» es del contrato
+      # (`00-donde-correria.md`, fila «Registros consultables»), y una afirmacion
+      # que nadie mide se vuelve falsa en silencio en cuanto el script cambie.
+      # Lo que este paso NO hace es volver publicable el archivo: eso es lo que
+      # explica el bloque de abajo.
+      - name: el registro no lleva URLs
+        id: registro_sin_urls
+        if: ${{ always() && steps.corrida.outcome != 'skipped' && steps.dirs_privados.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          if grep -Eq '(https?://|www\.|github\.com/)' "$RUTA_ESTADO_VALIDADA/registro-corrida-$GITHUB_RUN_NUMBER.txt"; then
+            echo "::error::El registro contiene URLs. No se conserva ni se comparte."
+            exit 1
+          fi
+
+      # --- NINGUNA ESCRITURA AL ARBOL PUBLICO --------------------------------
+      # La garantia de que este workflow no escribe en el repositorio no puede
+      # ser «no hay un paso que lo haga»: eso lo desmiente el primer paso que
+      # alguien añada. Se mide.
+      #
+      # VA AL FINAL, y es deliberado: una medicion del arbol solo vale si corre
+      # DESPUES del ultimo paso que puede escribir. Estuvo antes del registro
+      # hasta el 2026-09-24, y era el mismo defecto que el paso de subida con
+      # `always()`: el destino del registro sale de una variable, asi que un
+      # `EDITORIAL_ESTADO_DIR` mal apuntado habria escrito dentro del checkout
+      # sin que nada lo mirara. Una compuerta que corre antes del escritor no
+      # mide al escritor.
+      #
+      # Y MIDE DOS COSAS, no una. `git status --porcelain` NO lista lo ignorado, y
+      # las dos rutas historicas del canal estan en `.gitignore`: un archivo escrito
+      # ahi daba un arbol «limpio». Esa es la mitad del hallazgo F-01 que la
+      # validacion de arriba cierra por delante; el bucle de abajo la cierra por
+      # detras, que es lo que hace que no dependa de un solo mecanismo.
+      #
+      # La condicion cuelga de `dirs_privados` y no de `corrida`: si la validacion
+      # fallo, la corrida queda `skipped` y el arbol se tiene que medir IGUAL —es
+      # justo el caso en que alguien pudo escribir donde no debia—.
+      - name: el arbol de trabajo quedo intacto
+        id: arbol_intacto
+        if: ${{ always() && steps.dirs_privados.outcome != 'skipped' }}
+        run: |
+          set -euo pipefail
+          sucio="$(git status --porcelain)"
+          if [ -n "$sucio" ]; then
+            echo "::error::La corrida escribio dentro del repositorio publico."
+            echo "::error::El estado y los borradores viven fuera de git (02-editorial.md §8.3)."
+            git status --porcelain
+            exit 1
+          fi
+          for ruta in scripts/editorial/estado scripts/editorial/redacciones; do
+            if [ -e "$ruta" ]; then
+              echo "::error::La corrida escribio en $ruta, que git IGNORA: git status no lo lista."
+              echo "::error::El estado y los borradores viven fuera de git (02-editorial.md §8.3)."
+              exit 1
+            fi
+          done
+
+      # ========================================================================
+      # POR QUE AQUI NO HAY UN PASO QUE SUBA EL REGISTRO COMO ARTEFACTO
+      #
+      # Hasta el 2026-09-24 este archivo terminaba en un `actions/upload-artifact`
+      # descrito como «artefacto privado». ESO NO EXISTE, y el error es del tipo
+      # que hay que dejar escrito en vez de borrar:
+      #
+      #   - En un repositorio PUBLICO, los artefactos de una corrida de Actions
+      #     los puede descargar cualquiera que pueda ver el repositorio — o sea,
+      #     cualquiera. `actions/upload-artifact` no tiene ninguna opcion de ACL:
+      #     no hay forma de subir un artefacto y restringir quien lo baja.
+      #   - SANEAR EL CONTENIDO NO VUELVE PRIVADO EL ARTEFACTO. Vuelve publicable
+      #     su contenido, que es otra cosa. El paso «el registro no lleva URLs»
+      #     mide lo segundo y no puede dar lo primero; confundirlos era el
+      #     defecto.
+      #
+      # Tener un registro descargable exigiria una de dos cosas, y ninguna es
+      # este archivo: o el repositorio es privado, o el registro va a un destino
+      # externo con credencial. Las dos caen dentro del prerrequisito 3 de
+      # `00-donde-correria.md` —elegir el almacen externo—, que sigue ABIERTO.
+      # Mientras tanto el registro se queda en `$EDITORIAL_ESTADO_DIR`: quien lo
+      # necesite lo lee de ahi, y quien no tenga acceso a ese almacen tampoco
+      # tendria por que leerlo.
+      #
+      # ------------------------------------------------------------------------
+      # LA REGLA QUE SOBREVIVE AL PASO RETIRADO, y que es la parte reutilizable.
+      # Va escrita en su forma GENERAL a proposito: estrecharla a «el paso que
+      # publica» fue el error, y despues estrecharla a «el paso del registro»
+      # tambien. Lo que hace peligroso a `always()` no es donde escribe, es que
+      # corre DESPUES de que una compuerta haya dicho que no.
+      #
+      #   TODO PASO CON `always()` CUMPLE UNA DE TRES: NO ESCRIBE, O EXIGE QUE UNA
+      #   COMPUERTA ANTERIOR HAYA **PASADO** (`steps.<id>.outcome == 'success'`),
+      #   O REVALIDA POR SU CUENTA LO QUE ESA COMPUERTA RECHAZO.
+      #
+      #   Y UN PASO QUE PUBLIQUE EXIGE ADEMAS LAS DOS COMPUERTAS DEL CONTENIDO
+      #   —`steps.exposicion.outcome == 'success'` y
+      #   `steps.registro_sin_urls.outcome == 'success'`—, NUNCA `always()`.
+      #
+      # Es literalmente el defecto que tenia el paso retirado: compartia condicion
+      # con las tres compuertas (`always() && steps.corrida.outcome != 'skipped'`),
+      # asi que subia el archivo IGUAL aunque «el registro no lleva URLs» acabara
+      # de fallar. Una compuerta que no puede detener lo que viene despues no es
+      # una compuerta: es un mensaje de log.
+      #
+      # Los cuatro pasos con `always()` de arriba se comprobaron UNO POR UNO, y
+      # la cuenta real es TRES que no escriben y UNO que escribe:
+      #   - «compuerta de exposicion»: no escribe. Corre un script de solo
+      #     lectura —ver el limite declarado mas abajo—.
+      #   - «el registro no lleva URLs»: no escribe. Es un `grep -Eq`.
+      #   - «el arbol de trabajo quedo intacto»: NO escribe —`git status
+      #     --porcelain`, un `[ -e ]` y dos `echo` a stdout—, y por eso su `if`
+      #     es `!= 'skipped'` y NO `== 'success'`. La diferencia es deliberada y
+      #     no hay que «alinearla»: tiene que medir el arbol TAMBIEN cuando la
+      #     validacion fallo, que es justo el caso F-01, cuando alguien pudo
+      #     escribir donde no debia. Ponerle `== 'success'` seria la regresion.
+      #     Lo explica el bloque de ese paso, mas arriba.
+      #   - «registro de la corrida»: es el UNICO que escribe, y es el que
+      #     cuelga de `steps.dirs_privados.outcome == 'success'`.
+      #
+      # PUBLICAR NO ES SOLO SUBIR UN ARTEFACTO. `$GITHUB_STEP_SUMMARY` se renderiza
+      # en la pagina de la corrida, y en un repositorio PUBLICO esa pagina la ve
+      # cualquiera: misma clase, otra puerta. No se escribe ahi, y la prueba lo
+      # cuenta como publicacion.
+      #
+      # `scripts/editorial/pruebas/workflow-preparado.test.mjs` comprueba las dos
+      # mitades de cada regla: que hoy ningun paso publica ni escribe sin compuerta,
+      # y que reponer uno —con `always()`, o quitandole la exigencia al del
+      # registro— pone la prueba roja.
+      # ========================================================================
