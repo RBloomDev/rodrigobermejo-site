@@ -7,7 +7,7 @@ import { FeedInvalidoError, leerFeed, raizDelFeed } from "./feed.ts";
 // Derivado de docs/05: dos documentos opcionales, sin métricas calculadas aquí.
 const period = z.string().regex(/^\d{4}-(?:0[1-9]|1[0-2]|Q[1-4])$/);
 const source = z.literal("wakatime");
-const record = z.object({
+export const procesoRecordSchema = z.object({
   kind: z.literal("human_editor_activity"), period, source,
   seconds: z.number().finite().nonnegative(), unit: z.literal("recorded_activity_seconds"),
   coverage: z.object({
@@ -18,12 +18,12 @@ const record = z.object({
     del_trabajo: z.literal("desconocida"),
   }).strict(),
 }).strict();
-const absence = z.object({
+export const procesoAbsenceSchema = z.object({
   period, source,
   motivo_de_ausencia: z.enum(["sin_fuente_registrada", "fuera_del_periodo_medido", "fuente_no_respondio"]),
 }).strict();
-const procesoSchema = z.object({
-  schema_version: z.literal("1.0.0"), records: z.array(record), absences: z.array(absence),
+export const procesoSchema = z.object({
+  schema_version: z.literal("1.0.0"), records: z.array(procesoRecordSchema), absences: z.array(procesoAbsenceSchema),
 }).strict();
 const count = z.number().int().nonnegative();
 const activitySchema = z.object({

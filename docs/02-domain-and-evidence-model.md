@@ -295,8 +295,8 @@ obligar a que alguien lo escriba, en lugar de que un algoritmo lo adivine.
 El párrafo de arriba sigue vigente **del validador**, y solo de él: `validate` corre
 offline y no toca la red, así que no puede desmentir un `public: true`. Lo que sí existe,
 fuera de los gates y precisamente porque usa la red, es un comando aparte del motor que
-mide esa declaración contra la API de GitHub. Ese comando **no clasifica en «verificada» o
-«fallo»** —tuvo esos dos resultados y los corrigió—, y la razón por la que ya no lo hace
+mide esa declaración contra la API de GitHub. Ese comando **no clasifica en `OK` o
+`FALLO`** —tuvo exactamente esos dos resultados, con esos nombres, y los corrigió—, y la razón por la que ya no lo hace
 pertenece al modelo de dominio, no a la implementación.
 
 > **Un 404 sin credencial no prueba que el recurso no exista.**
@@ -360,22 +360,27 @@ regla de arriba prohíbe. El `README.md` del motor repite la misma tabla y el mi
 en `:265-273`.
 
 **Lo que no se comprobó, dicho en vez de omitido.** El motor vive en un repositorio privado
-aparte (`decisions/0001`) y no es legible desde el repositorio del sitio: quien escribió
-este apartado no pudo abrir esos archivos. Esas tres citas son las únicas medidas, y ningún
-otro archivo ni rango del motor respalda este apartado. En un apartado cuyo tema es no
+aparte (`decisions/0001`): quien escribió la redacción inicial no pudo abrir esos archivos.
+En esa redacción, esas tres citas eran las únicas medidas, y ningún
+otro archivo ni rango del motor respaldaba este apartado. En un apartado cuyo tema es no
 afirmar lo que no se midió, la diferencia entre «lo leí» y «me lo midieron» se escribe. El
 resto —que las clases son tres, qué mide cada una, que `INDETERMINADA` bloquea y que no hay
 una cuarta— no es una observación del motor sino la regla del modelo, y en el modelo manda
 este documento sobre el código, no al revés.
 
-**Comprobación directa posterior — 2026-09-26.** En la copia local del motor
-`rb-loop-motor` se leyeron `cli/verificar-fuentes.ts:33-43` y
-`README.md:400-433`: enumeran estas tres clases, descartan el nombre
+**Comprobación directa posterior — 2026-09-26.** La primera lectura local quedó
+registrada sin SHA, con `README.md:400-433` y su tabla en `:405-409`; se conserva
+como antecedente, no como cita vigente reproducible. Al remediar se comprobó que
+el README local tenía cambios sin commit: no se atribuyen esos rangos a otro commit.
+La referencia vigente es `rodrigoBermejo/proof-engine@4fe2a7a712156a0a1925c24edd6e337a74abb86f`:
+se leyeron con `git show` los blobs versionados de `cli/verificar-fuentes.ts:33-45`
+y `README.md:258-291`. Enumeran estas tres clases, descartan el nombre
 `INEXISTENTE_CONFIRMADA` y declaran que `INDETERMINADA` termina con exit 1.
-Las líneas del README cambiaron respecto de la cita histórica; su tabla está ahora
-en `:405-409`. Esta lectura sustituye la limitación de acceso de la redacción
-inicial, que se conserva arriba como historia. Es una comprobación del código y su
-documentación, no una ejecución contra GitHub ni una verificación de fuentes reales.
+El rango `:265-273` de la medición histórica está dentro de este rango vigente;
+aquella medición no registró SHA y no se presume que fuera otro commit.
+Esta lectura sustituye la limitación de acceso inicial, conservada arriba como
+historia. Es una comprobación del código y su documentación, no una ejecución
+contra GitHub ni una verificación de fuentes reales.
 
 ### Resolución de un evento a un proyecto
 

@@ -45,7 +45,7 @@ Read-only, sobre repos allowlisted explícitamente:
 - `/proyectos` — listado, agrupable por `kind` y `lifecycle`
 - `/proyectos/[slug]` — proyecto, claims que sostiene y evidencia adherida
 - `/evidencia` — metodología, los dos ejes, y **los límites del sistema** declarados explícitamente
-- `/actividad` — autorizada en V1 por `decisions/0015` §4-A; **todavía no está implementada**
+- `/actividad` — autorizada en V1 por `decisions/0015` §4-A; **implementada** (`app/actividad/page.tsx`, T-S4). Hasta el 2026-09-26 esta línea decía «todavía no está implementada» con la ruta ya viva: se corrige y se fecha, porque un documento de alcance que niega una ruta existente lleva a un agente a construirla dos veces
 - Todo estático, leído del filesystem, validado con zod
 
 ---
