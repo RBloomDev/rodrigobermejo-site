@@ -351,6 +351,7 @@ no llega a ninguna respuesta— no se produce una clase peor: no se produce ning
 lo reciba aborta. Degradar a `INDETERMINADA` una medición que no se hizo sería inventarla,
 que es el mismo defecto una vuelta más abajo.
 
+**Registro histórico de la redacción inicial (la comprobación posterior está abajo).**
 Medido el 2026-09-26 por Rodrigo en `origin/develop` de `rodrigoBermejo/proof-engine`, y
 citado aquí **de esa medición, no de una lectura propia**: `cli/verificar-fuentes.ts:33-35`
 enumera las tres clases con estos nombres, y `:40` deja escrito que
@@ -366,6 +367,15 @@ afirmar lo que no se midió, la diferencia entre «lo leí» y «me lo midieron�
 resto —que las clases son tres, qué mide cada una, que `INDETERMINADA` bloquea y que no hay
 una cuarta— no es una observación del motor sino la regla del modelo, y en el modelo manda
 este documento sobre el código, no al revés.
+
+**Comprobación directa posterior — 2026-09-26.** En la copia local del motor
+`rb-loop-motor` se leyeron `cli/verificar-fuentes.ts:33-43` y
+`README.md:400-433`: enumeran estas tres clases, descartan el nombre
+`INEXISTENTE_CONFIRMADA` y declaran que `INDETERMINADA` termina con exit 1.
+Las líneas del README cambiaron respecto de la cita histórica; su tabla está ahora
+en `:405-409`. Esta lectura sustituye la limitación de acceso de la redacción
+inicial, que se conserva arriba como historia. Es una comprobación del código y su
+documentación, no una ejecución contra GitHub ni una verificación de fuentes reales.
 
 ### Resolución de un evento a un proyecto
 
