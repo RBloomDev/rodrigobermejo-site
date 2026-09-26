@@ -100,7 +100,19 @@ const correr = async (etapasDelCaso, banderas = {}) => {
 };
 
 /** Las piezas selladas que quedaron en disco. Es lo que antes contaba el corpus. */
-const selladas = () => borradoresEnDisco();
+/**
+ * Los borradores en disco CON SU CONTENIDO, no solo sus nombres.
+ *
+ * Comparaba `borradoresEnDisco()` a secas, que devuelve los ids ordenados. En `develop` la
+ * propiedad 1 comparaba el corpus COMPLETO, asi que el refactor debilito la asercion sin
+ * que nada se pusiera rojo: una regresion que reescribiera el contenido de un borrador ya
+ * sellado en la segunda corrida ---un `generar` que volviera a redactar sobre el mismo
+ * id--- pasaba, porque el conjunto de nombres no cambia.
+ *
+ * Una compuerta que se afloja durante un refactor es peor que una que nunca existio: la
+ * primera sigue dando verde y nadie vuelve a mirarla.
+ */
+const selladas = () => borradoresEnDisco().map((id) => ({ id, contenido: borradorEnDisco(id) }));
 
 /** El item y su borrador: los mismos datos en las tres propiedades. */
 function caso(titulo, url, id) {
@@ -147,7 +159,7 @@ const fixtureAntes = existsSync(RUTA_FIXTURE_PROTOTIPO) ? readFileSync(RUTA_FIXT
   comprobar("1 determinismo", p2.generado.borradores.length === 0, `la segunda corrida no deberia escribir borradores, escribio ${p2.generado.borradores.length}`);
   comprobar("1 determinismo", p2.verificado.selladas.length === 0, `la segunda corrida no deberia sellar nada, sello ${p2.verificado.selladas.length}`);
   comprobar("1 determinismo", selladas().length === 1, `deberia quedarse en 1 borrador, hay ${selladas().length}`);
-  comprobar("1 determinismo", JSON.stringify(selladas()) === trasUno, "el conjunto de borradores cambio entre dos corridas identicas");
+  comprobar("1 determinismo", JSON.stringify(selladas()) === trasUno, "los borradores cambiaron entre dos corridas identicas: compara ids Y contenido, porque una reescritura del mismo id no cambia el conjunto de nombres");
   comprobar(
     "1 determinismo",
     porUrlCanonica(noticia.url_canonica)?.estado === "terminada",

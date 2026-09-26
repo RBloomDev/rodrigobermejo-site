@@ -34,9 +34,13 @@
  * intento la descartaria a las tres corridas —cambiar una perdida silenciosa por otra—.
  *
  * Codigos de salida:
- *   0  exito: todo lo pendiente se comprobo y se sello.
- *   2  EXITO PARCIAL: alguna pieza no paso la verificacion; queda constancia en
- *      `estado/fallos.jsonl` y la entrada sigue reintentable (§5.5).
+ *   0  exito: todo lo pendiente se comprobo y se sello. **Nada quedo a medias.**
+ *   2  EXITO PARCIAL: quedo trabajo sin terminar, en cualquiera de sus TRES formas —una
+ *      pieza que no paso la verificacion, con constancia en `estado/fallos.jsonl` y la
+ *      entrada reintentable (§5.5); una entrada de la cola sin borrador en disco; un sello
+ *      que no llego al archivo—. Las dos ultimas **no registran fallo** a proposito (ver
+ *      el parrafo de abajo), asi que el codigo de salida es lo unico que las hace visibles
+ *      desde fuera: sin el, la corrida diria EXITO habiendo dejado piezas sin verificar.
  *   1  fallo: la corrida no pudo completarse.
  *
  * Uso:
@@ -185,10 +189,18 @@ export async function verificarPendientes(banderas = {}, inyeccion = {}) {
     + `${sinBorrador.length} sin borrador, ${sinSellar.length} sin sello guardado`);
   linea(`estado: ${JSON.stringify(instantanea())}`);
 
-  const parcial = rechazadas.length > 0;
+  // `parcial` son TRES cosas, no una, y las dos que se sumaron aqui son justamente las que
+  // NO dejan rastro en `fallos.jsonl`: una entrada sin borrador en disco y un sello que no
+  // llego al archivo no registran fallo —no es culpa de la entrada y contarlo como intento
+  // la descartaria a las tres corridas—. Si tampoco salieran por el codigo, no saldrian por
+  // ningun sitio: el comando decia EXITO y salia 0 habiendo dejado piezas sin verificar, y
+  // el workflow lo pintaba verde. Un cero medido y un cero por falta de dato se ven igual y
+  // significan lo opuesto; esta linea es la que los separa.
+  const parcial = rechazadas.length > 0 || sinBorrador.length > 0 || sinSellar.length > 0;
   linea(parcial
-    ? `== EXITO PARCIAL: ${rechazadas.length} pieza(s) no pasaron, con constancia en estado/fallos.jsonl`
-    : '== EXITO: sin fallos de verificacion');
+    ? `== EXITO PARCIAL: ${rechazadas.length} rechazada(s) con constancia en estado/fallos.jsonl; `
+      + `${sinBorrador.length} sin borrador y ${sinSellar.length} sin sello siguen pendientes`
+    : '== EXITO: sin fallos de verificacion y sin nada pendiente');
 
   return {
     corrida,

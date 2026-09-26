@@ -289,9 +289,20 @@ jobs:
           codigo_generar=$?
           node scripts/editorial/verificar-canal.mjs --limite "$EDITORIAL_MAX_PIEZAS"
           codigo_verificar=$?
-          # El peor de los dos, con 1 dominando sobre 2: un fallo de verdad no se
-          # puede tapar con el exito parcial del otro comando.
-          if [ "$codigo_generar" = "1" ] || [ "$codigo_verificar" = "1" ]; then
+          # El peor de los dos, con el fallo dominando sobre el exito parcial: un
+          # fallo de verdad no se puede tapar con el exito parcial del otro comando.
+          #
+          # SE ENUMERA LO QUE ES EXITO, NO LO QUE ES FALLO. Esta condicion preguntaba
+          # por `= "1"` y mandaba todo lo demas a `codigo=0`, asi que cualquier codigo
+          # que los comandos no emiten salia del paso como EXITO: 137 —al runner se le
+          # acabo la memoria, o mato el proceso al vencer el timeout—, 126 y 127 —el
+          # ejecutable no esta o no corre—, y los de una señal. Una lista de fallos
+          # conocidos deja verde justamente lo que nadie previo, que es la clase de
+          # fallo que importa. La lista de exitos no: lo que no esta enumerado ES un
+          # fallo, y son dos codigos, 0 y 2, los mismos que documentan los dos .mjs.
+          if [ "$codigo_generar" != "0" ] && [ "$codigo_generar" != "2" ]; then
+            codigo=1
+          elif [ "$codigo_verificar" != "0" ] && [ "$codigo_verificar" != "2" ]; then
             codigo=1
           elif [ "$codigo_generar" = "2" ] || [ "$codigo_verificar" = "2" ]; then
             codigo=2
@@ -301,11 +312,12 @@ jobs:
           echo "codigo=$codigo" >> "$GITHUB_OUTPUT"
           echo "codigo_generar=$codigo_generar" >> "$GITHUB_OUTPUT"
           echo "codigo_verificar=$codigo_verificar" >> "$GITHUB_OUTPUT"
-          # 0 = exito, 2 = exito parcial (hubo fallos con constancia, o la
-          # generacion se detuvo en el tope de llamadas). Los dos son resultados
-          # legitimos y NO tumban el workflow: el canal esta disenado para que un
-          # fallo de acceso deje registro en vez de fabricar una noticia. Solo 1
-          # es un fallo de verdad.
+          # 0 = exito, 2 = exito parcial (hubo fallos con constancia, quedo algo
+          # sin verificar, o la generacion se detuvo en el tope de llamadas). Los
+          # dos son resultados legitimos y NO tumban el workflow: el canal esta
+          # disenado para que un fallo de acceso deje registro en vez de fabricar
+          # una noticia. Cualquier otro codigo —el 1 que los comandos emiten y el
+          # que no emite ninguno— ya llego aqui como `codigo=1`, y tumba el paso.
           [ "$codigo" = "1" ] && exit 1
           exit 0
 

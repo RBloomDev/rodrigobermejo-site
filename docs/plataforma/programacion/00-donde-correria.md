@@ -392,14 +392,21 @@ Detalles para tomarla con la información completa:
   **no** tiene `workflow`, así que tampoco puede instalar el archivo de workflow.
   Eso no es un obstáculo a rodear: es la restricción funcionando.
 - **Coste:** es consumo de API por corrida. Con `--limite 1` es una redacción más
-  los juicios de verificación. El tope de `EDITORIAL_MAX_LLAMADAS` **está declarado pero hoy
-  no ata** —nadie lo lee del entorno y ningún `.mjs` de producción lo nombra, vuelto a medir
-  el 2026-09-25—, así que lo que acota de verdad el
-  gasto de una corrida es `--limite`, topado además a 3 por el primer paso del workflow.
+  los juicios de verificación. El tope de `EDITORIAL_MAX_LLAMADAS` **ata desde el 2026-09-25**:
+  `generar.mjs` lo lee con `topeDeLlamadas()`, envuelve la vía de inferencia con
+  `contadorDeLlamadas()` y aborta la corrida al llegar al tope, con la prueba que lo cubre
+  por los dos lados en `tres-comandos.test.mjs` (caso 4: superarlo aborta, y no superarlo
+  no). `--limite` ---topado a 3 por el primer paso del workflow--- sigue siendo el otro
+  freno, y son independientes.
+
+  > Este párrafo decía lo contrario hasta el 2026-09-26, nueve líneas después de que la
+  > línea 140 dijera lo correcto: **el mismo archivo afirmaba las dos cosas**. No se borra
+  > el error, se fecha: un documento que se corrige en silencio no enseña a nadie por qué
+  > se equivocó.
 
 ## Activar, cuando se decida
 
-**Cinco prerrequisitos, y ninguno es la credencial. Tres están cerrados; quedan el 3 y el 4:**
+**Cinco prerrequisitos, y ninguno es la credencial. Cuatro están cerrados; queda el 3:**
 
 1. ~~**Cerrar T-E1, con la compuerta de CI que lo sostiene**~~ (`02-editorial.md` §8.6).
    **Cerrado.** El estado y los borradores salieron del repositorio, las dos variables son
@@ -415,10 +422,11 @@ Detalles para tomarla con la información completa:
    procesar como nuevo todo lo ya visto. **Abierto**, y es la decisión que queda. Es también
    lo único que podría dar un registro descargable sin publicarlo: mientras este repositorio
    sea público, subirlo como artefacto es publicarlo —ver *El registro no se publica*—.
-4. **Hacer que el tope de llamadas al redactor ate.** `EDITORIAL_MAX_LLAMADAS` está declarado
-   en el workflow y ningún `.mjs` de producción lo lee: `invocar-redactor.mjs` tiene que contar sus
-   llamadas y abortar al llegar al tope. **Abierto.** Mientras siga así, el único freno a un
-   bucle inesperado es `--limite` y el tope de 25 minutos.
+4. ~~**Hacer que el tope de llamadas al redactor ate.**~~ **CERRADO el 2026-09-25.**
+   `generar.mjs` lee `EDITORIAL_MAX_LLAMADAS` con `topeDeLlamadas()`, envuelve la vía de
+   inferencia con `contadorDeLlamadas()` y aborta al llegar al tope. La prueba lo cubre por
+   los dos lados —`tres-comandos.test.mjs`, caso 4: superarlo aborta y no superarlo no—,
+   porque un tope que se lee pero nunca puede dispararse es el mismo defecto con otra cara.
 5. ~~**Arreglar `registro-de-corridas.mjs` para que lea `$EDITORIAL_ESTADO_DIR`.**~~
    **Cerrado el 2026-09-25**, en la misma entrega que lo encontró. Resuelve con `dirEstado()`
    —la validación canónica— y aborta con código 1 si falta la variable, con el error saneado:

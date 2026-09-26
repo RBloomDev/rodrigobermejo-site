@@ -46,7 +46,9 @@
  */
 
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -127,6 +129,91 @@ export function comprobarPreparado(fuente) {
     assert.ok(
       Number.isInteger(llamadas) && llamadas > 0,
       `jobs.${nombre}: falta el tope de llamadas al redactor (EDITORIAL_MAX_LLAMADAS) o no es un entero positivo`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------------------
+// RR-NEW-01 — un codigo de salida inesperado NO puede salir del paso como exito.
+//
+// Esta comprobacion no LEE la condicion: la EJECUTA. Se recorta del `run` del paso «corrida»
+// el trozo que clasifica los dos codigos, se le inyectan valores concretos y se corre con
+// `sh`. Leer el texto probaria que dice lo que dice; ejecutarlo prueba lo que hace, que es
+// lo unico que le importa al runner —y la diferencia entre las dos cosas es exactamente el
+// defecto que cerro: la condicion se leia razonable y dejaba pasar 137 como exito—.
+//
+// LO QUE NO CUBRE, dicho para no venderla por mas de lo que mide: `sh` local no es `bash`
+// de un runner de GitHub. Lo que se ejercita es el subconjunto POSIX del fragmento —`if`,
+// `[`, `echo`— que es identico en los dos; no se ejercita ni `set +e`, ni la expansion de
+// `${{ inputs... }}`, ni que `node` devuelva esos codigos.
+// ---------------------------------------------------------------------------------------
+
+/** El fragmento de `run` que va DESPUES de tener los dos codigos, recortado del archivo. */
+function clasificacionDe(fuente) {
+  const inicio = fuente.indexOf('          codigo_verificar=$?\n');
+  assert.ok(inicio >= 0, 'no se encontro `codigo_verificar=$?`: el paso de la corrida cambio de forma');
+  const desde = inicio + '          codigo_verificar=$?\n'.length;
+  const fin = fuente.indexOf('          exit 0\n', desde);
+  assert.ok(fin > desde, 'no se encontro el `exit 0` que cierra el paso de la corrida');
+
+  const bloque = fuente.slice(desde, fin + '          exit 0\n'.length);
+  const guion = bloque.replace(/^ {10}/gm, '');
+  assert.match(guion, /^if \[/m, 'el fragmento recortado no contiene la clasificacion');
+  return guion;
+}
+
+/** Corre la clasificacion con dos codigos dados. Devuelve `{ codigo, salida }`. */
+function clasificar(guion, codigoGenerar, codigoVerificar) {
+  const dir = mkdtempSync(join(tmpdir(), 'canal-codigos-'));
+  const salidaGh = join(dir, 'output');
+  writeFileSync(salidaGh, '', 'utf8');
+
+  const hijo = spawnSync(
+    'sh',
+    ['-c', `codigo_generar=${codigoGenerar}\ncodigo_verificar=${codigoVerificar}\n${guion}`],
+    { encoding: 'utf8', env: { ...process.env, GITHUB_OUTPUT: salidaGh } },
+  );
+  assert.equal(
+    hijo.error, undefined,
+    `no se pudo correr \`sh\`: sin un shell POSIX esta comprobacion no mide nada (${hijo.error?.message})`,
+  );
+
+  const escrito = readFileSync(salidaGh, 'utf8');
+  const m = /^codigo=(.*)$/m.exec(escrito);
+  assert.ok(m !== null, `el paso no escribio \`codigo=\` en GITHUB_OUTPUT. Escrito:\n${escrito}`);
+  return { codigo: m[1], salida: hijo.status };
+}
+
+/**
+ * La tabla entera, no solo los casos que alguien previo. Las tres ultimas filas son el
+ * hallazgo: 137 es lo que deja un proceso que el runner mato —sin memoria, o al vencer el
+ * timeout— y ninguno de los dos comandos lo emite nunca.
+ */
+const CASOS = [
+  { generar: '0', verificar: '0', codigo: '0', salida: 0 },
+  { generar: '2', verificar: '0', codigo: '2', salida: 0 },
+  { generar: '0', verificar: '2', codigo: '2', salida: 0 },
+  { generar: '2', verificar: '2', codigo: '2', salida: 0 },
+  { generar: '1', verificar: '0', codigo: '1', salida: 1 },
+  { generar: '0', verificar: '1', codigo: '1', salida: 1 },
+  { generar: '1', verificar: '2', codigo: '1', salida: 1 },
+  { generar: '137', verificar: '0', codigo: '1', salida: 1 },
+  { generar: '0', verificar: '137', codigo: '1', salida: 1 },
+  { generar: '137', verificar: '2', codigo: '1', salida: 1 },
+  { generar: '127', verificar: '127', codigo: '1', salida: 1 },
+];
+
+export function comprobarClasificacionDeCodigos(fuente) {
+  const guion = clasificacionDe(fuente);
+  for (const caso of CASOS) {
+    const r = clasificar(guion, caso.generar, caso.verificar);
+    assert.equal(
+      r.codigo, caso.codigo,
+      `generar=${caso.generar} verificar=${caso.verificar}: el paso clasifico \`codigo=${r.codigo}\` y tenia que ser ${caso.codigo}`,
+    );
+    assert.equal(
+      r.salida, caso.salida,
+      `generar=${caso.generar} verificar=${caso.verificar}: el paso salio ${r.salida} y tenia que salir ${caso.salida}`,
     );
   }
 }
@@ -600,6 +687,10 @@ test('AC-PRG-04: la regla general acepta un paso con always() que SI espera a la
   );
 });
 
+test('RR-NEW-01: un codigo que los comandos no emiten NO sale del paso como exito', () => {
+  comprobarClasificacionDeCodigos(fuente);
+});
+
 test('F-01: ninguna escritura sale de una ruta sin validar, y el arbol se mide tambien por lo ignorado', () => {
   comprobarEscrituraValidada(fuente);
   comprobarArbolMideLoIgnorado(fuente);
@@ -768,6 +859,24 @@ test('las comprobaciones pueden fallar: cada mutacion pone roja la suya', () => 
       motivo: /artefacto privado/,
       mutar: (f) => `${f.replace(/\s*$/, '')}\n${pasoQueResume('${{ always() }}')}`,
       comprobar: comprobarNadaSePublica,
+    },
+    {
+      // El defecto exacto que cerro RR-NEW-01, repuesto: preguntar por los fallos
+      // conocidos en vez de enumerar los exitos. La comprobacion tiene que ponerse roja
+      // sobre la fila de 137, que es la que la version anterior dejaba pasar como exito.
+      nombre: 'la clasificacion preguntando por `= "1"` en vez de enumerar los exitos',
+      motivo: /generar=137/,
+      mutar: (f) =>
+        f
+          .replace(
+            '          if [ "$codigo_generar" != "0" ] && [ "$codigo_generar" != "2" ]; then\n'
+            + '            codigo=1\n'
+            + '          elif [ "$codigo_verificar" != "0" ] && [ "$codigo_verificar" != "2" ]; then\n'
+            + '            codigo=1\n',
+            '          if [ "$codigo_generar" = "1" ] || [ "$codigo_verificar" = "1" ]; then\n'
+            + '            codigo=1\n',
+          ),
+      comprobar: comprobarClasificacionDeCodigos,
     },
     {
       nombre: 'la compuerta de exposicion movida al final, despues de publicar',

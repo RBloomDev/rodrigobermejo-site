@@ -19,7 +19,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { appendFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -437,6 +437,11 @@ test('6. una pieza cuyo sello no quedo en disco NO se marca terminada, y se recu
     assert.equal(r.sinSellar[0].pieza_id, 'guia-evaluacion-tutores');
     assert.equal(r.selladas.length, 0);
     assert.equal(
+      r.parcial, true,
+      'un sello que no llego al disco deja trabajo sin terminar: la corrida NO es un exito, '
+      + 'y como este caso no registra fallo el codigo de salida es lo unico que lo dice',
+    );
+    assert.equal(
       borradorEnDisco('guia-evaluacion-tutores').procedencia.verificado.detalle, 'sin verificar',
       'el sello no llego al disco, que es la premisa del caso',
     );
@@ -456,6 +461,11 @@ test('6. una pieza cuyo sello no quedo en disco NO se marca terminada, y se recu
 
     assert.equal(r.sinSellar.length, 0);
     assert.equal(r.selladas.length, 1, 'la entrada recuperada tiene que quedar sellada esta vez');
+    assert.equal(
+      r.parcial, false,
+      'la otra mitad: sin nada pendiente la corrida SI es un exito. Sin este assert, '
+      + '«parcial cuando falta un sello» podria estar implementado como «parcial siempre»',
+    );
     assert.deepEqual(borradoresEnDisco(), ['guia-evaluacion-tutores'], 'y sin duplicar: un borrador, no dos');
     assert.notEqual(
       borradorEnDisco('guia-evaluacion-tutores').procedencia.verificado.detalle, 'sin verificar',
@@ -467,6 +477,42 @@ test('6. una pieza cuyo sello no quedo en disco NO se marca terminada, y se recu
     assert.equal(tras2.pieza_id, 'guia-evaluacion-tutores');
   });
 
+  await t.test('6c. sin borrador en disco, el CLI real NO sale 0: sale 2', async () => {
+    // Las dos mitades de arriba miden `parcial`, que es la variable. Esta mide el CODIGO DE
+    // SALIDA del ejecutable, que es lo unico que ve el workflow, y sobre el otro caso que
+    // tampoco registra fallo: una entrada de la cola cuyo borrador ya no esta en disco.
+    // Medir la variable y dar por hecho el codigo seria medir contra el registro en vez de
+    // contra el sistema.
+    nuevoEntorno('p6c');
+    const etapas = etapasFalsas({ deteccion: { items: [noticia] }, redacciones });
+    await generar({ silencioso: true }, { etapas });
+
+    // El borrador desaparece entre las dos etapas —un `git clean`, un tmpdir barrido, un
+    // worktree cambiado—. La entrada sigue en la cola y no hay nada que verificar.
+    unlinkSync(join(process.env.EDITORIAL_REDACCIONES_DIR, 'guia-evaluacion-tutores.json'));
+
+    const hijo = spawnSync(process.execPath, [join(DIR_EDITORIAL, 'verificar-canal.mjs')], {
+      env: process.env,
+      encoding: 'utf8',
+    });
+
+    assert.equal(
+      hijo.status, 2,
+      `el CLI tiene que salir 2 (exito PARCIAL), no 0. stdout:\n${hijo.stdout}\nstderr:\n${hijo.stderr}`,
+    );
+    assert.match(hijo.stdout, /EXITO PARCIAL/, 'y tiene que decirlo, no solo salir distinto de 0');
+    assert.match(hijo.stdout, /1 sin borrador/, 'nombrando el caso concreto que quedo pendiente');
+    assert.equal(
+      porUrlCanonica(noticia.url_canonica).estado, 'pendiente_verificacion',
+      'y sin mover la entrada: lo que falta es el borrador, no un intento gastado',
+    );
+  });
+
+  // COMO SE PONE ROJA: en `verificar-canal.mjs`, devolver `parcial` a `rechazadas.length > 0`.
+  // Comprobado: 6a falla en el assert de `r.parcial` y 6c sale 0 en vez de 2 —el comando
+  // declara EXITO sobre una cola que no verifico nada—. 6b sigue verde, que es lo que
+  // demuestra que el assert nuevo no es «parcial siempre».
+  //
   // COMO SE PONE ROJA: en `verificar-canal.mjs`, quitar la relectura y llamar a
   // `marcarVerificada()` siempre:
   //   escribirJson(ruta, sellada); marcarVerificada(entrada.id, {...});
