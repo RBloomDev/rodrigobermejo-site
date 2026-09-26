@@ -32,7 +32,16 @@ import test from 'node:test';
 
 import { DIR_EDITORIAL } from './ayuda.mjs';
 
-const EJECUTAR = join(DIR_EDITORIAL, 'ejecutar.mjs');
+/**
+ * **Los DOS comandos, no uno.** Partido el canal (§8.1), la regla se cumple o se incumple
+ * por separado en cada entrada: un `generar` que aborta y un `verificar` que no lo hace
+ * dejarian la mitad del canal escribiendo donde no debe, y una prueba sobre un solo
+ * ejecutable no lo veria. Cada caso de abajo se corre contra los dos.
+ */
+const COMANDOS = [
+  { nombre: 'generar', cli: join(DIR_EDITORIAL, 'generar.mjs') },
+  { nombre: 'verificar', cli: join(DIR_EDITORIAL, 'verificar-canal.mjs') },
+];
 
 /** Las dos rutas historicas dentro del repositorio: donde caia el default. */
 const HISTORICAS = [join(DIR_EDITORIAL, 'estado'), join(DIR_EDITORIAL, 'redacciones')];
@@ -53,22 +62,23 @@ function inventario(dir) {
   return salida.sort();
 }
 
-/** Corre el canal con el entorno que se le da, sin heredar las variables del canal. */
-function correrCanal({ estado, redacciones, piezas, entradas }) {
+/** Corre un comando del canal con el entorno que se le da, sin heredar sus variables. */
+function correrComando(cli, { estado, redacciones, entradas }) {
   const env = { ...process.env };
   delete env.EDITORIAL_ESTADO_DIR;
   delete env.EDITORIAL_REDACCIONES_DIR;
   if (estado) env.EDITORIAL_ESTADO_DIR = estado;
   if (redacciones) env.EDITORIAL_REDACCIONES_DIR = redacciones;
-  env.EDITORIAL_PIEZAS = piezas;
 
-  return spawnSync(process.execPath, [EJECUTAR, '--entradas', entradas, '--silencioso'], {
+  // `--entradas` solo lo entiende `generar`; `verificar` ignora lo que no conoce y lee su
+  // cola de la bitacora. Se pasa igual a los dos para que la invocacion sea la misma.
+  return spawnSync(process.execPath, [cli, '--entradas', entradas, '--silencioso'], {
     env,
     encoding: 'utf8',
   });
 }
 
-/** Un entorno de prueba: dos directorios vacios en `tmpdir` y un corpus tambien vacio. */
+/** Un entorno de prueba: dos directorios vacios en `tmpdir`, y nada mas que montar. */
 function entornoVacio(nombre) {
   const raiz = mkdtempSync(join(tmpdir(), `editorial-${nombre}-`));
   const entradas = join(raiz, 'entradas.json');
@@ -77,7 +87,6 @@ function entornoVacio(nombre) {
     raiz,
     estado: join(raiz, 'estado'),
     redacciones: join(raiz, 'redacciones'),
-    piezas: join(raiz, 'piezas.json'),
     entradas,
   };
 }
@@ -89,45 +98,44 @@ test('sin las dos variables el canal aborta, lo dice, y no escribe un solo byte'
     { nombre: 'falta EDITORIAL_ESTADO_DIR', pon: { redacciones: true }, esperado: [/EDITORIAL_ESTADO_DIR/] },
   ];
 
-  for (const caso of casos) {
-    await t.test(caso.nombre, () => {
-      const e = entornoVacio('obligatorias');
-      const antes = HISTORICAS.map(inventario);
+  for (const comando of COMANDOS) {
+    for (const caso of casos) {
+      await t.test(`${comando.nombre}: ${caso.nombre}`, () => {
+        const e = entornoVacio('obligatorias');
+        const antes = HISTORICAS.map(inventario);
 
-      const r = correrCanal({
-        estado: caso.pon.estado ? e.estado : undefined,
-        redacciones: caso.pon.redacciones ? e.redacciones : undefined,
-        piezas: e.piezas,
+        const r = correrComando(comando.cli, {
+          estado: caso.pon.estado ? e.estado : undefined,
+          redacciones: caso.pon.redacciones ? e.redacciones : undefined,
+          entradas: e.entradas,
+        });
+
+        assert.notEqual(r.status, 0, `${comando.nombre} tiene que salir con codigo distinto de 0`);
+        for (const patron of caso.esperado) {
+          assert.match(r.stderr, patron, 'el mensaje tiene que nombrar la variable que falta');
+        }
+        assert.match(r.stderr, /no se escribio nada/i, 'el mensaje tiene que decir que no escribio');
+
+        // Ni un byte: ni en el directorio que SI estaba puesto...
+        assert.equal(inventario(e.estado), null, 'no se crea el directorio de estado');
+        assert.equal(inventario(e.redacciones), null, 'no se crea el directorio de redacciones');
+        // ...ni en las rutas historicas del repositorio, que es donde caia el default.
+        assert.deepEqual(HISTORICAS.map(inventario), antes, 'las rutas historicas no se tocan');
+      });
+    }
+
+    // Control: con las DOS puestas el comando arranca. Sin este caso, la prueba pasaria
+    // igual si abortara siempre por cualquier otro motivo, y entonces no probaria que el
+    // aborto lo causa la variable ausente.
+    await t.test(`${comando.nombre}: control — con las dos variables arranca y no aborta`, () => {
+      const e = entornoVacio('control');
+      const r = correrComando(comando.cli, {
+        estado: e.estado,
+        redacciones: e.redacciones,
         entradas: e.entradas,
       });
-
-      assert.notEqual(r.status, 0, 'el canal tiene que salir con codigo distinto de 0');
-      for (const patron of caso.esperado) {
-        assert.match(r.stderr, patron, 'el mensaje tiene que nombrar la variable que falta');
-      }
-      assert.match(r.stderr, /no se escribio nada/i, 'el mensaje tiene que decir que no escribio');
-
-      // Ni un byte: ni en el directorio que SI estaba puesto...
-      assert.equal(inventario(e.estado), null, 'no se crea el directorio de estado');
-      assert.equal(inventario(e.redacciones), null, 'no se crea el directorio de redacciones');
-      assert.equal(existsSync(e.piezas), false, 'no se escribe el corpus');
-      // ...ni en las rutas historicas del repositorio, que es donde caia el default.
-      assert.deepEqual(HISTORICAS.map(inventario), antes, 'las rutas historicas no se tocan');
+      assert.equal(r.status, 0, `${comando.nombre} deberia correr; stderr: ${r.stderr}`);
+      assert.doesNotMatch(r.stderr, /EDITORIAL_ESTADO_DIR/);
     });
   }
-
-  // Control: con las DOS puestas el canal arranca. Sin este caso, la prueba pasaria
-  // igual si el canal abortara siempre por cualquier otro motivo, y entonces no
-  // probaria que el aborto lo causa la variable ausente.
-  await t.test('control: con las dos variables el canal arranca y no aborta', () => {
-    const e = entornoVacio('control');
-    const r = correrCanal({
-      estado: e.estado,
-      redacciones: e.redacciones,
-      piezas: e.piezas,
-      entradas: e.entradas,
-    });
-    assert.equal(r.status, 0, `el canal deberia correr; stderr: ${r.stderr}`);
-    assert.doesNotMatch(r.stderr, /EDITORIAL_ESTADO_DIR/);
-  });
 });

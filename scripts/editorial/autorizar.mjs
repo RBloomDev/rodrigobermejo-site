@@ -538,9 +538,9 @@ export function autorizar({ id, registro: rutaRegistro, corrida = null }) {
     // (§8.4 paso 6) mientras la bitacora vive fuera de git, asi que un cambio de worktree o
     // un `git clean -fd` se lleva el archivo y deja la bitacora diciendo `autorizada`.
     //
-    // Y `autorizada` es TERMINAL —`estado.mjs` no le da transicion de salida y
-    // `conciliarConCorpus` la salta—, asi que no hay camino de vuelta: el comando reportaria
-    // exito para siempre sobre una pieza que no esta publicada. Un estado que dice que algo
+    // Y `autorizada` es TERMINAL —`estado.mjs` no le da transicion de salida—, asi que no
+    // hay camino de vuelta: el comando reportaria exito para siempre sobre una pieza que no
+    // esta publicada. Un estado que dice que algo
     // existe cuando no existe es peor que un error, porque nadie va a mirar.
     //
     // Se NIEGA en vez de reescribir. Reescribir exigiria el registro humano, que en una

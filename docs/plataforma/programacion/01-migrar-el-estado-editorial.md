@@ -141,8 +141,12 @@ Test-Path scripts\editorial\redacciones
 
 # 2. El canal aborta si las variables no están. $LASTEXITCODE != 0 y no escribe nada.
 #    Va al final porque deja la sesión sin las dos variables.
+#    Se comprueban LOS DOS comandos, no uno: desde que el canal se partió (§8.1 de
+#    02-editorial.md) son dos entradas distintas, y que una aborte no dice nada de la otra.
 Remove-Item Env:EDITORIAL_ESTADO_DIR, Env:EDITORIAL_REDACCIONES_DIR -ErrorAction SilentlyContinue
-node scripts/editorial/ejecutar.mjs
+node scripts/editorial/generar.mjs
+$LASTEXITCODE
+node scripts/editorial/verificar-canal.mjs
 $LASTEXITCODE
 ```
 
@@ -153,7 +157,9 @@ $LASTEXITCODE
 npm run guard:estado-editorial
 
 # 2. El canal aborta si las variables no están. Sale != 0 y no escribe nada.
-env -u EDITORIAL_ESTADO_DIR -u EDITORIAL_REDACCIONES_DIR node scripts/editorial/ejecutar.mjs
+#    Los DOS comandos, no uno: son dos entradas distintas desde que el canal se partió.
+env -u EDITORIAL_ESTADO_DIR -u EDITORIAL_REDACCIONES_DIR node scripts/editorial/generar.mjs ; echo $?
+env -u EDITORIAL_ESTADO_DIR -u EDITORIAL_REDACCIONES_DIR node scripts/editorial/verificar-canal.mjs ; echo $?
 
 # 3. Las rutas históricas ya no existen en disco. Las dos salen 1 (no existe).
 test -e scripts/editorial/estado ; echo $?

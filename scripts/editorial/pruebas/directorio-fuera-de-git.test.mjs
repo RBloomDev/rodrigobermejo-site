@@ -48,7 +48,11 @@ import test from 'node:test';
 import { DIR_EDITORIAL } from './ayuda.mjs';
 import { dirEstado, dirRedacciones } from '../comun.mjs';
 
-const EJECUTAR = join(DIR_EDITORIAL, 'ejecutar.mjs');
+/** Los dos comandos del canal que escriben. La regla se comprueba en los DOS (§8.1). */
+const COMANDOS = [
+  { nombre: 'generar', cli: join(DIR_EDITORIAL, 'generar.mjs') },
+  { nombre: 'verificar', cli: join(DIR_EDITORIAL, 'verificar-canal.mjs') },
+];
 const RUTA_ESTADO = join(DIR_EDITORIAL, 'ruta-estado.mjs');
 
 /** Corre un cuerpo con el entorno dado y restaura despues, pase lo que pase. */
@@ -122,47 +126,50 @@ test('una ruta de ESTE repositorio no vale como directorio privado', async (t) =
 });
 
 // =====================================================================================
-test('el canal aborta ante un arbol de git AJENO, y no deja un byte dentro', () => {
-  // «Sea este repositorio u otro»: un repo privado ajeno tampoco vale. Montarlo en
-  // `tmpdir` es la unica forma de probar esa mitad sin escribir en el arbol real.
-  const raiz = mkdtempSync(join(tmpdir(), 'editorial-repo-ajeno-'));
-  const privado = join(raiz, 'privado');
-  mkdirSync(privado, { recursive: true });
-  const entradas = join(raiz, 'entradas.json');
-  writeFileSync(entradas, '[]', 'utf8');
+test('los dos comandos abortan ante un arbol de git AJENO, y no dejan un byte dentro', async (t) => {
+  for (const comando of COMANDOS) {
+    await t.test(comando.nombre, () => {
+      // «Sea este repositorio u otro»: un repo privado ajeno tampoco vale. Montarlo en
+      // `tmpdir` es la unica forma de probar esa mitad sin escribir en el arbol real.
+      const raiz = mkdtempSync(join(tmpdir(), 'editorial-repo-ajeno-'));
+      const privado = join(raiz, 'privado');
+      mkdirSync(privado, { recursive: true });
+      const entradas = join(raiz, 'entradas.json');
+      writeFileSync(entradas, '[]', 'utf8');
 
-  const env = { ...process.env };
-  env.EDITORIAL_ESTADO_DIR = join(privado, 'estado');
-  env.EDITORIAL_REDACCIONES_DIR = join(privado, 'redacciones');
-  env.EDITORIAL_PIEZAS = join(raiz, 'piezas.json');
-  const correr = () =>
-    spawnSync(process.execPath, [EJECUTAR, '--entradas', entradas, '--silencioso'], {
-      env,
-      encoding: 'utf8',
+      const env = { ...process.env };
+      env.EDITORIAL_ESTADO_DIR = join(privado, 'estado');
+      env.EDITORIAL_REDACCIONES_DIR = join(privado, 'redacciones');
+      const correr = () =>
+        spawnSync(process.execPath, [comando.cli, '--entradas', entradas, '--silencioso'], {
+          env,
+          encoding: 'utf8',
+        });
+
+      // --- CONTROL primero: sin `.git`, el mismo directorio deja correr el comando. ---
+      const verde = correr();
+      assert.equal(verde.status, 0, `sin .git ${comando.nombre} deberia correr; stderr: ${verde.stderr}`);
+
+      // --- ROJO: se convierte el ancestro en un arbol de trabajo de git. ---
+      assert.equal(
+        spawnSync('git', ['-c', 'init.defaultBranch=main', 'init', '-q'], { cwd: raiz, encoding: 'utf8' }).status,
+        0,
+        'git init tiene que funcionar',
+      );
+      const antes = readdirSync(privado).sort();
+
+      const rojo = correr();
+      assert.notEqual(rojo.status, 0, `dentro de un arbol de git ${comando.nombre} tiene que abortar`);
+      assert.match(rojo.stderr, /EDITORIAL_ESTADO_DIR/, 'tiene que nombrar la variable');
+      assert.match(rojo.stderr, /arbol de trabajo de git/i, 'y el motivo');
+      assert.match(rojo.stderr, /no se escribio nada/i);
+
+      // Ni un byte nuevo dentro del arbol ajeno. El control de arriba ya creo lo suyo, asi
+      // que lo que se compara es que la corrida ABORTADA no anadio nada.
+      assert.deepEqual(readdirSync(privado).sort(), antes, 'la corrida abortada no escribe dentro del arbol de git');
+      assert.equal(existsSync(join(raiz, '.git', 'estado')), false);
     });
-
-  // --- CONTROL primero: sin `.git`, el mismo directorio deja correr el canal. ---
-  const verde = correr();
-  assert.equal(verde.status, 0, `sin .git el canal deberia correr; stderr: ${verde.stderr}`);
-
-  // --- ROJO: se convierte el ancestro en un arbol de trabajo de git. ---
-  assert.equal(
-    spawnSync('git', ['-c', 'init.defaultBranch=main', 'init', '-q'], { cwd: raiz, encoding: 'utf8' }).status,
-    0,
-    'git init tiene que funcionar',
-  );
-  const antes = readdirSync(privado).sort();
-
-  const rojo = correr();
-  assert.notEqual(rojo.status, 0, 'dentro de un arbol de git el canal tiene que abortar');
-  assert.match(rojo.stderr, /EDITORIAL_ESTADO_DIR/, 'tiene que nombrar la variable');
-  assert.match(rojo.stderr, /arbol de trabajo de git/i, 'y el motivo');
-  assert.match(rojo.stderr, /no se escribio nada/i);
-
-  // Ni un byte nuevo dentro del arbol ajeno. El control de arriba ya creo lo suyo, asi
-  // que lo que se compara es que la corrida ABORTADA no anadio nada.
-  assert.deepEqual(readdirSync(privado).sort(), antes, 'la corrida abortada no escribe dentro del arbol de git');
-  assert.equal(existsSync(join(raiz, '.git', 'estado')), false);
+  }
 });
 
 // =====================================================================================

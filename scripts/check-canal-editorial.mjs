@@ -8,6 +8,18 @@
  * las que el canal ANTERIOR no tenia: marcaba una entrada como vista al detectarla, asi
  * que lo que no llegaba a pieza se perdia para siempre y en silencio.
  *
+ * ================== SOBRE LOS DOS COMANDOS, NO SOBRE UNO ==================
+ *
+ * Desde que el canal se partio (§8.1), cada propiedad se ejercita invocando `generar()` y
+ * despues `verificarPendientes()`, que es como se opera de verdad. Repartir las etapas no
+ * puede romper la idempotencia de §5.2, y este guard es lo que lo mide: si `generar`
+ * volviera a sellar, o si `verificar` volviera a redactar, las tres propiedades dejarian
+ * de sostenerse por caminos distintos.
+ *
+ * El «corpus» de este guard son los BORRADORES en `$EDITORIAL_REDACCIONES_DIR`: el corpus
+ * intermedio se retiro con su variable (§8.6, fila 2), y lo que hay que contar es cuantas
+ * piezas selladas quedaron en disco.
+ *
  * ============================ SIN RED Y SIN INFERENCIA ============================
  *
  * Este guard **no llama a ningun modelo**. Usa el redactor falso de
@@ -19,9 +31,9 @@
  * en cada iteracion y no podria correr en CI. La demostracion CON inferencia real es otra
  * cosa, y va aparte.
  *
- * Todo lo que escribe vive en `tmpdir`, por las dos variables obligatorias mas
- * `EDITORIAL_PIEZAS`. La ultima comprobacion verifica que el fixture trackeado del
- * prototipo quedo intacto: un guard que ensucia el arbol que vigila acaba ignorandose.
+ * Todo lo que escribe vive en `tmpdir`, por las dos variables obligatorias y ninguna mas.
+ * La ultima comprobacion verifica que el fixture trackeado del prototipo quedo intacto: un
+ * guard que ensucia el arbol que vigila acaba ignorandose.
  *
  * Uso:
  *   node scripts/check-canal-editorial.mjs
@@ -40,12 +52,15 @@ import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-import { RUTA_PIEZAS } from "./editorial/comun.mjs";
-import { ejecutar } from "./editorial/ejecutar.mjs";
+import { RUTA_FIXTURE_PROTOTIPO } from "./editorial/comun.mjs";
+import { generar } from "./editorial/generar.mjs";
+import { verificarPendientes } from "./editorial/verificar-canal.mjs";
 import { estadoDe, pendientesDeRedaccion, porUrlCanonica } from "./editorial/estado.mjs";
 import {
   DIR_EDITORIAL,
   borrador,
+  borradorEnDisco,
+  borradoresEnDisco,
   etapasFalsas,
   item,
   nuevoEntorno,
@@ -71,13 +86,33 @@ function comprobar(propiedad, condicion, detalle) {
   if (!condicion) fallos.push(`${propiedad}: ${detalle}`);
 }
 
-const correr = (etapasDelCaso, banderas = {}) =>
-  ejecutar({ silencioso: true, ...banderas }, { etapas: etapasDelCaso });
+/**
+ * Una pasada completa del canal: los DOS comandos, en su orden, con las mismas etapas
+ * dobles. Devuelve los dos resultados, que es lo que permite exigirle a cada uno lo suyo.
+ */
+const correr = async (etapasDelCaso, banderas = {}) => {
+  const generado = await generar({ silencioso: true, ...banderas }, { etapas: etapasDelCaso });
+  const verificado = await verificarPendientes(
+    { silencioso: true, ...banderas },
+    { etapas: etapasDelCaso },
+  );
+  return { generado, verificado };
+};
 
-const corpus = () =>
-  existsSync(process.env.EDITORIAL_PIEZAS)
-    ? JSON.parse(readFileSync(process.env.EDITORIAL_PIEZAS, "utf8"))
-    : [];
+/** Las piezas selladas que quedaron en disco. Es lo que antes contaba el corpus. */
+/**
+ * Los borradores en disco CON SU CONTENIDO, no solo sus nombres.
+ *
+ * Comparaba `borradoresEnDisco()` a secas, que devuelve los ids ordenados. En `develop` la
+ * propiedad 1 comparaba el corpus COMPLETO, asi que el refactor debilito la asercion sin
+ * que nada se pusiera rojo: una regresion que reescribiera el contenido de un borrador ya
+ * sellado en la segunda corrida ---un `generar` que volviera a redactar sobre el mismo
+ * id--- pasaba, porque el conjunto de nombres no cambia.
+ *
+ * Una compuerta que se afloja durante un refactor es peor que una que nunca existio: la
+ * primera sigue dando verde y nadie vuelve a mirarla.
+ */
+const selladas = () => borradoresEnDisco().map((id) => ({ id, contenido: borradorEnDisco(id) }));
 
 /** El item y su borrador: los mismos datos en las tres propiedades. */
 function caso(titulo, url, id) {
@@ -99,7 +134,7 @@ function caso(titulo, url, id) {
 }
 
 // El fixture trackeado del prototipo. Se mide ANTES de correr nada.
-const fixtureAntes = existsSync(RUTA_PIEZAS) ? readFileSync(RUTA_PIEZAS) : null;
+const fixtureAntes = existsSync(RUTA_FIXTURE_PROTOTIPO) ? readFileSync(RUTA_FIXTURE_PROTOTIPO) : null;
 
 // =====================================================================================
 // PROPIEDAD 1 — la segunda corrida sobre las mismas entradas da 0 nuevos.
@@ -113,16 +148,18 @@ const fixtureAntes = existsSync(RUTA_PIEZAS) ? readFileSync(RUTA_PIEZAS) : null;
   );
   const deteccion = { items: [noticia] };
 
-  const r1 = await correr(etapas({ deteccion, redacciones }));
-  comprobar("1 determinismo", r1.nuevos === 1, `la primera corrida deberia detectar 1 nuevo, dio ${r1.nuevos}`);
-  comprobar("1 determinismo", r1.insertadas.length === 1, `deberia insertar 1 pieza, inserto ${r1.insertadas.length}`);
-  const corpusTras1 = JSON.stringify(corpus());
+  const p1 = await correr(etapas({ deteccion, redacciones }));
+  comprobar("1 determinismo", p1.generado.nuevos === 1, `la primera corrida deberia detectar 1 nuevo, dio ${p1.generado.nuevos}`);
+  comprobar("1 determinismo", p1.generado.borradores.length === 1, `deberia escribir 1 borrador, escribio ${p1.generado.borradores.length}`);
+  comprobar("1 determinismo", p1.verificado.selladas.length === 1, `deberia sellar 1 pieza, sello ${p1.verificado.selladas.length}`);
+  const trasUno = JSON.stringify(selladas());
 
-  const r2 = await correr(etapas({ deteccion, redacciones }));
-  comprobar("1 determinismo", r2.nuevos === 0, `la segunda corrida sobre las mismas entradas deberia dar 0 nuevos, dio ${r2.nuevos}`);
-  comprobar("1 determinismo", r2.insertadas.length === 0, `la segunda corrida no deberia insertar nada, inserto ${r2.insertadas.length}`);
-  comprobar("1 determinismo", corpus().length === 1, `el corpus deberia quedarse en 1 pieza, tiene ${corpus().length}`);
-  comprobar("1 determinismo", JSON.stringify(corpus()) === corpusTras1, "el corpus cambio entre dos corridas identicas");
+  const p2 = await correr(etapas({ deteccion, redacciones }));
+  comprobar("1 determinismo", p2.generado.nuevos === 0, `la segunda corrida sobre las mismas entradas deberia dar 0 nuevos, dio ${p2.generado.nuevos}`);
+  comprobar("1 determinismo", p2.generado.borradores.length === 0, `la segunda corrida no deberia escribir borradores, escribio ${p2.generado.borradores.length}`);
+  comprobar("1 determinismo", p2.verificado.selladas.length === 0, `la segunda corrida no deberia sellar nada, sello ${p2.verificado.selladas.length}`);
+  comprobar("1 determinismo", selladas().length === 1, `deberia quedarse en 1 borrador, hay ${selladas().length}`);
+  comprobar("1 determinismo", JSON.stringify(selladas()) === trasUno, "los borradores cambiaron entre dos corridas identicas: compara ids Y contenido, porque una reescritura del mismo id no cambia el conjunto de nombres");
   comprobar(
     "1 determinismo",
     porUrlCanonica(noticia.url_canonica)?.estado === "terminada",
@@ -172,10 +209,10 @@ process.kill(process.pid, 'SIGKILL');
   comprobar("2 interrupcion", traslaCaida?.estado === "pendiente_redaccion", `tras la caida la entrada deberia quedar pendiente_redaccion, quedo ${traslaCaida?.estado}`);
   comprobar("2 interrupcion", pendientesDeRedaccion().length === 1, `la entrada deberia seguir en la cola de pendientes, hay ${pendientesDeRedaccion().length}`);
 
-  const r = await correr(etapas({ deteccion: { items: [noticia] }, redacciones }));
-  comprobar("2 interrupcion", r.repetidos === 0, "lo interrumpido no puede descartarse por «ya visto»: nunca llego a pieza");
-  comprobar("2 interrupcion", r.insertadas.length === 1, `la corrida siguiente deberia recuperarla e insertar 1 pieza, inserto ${r.insertadas.length}`);
-  comprobar("2 interrupcion", corpus().length === 1, `sin duplicar: el corpus deberia tener 1 pieza, tiene ${corpus().length}`);
+  const p = await correr(etapas({ deteccion: { items: [noticia] }, redacciones }));
+  comprobar("2 interrupcion", p.generado.repetidos === 0, "lo interrumpido no puede descartarse por «ya visto»: nunca llego a pieza");
+  comprobar("2 interrupcion", p.generado.borradores.length === 1, `la corrida siguiente deberia recuperarla y escribir 1 borrador, escribio ${p.generado.borradores.length}`);
+  comprobar("2 interrupcion", selladas().length === 1, `sin duplicar: deberia haber 1 borrador, hay ${selladas().length}`);
   comprobar("2 interrupcion", porUrlCanonica(noticia.url_canonica)?.estado === "terminada", "la entrada recuperada deberia quedar terminada");
 }
 
@@ -183,6 +220,10 @@ process.kill(process.pid, 'SIGKILL');
 // PROPIEDAD 3 — tres fallos descartan la entrada CON MOTIVO. Un descarte sin motivo
 // escrito no se puede auditar, y una entrada que se reintenta para siempre es una cola
 // que nunca se vacia.
+//
+// Con el canal partido, los tres intentos los hace `verificar`: `generar` escribe el
+// borrador una vez y no vuelve a tocarlo. Que los reintentos sigan contando igual es
+// justamente lo que hay que comprobar tras repartir las etapas.
 // =====================================================================================
 {
   nuevoEntorno("guard-reintentos");
@@ -220,8 +261,15 @@ process.kill(process.pid, 'SIGKILL');
   comprobar("3 reintentos", Boolean(final?.motivo_descarte), "la entrada descartada tiene que llevar motivo escrito");
   comprobar("3 reintentos", /reintentos_agotados/.test(final?.motivo_descarte ?? ""), `el motivo deberia decir reintentos_agotados, dice: ${final?.motivo_descarte}`);
   comprobar("3 reintentos", /verificar/.test(final?.motivo_descarte ?? ""), "el motivo tiene que nombrar la etapa que fallo");
-  comprobar("3 reintentos", corpus().length === 0, `una entrada descartada no entra al corpus, tiene ${corpus().length}`);
   comprobar("3 reintentos", estadoDe(final?.id)?.estado === "descartada", "la entrada no queda reintentandose para siempre");
+  // El borrador de una entrada descartada sigue en disco —`generar` lo escribio— y eso es
+  // correcto: no se borra trabajo. Lo que NO puede llevar es sello, porque nunca paso la
+  // verificacion; y sin sello `autorizar` se niega. Se mide el archivo, no la intencion.
+  comprobar(
+    "3 reintentos",
+    (borradorEnDisco("tutores-automaticos")?.procedencia?.verificado?.detalle ?? null) === "sin verificar",
+    "una entrada que fallo tres veces no puede dejar un borrador sellado"
+  );
 }
 
 // =====================================================================================
@@ -229,11 +277,11 @@ process.kill(process.pid, 'SIGKILL');
 // las rutas privadas estan ignoradas y un `git status --porcelain` no lista ignorados.
 // =====================================================================================
 {
-  const fixtureDespues = existsSync(RUTA_PIEZAS) ? readFileSync(RUTA_PIEZAS) : null;
+  const fixtureDespues = existsSync(RUTA_FIXTURE_PROTOTIPO) ? readFileSync(RUTA_FIXTURE_PROTOTIPO) : null;
   const intacto =
     (fixtureAntes === null && fixtureDespues === null) ||
     (fixtureAntes !== null && fixtureDespues !== null && fixtureAntes.equals(fixtureDespues));
-  comprobar("4 aislamiento", intacto, `el guard escribio en el fixture trackeado ${RUTA_PIEZAS}`);
+  comprobar("4 aislamiento", intacto, `el guard escribio en el fixture trackeado ${RUTA_FIXTURE_PROTOTIPO}`);
 }
 
 if (fallos.length > 0) {
@@ -249,5 +297,5 @@ if (fallos.length > 0) {
 
 console.log(
   "OK: canal determinista (2a corrida = 0 nuevos), lo interrumpido se recupera sin duplicar, " +
-    "y tres fallos descartan con motivo. Sin red y sin inferencia."
+    "y tres fallos descartan con motivo. Los dos comandos, sin red y sin inferencia."
 );

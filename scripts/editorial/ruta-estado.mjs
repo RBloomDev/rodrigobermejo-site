@@ -6,7 +6,8 @@
  * preparado: el registro de la corrida se escribia con `mkdir -p "$EDITORIAL_ESTADO_DIR"`
  * y una redireccion del shell. El shell no sabe nada de `02-editorial.md` §8.3, asi que
  * con `EDITORIAL_ESTADO_DIR` apuntando dentro del checkout la corrida abortaba
- * —`ejecutar.mjs` si valida— pero el paso del registro, que corre con `always()` porque
+ * —el comando del canal si validaba, y hoy validan los dos en que se partio— pero el paso
+ * del registro, que corre con `always()` porque
  * una corrida fallida es justo la que hay que registrar, creaba el directorio dentro del
  * repositorio PUBLICO y escribia ahi. Y como las dos rutas historicas del canal estan en
  * `.gitignore`, el paso que mide el arbol tampoco lo veia: `git status --porcelain` no

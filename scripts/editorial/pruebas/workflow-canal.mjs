@@ -27,7 +27,19 @@ export const RAIZ = dirname(dirname(dirname(dirname(fileURLToPath(import.meta.ur
 export const RUTA = join(RAIZ, 'docs/plataforma/programacion/canal-editorial.yml');
 export const RUTA_INSTALADA = join(RAIZ, '.github/workflows/canal-editorial.yml');
 
-export const leerFuente = () => readFileSync(RUTA, 'utf8');
+/**
+ * El workflow, **normalizado a `\n`**. La normalizacion no es cosmetica: las mutaciones de
+ * `workflow-preparado.test.mjs` aislan un paso con expresiones del tipo
+ * `/^ {6}- name: ...\n(?: {8}.*\n)+/m`, y con finales `\r\n` ninguna de ellas casa. Medido
+ * el 2026-09-25: editar el YAML desde Windows lo dejo en CRLF —git lo sigue guardando en
+ * LF, asi que el `git diff` no ensena nada— y la mutacion «la validacion movida despues de
+ * la corrida» dejo de poder aplicarse. Una mutacion que no se aplica no demuestra que la
+ * comprobacion pueda fallar, que es justamente lo que esa prueba existe para demostrar.
+ *
+ * Se normaliza en el UNICO punto de lectura en vez de en cada expresion: una regla que hay
+ * que recordar en veinte sitios ya fallo en uno.
+ */
+export const leerFuente = () => readFileSync(RUTA, 'utf8').replace(/\r\n/g, '\n');
 
 // ---------------------------------------------------------------------------------------
 // Analizador del subconjunto de YAML que usa un workflow de Actions.
