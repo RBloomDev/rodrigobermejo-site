@@ -12,7 +12,20 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { seguirConGuarda } from './red-segura.mjs';
 
 export const DIR_EDITORIAL = dirname(fileURLToPath(import.meta.url));
-export const RUTA_PIEZAS = join(
+
+/**
+ * El fixture TRACKEADO del prototipo. **Nadie del canal lo escribe** —§8.3, fila «Fixture
+ * del prototipo»—: existe aqui para que `guard:canal` pueda comprobar que sigue intacto
+ * despues de correr, que es la unica razon por la que un modulo del canal nombra una ruta
+ * del arbol publico.
+ *
+ * Se llamaba `RUTA_PIEZAS`, y el nombre mentia por dos lados: sugeria «la ruta del corpus»
+ * cuando ese corpus intermedio ya no existe (§8.6 fila 2, cerrada por la tarea que partio
+ * el comando), y se confundia a simple vista con la funcion que resolvia la variable del
+ * corpus intermedio. Las dos desaparecieron con el corpus; esta constante no es lo mismo,
+ * no la escribe nadie, y ahora el nombre lo dice.
+ */
+export const RUTA_FIXTURE_PROTOTIPO = join(
   DIR_EDITORIAL,
   '..',
   '..',
@@ -144,6 +157,23 @@ export function dirEstado() {
 /** Raiz de los borradores y redacciones. */
 export function dirRedacciones() {
   return exigirDirectorio('EDITORIAL_REDACCIONES_DIR');
+}
+
+/**
+ * **La ruta del borrador privado de una pieza, y el unico sitio donde se decide.**
+ *
+ * Los tres comandos del canal (§8.1) la tienen que resolver igual o dejan de hablar del
+ * mismo archivo: `generar` lo escribe, `verificar` lo sella en su sitio y `autorizar` lo
+ * lee. Hasta que el comando se partio, el orquestador escribia un corpus intermedio en una
+ * ruta de archivo completa que no se derivaba de nada, y `autorizar` leia `<id>.json`: dos
+ * rutas distintas que solo coincidian si quien corria el canal las apuntaba a mano.
+ * Derivarla de `dirRedacciones()` cierra esa divergencia sin inventar una tercera variable,
+ * que §8.3 prohibe («Son dos, y solo dos»).
+ *
+ * @param {string} id  id kebab-case de la pieza (§3)
+ */
+export function rutaBorrador(id) {
+  return join(dirRedacciones(), `${id}.json`);
 }
 
 export function rutaErrores() {

@@ -146,36 +146,35 @@ jobs:
       EDITORIAL_ESTADO_DIR: ${{ vars.EDITORIAL_ESTADO_DIR }}
       EDITORIAL_REDACCIONES_DIR: ${{ vars.EDITORIAL_REDACCIONES_DIR }}
 
-      # `EDITORIAL_PIEZAS` NO se declara, y es deliberado: sin ella la corrida
-      # no escribe corpus en ningun sitio (`ejecutar.mjs`, `rutaPiezas()`).
-      # Declararla aqui reabriria por la puerta de atras la escritura que el
-      # paso de commitear hacia por la de delante.
+      # No hay una tercera variable, y ya no puede haberla: la del corpus
+      # intermedio se elimino con su funcion al partir el canal en `generar` y
+      # `verificar` (`02-editorial.md` §8.3, §8.6 fila 2). El borrador vive en
+      # `$EDITORIAL_REDACCIONES_DIR/<id>.json`, lo sella `verificar` ahi mismo, y
+      # lo unico que llega al arbol publico lo escribe `autorizar`.
 
       # --- LIMITES DE CONSUMO ---------------------------------------------
       EDITORIAL_MAX_PIEZAS: ${{ inputs.limite || '1' }}
 
-      # Tope de llamadas al redactor por corrida. ATENCION, vuelto a medir el
-      # 2026-09-25: `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/`
-      # sale VACIO, y `grep -rln EDITORIAL_MAX_LLAMADAS scripts/editorial/*.mjs
-      # scripts/*.mjs` no devuelve ningun archivo: nadie lo lee del entorno y
-      # ningun `.mjs` de produccion lo nombra. Asi que HOY ESTE TOPE ESTA
-      # DECLARADO Y NO ATA.
-      # (El grep suelto `grep -rn EDITORIAL_MAX_LLAMADAS scripts/` SI devuelve
-      # cuatro lineas, todas de `workflow-preparado.test.mjs`, que comprueba que
-      # este YAML lo DECLARA. Esa prueba no es una lectura del tope: citarla como
-      # evidencia de que ata seria justo el error que este comentario evita.)
-      # Se deja
-      # escrito con su valor porque es el contrato que el canal tiene que
-      # cumplir, y porque un tope invisible no se puede reclamar; pero quien lo
-      # lea no debe creer que hoy protege de nada.
-      # El limite que SI ata hoy es doble, y los dos son mecanicos: el paso
-      # «limites de la corrida» rechaza un `limite` mayor que 3 antes de gastar
-      # un minuto, y `--limite N` acota las piezas que se redactan. Ademas los
-      # reintentos por entrada estan topados en la maquina de estados
-      # (MAX_INTENTOS = 3): una entrada que falla tres veces se descarta con
-      # motivo, no se reintenta para siempre.
-      # Cerrar la brecha —que `invocar-redactor.mjs` cuente sus llamadas y
-      # aborte al llegar al tope— es prerrequisito 4 de la activacion.
+      # Tope de llamadas al redactor por corrida. ESTE TOPE YA ATA, medido el
+      # 2026-09-25: `generar.mjs` lo lee con `topeDeLlamadas()`, envuelve la via
+      # de inferencia con `contadorDeLlamadas()` y **aborta la corrida** al
+      # llegar. La prueba esta en `pruebas/tres-comandos.test.mjs`, caso 4, con
+      # su par: superar el tope aborta, y no superarlo no —un tope que se lee
+      # pero no puede dispararse es el mismo defecto con otra cara—.
+      #
+      # Hasta esa fecha estaba DECLARADO Y NO ATABA: ningun `.mjs` lo leia, y
+      # las unicas cuatro lineas que lo nombraban en `scripts/` eran de la
+      # prueba que comprueba que este YAML lo DECLARA. Se deja escrita aqui esa
+      # historia porque el tope se reclamo como proteccion antes de serlo.
+      #
+      # No es una variable obligatoria del canal: sin ella no hay tope, y eso es
+      # deliberado (§8.3, «Son dos, y solo dos»). Lo que no se acepta es un
+      # valor que no sea entero >= 0: se rechaza en vez de caer en «sin tope».
+      #
+      # Los otros limites siguen: el paso «limites de la corrida» rechaza un
+      # `limite` mayor que 3 antes de gastar un minuto, `--limite N` acota las
+      # entradas que se intentan, y `MAX_INTENTOS = 3` topa los reintentos por
+      # entrada en la maquina de estados.
       EDITORIAL_MAX_LLAMADAS: "40"
 
     steps:
@@ -243,8 +242,8 @@ jobs:
       # --- RECUPERACION -------------------------------------------------------
       # La corrida NO arranca del feed: arranca de la bitacora. Lo que quedo a
       # medias en la corrida anterior —por fallo, por timeout o porque el runner
-      # murio— vuelve a la cola antes que lo detectado hoy. Esto ya lo hace
-      # `ejecutar.mjs`; el paso existe para dejar constancia del estado de
+      # murio— vuelve a la cola antes que lo detectado hoy. Esto ya lo hacen los
+      # dos comandos; el paso existe para dejar constancia del estado de
       # ENTRADA, que es lo que permite auditar una recuperacion.
       #
       # LEE EL ALMACEN EXTERNO, no una constante del repositorio. Hasta el
@@ -267,21 +266,46 @@ jobs:
           set -euo pipefail
           node scripts/editorial/registro-de-corridas.mjs --ultimas 5
 
+      # --- LA CORRIDA, EN SUS DOS ETAPAS ---------------------------------------
+      # Son DOS invocaciones porque el canal son tres comandos y no uno
+      # (`02-editorial.md` §8.1): `generar` detecta, deduplica y redacta, y deja
+      # el borrador privado; `verificar` toma lo que quedo esperando, comprueba
+      # hechos y sella ESE MISMO borrador. El tercero, `autorizar`, no corre
+      # aqui y no correra nunca desde un workflow: es la decision de un humano.
+      #
+      # Van en el mismo paso a proposito: si `verificar` fuera un paso aparte, un
+      # `generar` que saliera 2 —exito parcial, resultado legitimo— podria dejar
+      # sin correr la verificacion segun como se escribiera la condicion, y los
+      # borradores se acumularian sin sellar sin que nadie lo notara.
       - name: corrida
         id: corrida
         run: |
           set +e
           if [ "${{ inputs.con_redactor }}" = "true" ]; then
-            node scripts/editorial/ejecutar.mjs --con-redactor --limite "$EDITORIAL_MAX_PIEZAS"
+            node scripts/editorial/generar.mjs --con-redactor --limite "$EDITORIAL_MAX_PIEZAS"
           else
-            node scripts/editorial/ejecutar.mjs --limite "$EDITORIAL_MAX_PIEZAS"
+            node scripts/editorial/generar.mjs --limite "$EDITORIAL_MAX_PIEZAS"
           fi
-          codigo=$?
+          codigo_generar=$?
+          node scripts/editorial/verificar-canal.mjs --limite "$EDITORIAL_MAX_PIEZAS"
+          codigo_verificar=$?
+          # El peor de los dos, con 1 dominando sobre 2: un fallo de verdad no se
+          # puede tapar con el exito parcial del otro comando.
+          if [ "$codigo_generar" = "1" ] || [ "$codigo_verificar" = "1" ]; then
+            codigo=1
+          elif [ "$codigo_generar" = "2" ] || [ "$codigo_verificar" = "2" ]; then
+            codigo=2
+          else
+            codigo=0
+          fi
           echo "codigo=$codigo" >> "$GITHUB_OUTPUT"
-          # 0 = exito, 2 = exito parcial (hubo fallos con constancia). Los dos
-          # son resultados legitimos y NO tumban el workflow: el canal esta
-          # disenado para que un fallo de acceso deje registro en vez de
-          # fabricar una noticia. Solo 1 es un fallo de verdad.
+          echo "codigo_generar=$codigo_generar" >> "$GITHUB_OUTPUT"
+          echo "codigo_verificar=$codigo_verificar" >> "$GITHUB_OUTPUT"
+          # 0 = exito, 2 = exito parcial (hubo fallos con constancia, o la
+          # generacion se detuvo en el tope de llamadas). Los dos son resultados
+          # legitimos y NO tumban el workflow: el canal esta disenado para que un
+          # fallo de acceso deje registro en vez de fabricar una noticia. Solo 1
+          # es un fallo de verdad.
           [ "$codigo" = "1" ] && exit 1
           exit 0
 

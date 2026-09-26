@@ -7,14 +7,15 @@
  *      (`detectar`, `verificar`) se inyectan como dobles con fixtures locales. Lo que se
  *      prueba es la maquina de estados y el orquestador, no el RSS de nadie.
  *   2. **Sin tocar el estado real.** Cada prueba monta en `tmpdir` las **dos** variables
- *      obligatorias —`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`— y su propio
- *      `EDITORIAL_PIEZAS`. Igual que `PROOF_FEED_DIR` en el sitio: si la unica forma de
- *      probar algo fuera escribir en el estado de produccion, la prueba seria el
- *      mecanismo por el que ese estado se corrompe.
+ *      obligatorias —`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`— y **ninguna
+ *      mas**. Igual que `PROOF_FEED_DIR` en el sitio: si la unica forma de probar algo
+ *      fuera escribir en el estado de produccion, la prueba seria el mecanismo por el que
+ *      ese estado se corrompe.
  *
- *      Las redacciones no tenian variable que apuntar hasta que `EDITORIAL_REDACCIONES_DIR`
- *      existio (`02-editorial.md` §8.3): no era un descuido de quien escribio las
- *      pruebas, era que la variable no existia.
+ *      Eran tres hasta que el canal se partio en `generar` y `verificar`: la tercera
+ *      apuntaba el corpus intermedio, que ya no existe (`02-editorial.md` §8.3, «Son dos,
+ *      y solo dos»). El borrador de una pieza vive en `$EDITORIAL_REDACCIONES_DIR/<id>.json`
+ *      y lo resuelve `rutaBorrador()`, asi que no hay nada mas que montar.
  */
 
 import assert from 'node:assert/strict';
@@ -47,8 +48,20 @@ export function nuevoEntorno(nombre) {
   mkdirSync(redacciones, { recursive: true });
   process.env.EDITORIAL_ESTADO_DIR = estado;
   process.env.EDITORIAL_REDACCIONES_DIR = redacciones;
-  process.env.EDITORIAL_PIEZAS = join(raiz, 'piezas.json');
-  return { raiz, estado, redacciones, piezas: process.env.EDITORIAL_PIEZAS };
+  return { raiz, estado, redacciones };
+}
+
+/** El borrador privado de una pieza dentro del entorno activo, o `null` si no existe. */
+export function borradorEnDisco(id) {
+  const ruta = join(process.env.EDITORIAL_REDACCIONES_DIR, `${id}.json`);
+  return existsSync(ruta) ? JSON.parse(readFileSync(ruta, 'utf8')) : null;
+}
+
+/** Los ids de los borradores que hay en el entorno activo. */
+export function borradoresEnDisco() {
+  const dir = process.env.EDITORIAL_REDACCIONES_DIR;
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((n) => n.endsWith('.json')).map((n) => n.replace(/\.json$/, '')).sort();
 }
 
 /** Un item tal como lo entrega `detectar()`. Todos los campos, ninguno de mas. */
@@ -79,8 +92,9 @@ export function item({
 }
 
 /**
- * Dobles de las etapas que tocan red o disco ajeno. Reproducen el contrato que
- * `ejecutar.mjs` consume, y nada mas:
+ * Dobles de las etapas que tocan red o disco ajeno. Reproducen el contrato que consumen
+ * los dos comandos —`generar.mjs` las cuatro primeras, `verificar-canal.mjs` las dos
+ * ultimas—, y nada mas:
  *
  *   prepararExpediente(item)            -> expediente
  *   redactar([expediente])              -> {piezas, pendientes}
@@ -181,8 +195,18 @@ export function etapasFalsas({
       };
     },
 
+    // Mismo contrato que `verificar.mjs:629`: el sello lleva el VEREDICTO, y eso no es un
+    // detalle. Es la marca por la que se distingue un borrador sellado de uno sin sellar
+    // —`autorizar` rechaza un sello cuyo veredicto no sea uno de los tres de §5.4—, y es
+    // lo que `verificar-canal.mjs` relee del disco antes de marcar `terminada`. Un doble
+    // que lo omitiera dejaria verde un comando que declara terminado lo que no sello.
     sellarVerificacion: (pieza, informe) => {
-      pieza.procedencia.verificado = { por: 'pendiente', detalle: informe.detalle };
+      pieza.procedencia.verificado = {
+        por: 'pendiente',
+        veredicto: informe.veredicto,
+        detalle: informe.detalle,
+        pendientes: (informe.pendientes ?? []).map((p) => (typeof p === 'string' ? p : `${p.texto} — ${p.motivo}`)),
+      };
       return pieza;
     },
   };

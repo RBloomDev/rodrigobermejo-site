@@ -148,8 +148,10 @@ export function comprobarCompuertaAntesDeEscribir(fuente) {
   assert.ok(pasos.length >= 9, `se esperaban al menos 9 pasos y se analizaron ${pasos.length}`);
   const guiones = pasos.map((p) => (typeof p.paso.run === 'string' ? p.paso.run : ''));
   assert.ok(
-    guiones.some((g) => g.includes('ejecutar.mjs --limite')),
-    'no se encontro la invocacion del canal: el analisis no llego al cuerpo de los pasos',
+    guiones.some((g) => g.includes('generar.mjs --limite'))
+      && guiones.some((g) => g.includes('verificar-canal.mjs --limite')),
+    'no se encontraron las DOS invocaciones del canal —`generar` y `verificar`, §8.1—: '
+    + 'o el analisis no llego al cuerpo de los pasos, o el workflow volvio a correr un solo comando',
   );
 
   const indiceDe = (predicado) => pasos.findIndex(({ paso }, n) => predicado(guiones[n], paso));
@@ -157,7 +159,7 @@ export function comprobarCompuertaAntesDeEscribir(fuente) {
   const compuerta = indiceDe((g) => g.includes('auditoria-exposicion.mjs'));
   assert.ok(compuerta >= 0, 'no hay compuerta de exposicion en el workflow');
 
-  const corrida = indiceDe((g) => g.includes('ejecutar.mjs'));
+  const corrida = indiceDe((g) => g.includes('generar.mjs'));
   assert.ok(
     compuerta > corrida,
     'la compuerta tiene que correr DESPUES de la corrida: audita lo que la corrida escribio',
@@ -231,7 +233,7 @@ export function comprobarEscrituraValidada(fuente) {
     `el paso «${VALIDACION}» tiene que resolver el destino con la validacion CANONICA del canal (ruta-estado.mjs), no con una copia de la regla`,
   );
 
-  const iCorrida = pasos.findIndex((p) => guionDe(p).includes('ejecutar.mjs'));
+  const iCorrida = pasos.findIndex((p) => guionDe(p).includes('generar.mjs'));
   assert.ok(iCorrida >= 0, 'no se encontro el paso de la corrida');
   assert.ok(
     iValidacion < iCorrida,

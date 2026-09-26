@@ -160,19 +160,22 @@ servir.
    `EDITORIAL_REDACCIONES_DIR`. Un runner es efímero: apuntarlas a un directorio del runner
    da **cero** persistencia, y cada corrida reprocesaría como nuevo todo lo ya visto.
    Elegir ese almacén no se decide en este PR.
-4. **`EDITORIAL_MAX_LLAMADAS` está declarado y NO ata.** Medido el 2026-09-25:
-   `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/` sale **vacío**, y
-   `grep -rln EDITORIAL_MAX_LLAMADAS scripts/editorial/*.mjs scripts/*.mjs` tampoco
-   devuelve ningún archivo: nadie lo lee del entorno y ningún `.mjs` de producción lo
-   nombra. El grep suelto `grep -rn EDITORIAL_MAX_LLAMADAS scripts/` **sí** devuelve
-   líneas, pero las cuatro son de `workflow-preparado.test.mjs`, que comprueba que el YAML
-   lo **declara** —no que alguien lo obedezca—; citarlo como evidencia de lo segundo sería
-   el error. Se deja escrito
-   porque es el contrato, y dicho así para que nadie lo cuente como protección. Los límites
-   que **sí** atan hoy son el paso *límites de la corrida* (rechaza un `limite` fuera de
-   0–3 antes de gastar un minuto), `--limite N`, y `MAX_INTENTOS = 3` por entrada.
+4. ~~**`EDITORIAL_MAX_LLAMADAS` está declarado y NO ata.**~~ **CERRADO el 2026-09-25**, al
+   partir el canal en `generar` y `verificar`. Lo medido cuando se escribió este documento
+   —y se conserva porque borrarlo sería falsificar el registro— era que buscar la variable
+   leída desde el entorno del proceso en `scripts/`, `lib/` y `app/` salía **vacío** y
+   ningún `.mjs` de producción la nombraba: el grep suelto sí devolvía líneas, pero
+   las cuatro eran de `workflow-preparado.test.mjs`, que comprueba que el YAML lo
+   **declara** —no que alguien lo obedezca—, y citarlo como evidencia de lo segundo habría
+   sido el error. **Hoy ata**: `generar.mjs` lo lee con `topeDeLlamadas()`, envuelve la vía
+   de inferencia con `contadorDeLlamadas()` y **aborta la corrida** al llegar al tope,
+   dejando pendiente lo que no intentó y sin subirle `intentos` a ninguna entrada. Su prueba
+   trae el par que hace falta —superar el tope aborta, no superarlo no— en
+   `pruebas/tres-comandos.test.mjs` caso 4. Los otros límites que atan siguen igual: el paso
+   *límites de la corrida* (rechaza un `limite` fuera de 0–3 antes de gastar un minuto),
+   `--limite N`, y `MAX_INTENTOS = 3` por entrada.
 
-Mientras esos cuatro sigan abiertos, **esto es un documento, no un servicio**.
+Mientras los tres primeros sigan abiertos, **esto es un documento, no un servicio**.
 
 ---
 

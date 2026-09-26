@@ -36,7 +36,7 @@
  * | pendiente_redaccion    | redactada        | pendiente_verificacion | el redactor entrego borrador                              |
  * | pendiente_redaccion    | fallo            | fallida_reintentable   | el borrador no compone contra el esquema de §3            |
  * | pendiente_redaccion    | descartada       | descartada             | decision explicita                                        |
- * | pendiente_verificacion | verificada       | terminada              | la pieza paso §5.4 y entro al corpus                      |
+ * | pendiente_verificacion | verificada       | terminada              | la pieza paso §5.4 y su borrador quedo SELLADO en disco   |
  * | pendiente_verificacion | fallo            | fallida_reintentable   | una fuente no resuelve, fecha discrepante, cifra huerfana |
  * | pendiente_verificacion | descartada       | descartada             | decision explicita                                        |
  * | fallida_reintentable   | expediente_listo | pendiente_redaccion    | el reintento reconstruyo el expediente                    |
@@ -397,7 +397,7 @@ export function plegar() {
   // Migracion del canal anterior: `vistos.jsonl` decia «visto», que en la semantica nueva
   // es `detectada` y NADA MAS. Lo que el canal anterior dio por cerrado al detectarlo
   // vuelve a ser trabajo pendiente, que es lo que siempre fue. Lo que si llego a pieza lo
-  // cierra `conciliarConCorpus()`.
+  // cierra su propio evento de la bitacora, que es el unico registro que queda.
   for (const v of leerLog(rutaVistosLegado()).filas) {
     if (!v.url_canonica) continue;
     const id = claveDe(v);
@@ -435,7 +435,7 @@ function emitir(evento) {
 }
 
 // =====================================================================================
-//  API PUBLICA — la que consumen `redactar.mjs` y `ejecutar.mjs`
+//  API PUBLICA — la que consumen `generar.mjs`, `verificar-canal.mjs` y `autorizar.mjs`
 // =====================================================================================
 
 /**
@@ -523,15 +523,19 @@ export function pendientesDeVerificacion({ limite = Infinity } = {}) {
 }
 
 /**
- * La pieza paso §5.4 y entro al corpus.
+ * La pieza paso §5.4 y su borrador quedo SELLADO en `$EDITORIAL_REDACCIONES_DIR`.
  * `pendiente_verificacion | fallida_reintentable -> terminada`.
  *
- * QUIEN LLAMA A ESTO SE COMPROMETE A QUE LA PIEZA ESTA EN EL CORPUS **PERSISTIDO**, no a
- * que haya pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no
- * vuelve a la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo
- * verificada —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
- * `ejecutar.mjs` lo resuelve releyendo el corpus del disco antes de llamar; una entrada sin
- * pieza guardada se queda donde estaba y la corrida siguiente la recupera.
+ * **`terminada` significa «borrador verificado, SIN PUBLICAR»** (§8.1). Antes decia «entro
+ * al corpus», y con el corpus intermedio retirado esa frase ya no describe nada: entrar al
+ * corpus publicado es `autorizada`, que es la decision de un humano.
+ *
+ * QUIEN LLAMA A ESTO SE COMPROMETE A QUE EL SELLO ESTA **EN DISCO**, no a que la pieza haya
+ * pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no vuelve a
+ * la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo verificada
+ * —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
+ * `verificar-canal.mjs` lo resuelve releyendo el borrador del disco antes de llamar; una
+ * entrada sin sello guardado se queda donde estaba y la corrida siguiente la recupera.
  *
  * @param {string} id
  * @param {{pieza_id?: string, corrida?: string}} [datos]
@@ -699,42 +703,23 @@ export function todas() {
   return [...plegar().entradas.values()];
 }
 
-/**
- * Cierra como `terminada` toda entrada cuya huella ya tiene pieza en el corpus. Sirve para
- * dos cosas: absorber el `vistos.jsonl` del canal anterior sin reprocesar lo ya publicado,
- * y sostener la propiedad 4 aunque alguien borre la bitacora y el corpus sobreviva.
- *
- * @param {object[]} piezas  corpus actual (`piezas.json`)
- * @param {{corrida?: string}} [opciones]
- * @returns {string[]} ids conciliados
- */
-export function conciliarConCorpus(piezas, { corrida = null } = {}) {
-  const { entradas, porHuella } = plegar();
-  const cerrados = [];
-  for (const p of piezas ?? []) {
-    if (!p?.huella) continue;
-    const id = porHuella.get(p.huella);
-    if (!id) continue;
-    const e = entradas.get(id);
-    // `autorizada` es terminal y esta AGUAS ABAJO de `terminada`: conciliar una ya
-    // autorizada intentaria `autorizada --redactada--> (nada)` y lanzaria.
-    if (!e || ['terminada', 'autorizada', 'descartada'].includes(e.estado)) continue;
-    // Se llega a `terminada` por el camino legal de la tabla, no saltandoselo.
-    if (e.estado === 'detectada') emitir({ id, evento: 'expediente_listo', corrida });
-    if (e.estado !== 'pendiente_verificacion') {
-      emitir({
-        id,
-        evento: 'redactada',
-        redaccion_id: p.id,
-        modelo: p.procedencia?.redactado?.modelo ?? null,
-        corrida,
-      });
-    }
-    emitir({ id, evento: 'verificada', pieza_id: p.id, corrida });
-    cerrados.push(id);
-  }
-  return cerrados;
-}
+// =====================================================================================
+//  RETIRADO: `conciliarConCorpus()`
+//
+//  Cerraba como `terminada` toda entrada cuya huella ya tuviera pieza en el corpus
+//  intermedio. **Ese corpus ya no existe**: al partir el canal en `generar` y `verificar`
+//  (§8.1), el borrador terminado vive en `$EDITORIAL_REDACCIONES_DIR` y lo unico que llega
+//  al arbol publico lo escribe `autorizar` (§8.6, fila 2). Una funcion que concilia contra
+//  un archivo que nadie escribe no concilia nada; dejarla exportada seria dejar una puerta
+//  que parece que hace algo.
+//
+//  Lo que sostenia y donde vive ahora:
+//    - absorber `vistos.jsonl` sin reprocesar lo ya publicado -> lo hace `plegar()`, que
+//      lo traduce a `detectada`; lo que llego a pieza lo cierra su propio evento en la
+//      bitacora, que es donde tiene que estar;
+//    - sobrevivir a un borrado de la bitacora con el corpus vivo -> ya no aplica: sin
+//      corpus intermedio no hay dos registros que puedan divergir.
+// =====================================================================================
 
 // --- Interno -------------------------------------------------------------------------
 

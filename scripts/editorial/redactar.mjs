@@ -92,13 +92,25 @@ function idDesdeTitulo(titulo, huella) {
  * Los borradores viven en `$EDITORIAL_REDACCIONES_DIR`, fuera de todo repositorio (§8.3).
  * La constante `DIR_REDACCIONES` que resolvia dentro del repositorio ya no existe: era
  * una «constante sin variable», el tipo de camino que quitar un `||` no arregla (§8.6).
+ *
+ * **En ese directorio conviven ahora dos cosas distintas, y solo una es una redaccion.**
+ * Desde que el canal se partio en `generar` y `verificar` (§8.1), `generar` deja ahi el
+ * borrador ya compuesto —`<id>.json`, el objeto de §3 que `autorizar` lee— y `verificar`
+ * lo sella en su sitio. Una redaccion de entrada se reconoce por `detectado_de`, que es la
+ * URL con la que se empareja con su expediente; un borrador compuesto no lo lleva, porque
+ * §3 tiene esquema CERRADO y ese campo no esta en el.
+ *
+ * Sin este filtro, `normalizarUrl(undefined)` lanza en cuanto el directorio contiene un
+ * borrador —o sea, siempre despues de la primera corrida— y la etapa se cae con un error
+ * que no habla de redacciones.
  */
 export function cargarRedacciones() {
   const dir = dirRedacciones();
   if (!existsSync(dir)) return [];
   return readdirSync(dir)
     .filter((n) => n.endsWith('.json'))
-    .map((n) => ({ archivo: n, ...leerJson(join(dir, n), null) }));
+    .map((n) => ({ archivo: n, ...leerJson(join(dir, n), null) }))
+    .filter((r) => typeof r.detectado_de === 'string' && r.detectado_de.trim() !== '');
 }
 
 /**
@@ -312,6 +324,6 @@ export function validarEsquema(p) {
 }
 
 if (esCli(import.meta.url)) {
-  console.log('redactar.mjs no se ejecuta solo: es una etapa de ejecutar.mjs.');
+  console.log('redactar.mjs no se ejecuta solo: es una etapa de generar.mjs.');
   console.log(`Redacciones disponibles: ${cargarRedacciones().map((r) => r.id).join(', ') || '(ninguna)'}`);
 }

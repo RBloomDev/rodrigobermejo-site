@@ -180,8 +180,10 @@ Lo pediste explícitamente y la respuesta es incómoda.
   auto-commit diario a git. Si estuviera corriendo, ese repositorio tendría commits diarios.
   **No se actualiza desde abril.**
 
-**Lo entregado es ejecución local.** `node scripts/editorial/ejecutar.mjs` corre a mano y
-termina. No hay proceso persistente, ni programador, ni recuperación de errores más allá
+**Lo entregado es ejecución local.** El canal se corre a mano y termina: desde el
+2026-09-25 son **dos** invocaciones —`node scripts/editorial/generar.mjs` y después
+`node scripts/editorial/verificar-canal.mjs`—, más una tercera, `autorizar.mjs`, que es una
+decisión humana y no parte de la corrida (`02-editorial.md` §8.1). No hay proceso persistente, ni programador, ni recuperación de errores más allá
 del registro. **No se declara operación 24/7 porque no la hay.**
 
 La dependencia concreta para pasar de local a programado: un proceso persistente con

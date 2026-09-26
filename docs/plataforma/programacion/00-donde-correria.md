@@ -81,10 +81,9 @@ Elegir ese almacén no se decide en este documento.
 
 ## Qué correría, exactamente: dos etapas de tres
 
-El canal **se parte** en tres comandos (`02-editorial.md` §8.1) —hoy `generar` y `verificar`
-siguen dentro de `ejecutar.mjs`, y partirlos es la tarea que queda de esa línea; `autorizar`
-ya existe aparte desde el 2026-09-24—, y una corrida programada ejecutaría **dos** de los
-tres:
+El canal **está partido** en tres comandos (`02-editorial.md` §8.1), medido el 2026-09-25:
+`generar.mjs`, `verificar-canal.mjs` y `autorizar.mjs`, tres archivos invocables en
+`scripts/editorial/`. Una corrida programada ejecutaría **dos** de los tres:
 
 | Etapa | ¿Corre en el cron? | Escribe en |
 |---|---|---|
@@ -137,8 +136,8 @@ workflow no está instalado y el bloque de medición que sigue a la tabla dice q
 |---|---|---|
 | **Persistencia de pendientes y resultados** | El estado y los borradores viven **fuera de cualquier repositorio**: `EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` son **obligatorias, sin valor por defecto**, y sin ellas el canal **aborta** antes de escribir nada (`02-editorial.md` §8.3). En un runner efímero eso obliga además a un **almacén externo con respaldo**: un directorio local da persistencia local, no respaldo, y el runner no da ni eso | entorno de ejecución |
 | **Exclusión de ejecuciones simultáneas** | `concurrency.group` nativo de Actions, con un group **fijo**: no lleva `github.ref` ni `github.run_id`, porque el recurso que se disputa es uno solo —la bitácora— y un group por rama daría dos corridas simultáneas sobre el mismo estado. `cancel-in-progress: false` a propósito: **se encola, no se mata**. Matar a mitad deja trabajo en un estado que nadie cerró | bloque `concurrency` |
-| **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `ejecutar.mjs` |
-| **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. El que **no ata**: `EDITORIAL_MAX_LLAMADAS` está declarado con su valor, pero **nadie lo lee del entorno** —vuelto a medir el 2026-09-25: `grep -rn "process.env.EDITORIAL_MAX_LLAMADAS" scripts/ lib/ app/` sale vacío, y ningún `.mjs` de producción lo nombra siquiera; las cuatro líneas que devuelve el grep suelto son de `workflow-preparado.test.mjs`, que comprueba que el YAML lo **declara**, no que alguien lo obedezca—, así que hoy no protege de nada. Se deja escrito porque es el contrato, y dicho así para que nadie lo cuente como protección: prerrequisito 4 de *Activar* | `env` y pasos *límites de la corrida* y *corrida* |
+| **Reintentos limitados y recuperación** | `MAX_INTENTOS = 3` por entrada en la máquina de estados; a la tercera se descarta con motivo. La corrida **arranca de la bitácora, no del feed**: lo que quedó a medias vuelve a la cola antes que lo detectado hoy | `estado.mjs`, `generar.mjs`, `verificar-canal.mjs` |
+| **Límites de duración, piezas y consumo** | `timeout-minutes: 25`. Los que **atan hoy**: el paso *límites de la corrida* rechaza un `limite` fuera de 0–3 antes de gastar un minuto, `--limite N` acota las piezas que se redactan, y `MAX_INTENTOS = 3` topa los reintentos por entrada. `EDITORIAL_MAX_LLAMADAS` **también ata desde el 2026-09-25**: `generar.mjs` lo lee con `topeDeLlamadas()`, envuelve la vía de inferencia con `contadorDeLlamadas()` y **aborta la corrida** al llegar al tope, dejando pendiente lo que no intentó. Hasta esa fecha estaba declarado y no lo leía ningún `.mjs`; era el prerrequisito 4 de *Activar*, y está cerrado. Su prueba trae el par que hace falta —superar el tope aborta, no superarlo no— en `pruebas/tres-comandos.test.mjs` caso 4 | `env` y pasos *límites de la corrida* y *corrida* |
 | **Registros consultables sin contenido sensible** | `registro-de-corridas.mjs` deriva la bitácora a una tabla de contadores y marcas de tiempo: por construcción **sin títulos, URLs, prompts ni nombres de repositorio**. **Lee** la bitácora de `$EDITORIAL_ESTADO_DIR` resuelta con `dirEstado()` —desde el 2026-09-25; antes usaba una constante del repositorio y devolvía «0 corrida(s)» sin que nada fallara— y **se escribe** en la ruta que devuelve `ruta-estado.mjs` —`$EDITORIAL_ESTADO_DIR` ya **validada**, no la variable cruda: el almacén externo, fuera de todo árbol de git— con el número de corrida en el nombre, y un paso verifica que no lleva URLs. **No se sube como artefacto, y eso es la decisión**: en un repositorio público los artefactos de Actions los descarga cualquiera que pueda ver el repositorio, y `actions/upload-artifact` no tiene ninguna opción de ACL. Sanear el contenido no vuelve privado el artefacto: vuelve publicable su contenido, que es otra cosa. Ver *El registro no se publica* | pasos *registro de la corrida* y *el registro no lleva URLs* |
 | **Credencial y forma segura de suministrarla** | Secret del repositorio, leído del entorno. Nunca en el archivo, nunca en la línea de comandos | `env.ANTHROPIC_API_KEY` |
 
@@ -152,8 +151,8 @@ que decían tachado, porque una lista que se reescribe borra la evidencia de qu�
   `git ls-files scripts/editorial` devuelve dieciocho archivos y **ninguno** bajo `estado/`
   ni `redacciones/`: los dos directorios ni siquiera existen en el árbol. El estado salió del
   repositorio público con T-E1.
-- ~~Las variables tienen *fallback* dentro del repositorio (`estado.mjs:153`,
-  `ejecutar.mjs:66`).~~ **Ya no.** `grep -n "EDITORIAL_ESTADO_DIR ||"` no devuelve ninguna
+- ~~Las variables tienen *fallback* dentro del repositorio (`estado.mjs:153`, y la del
+  corpus intermedio en el orquestador).~~ **Ya no.** `grep -n "EDITORIAL_ESTADO_DIR ||"` no devuelve ninguna
   línea de código: `comun.mjs` resuelve las dos por `exigirDirectorio()`, que **aborta** si
   la variable falta y **rechaza** la ruta si cae dentro de un árbol de trabajo de git. Las
   únicas menciones de `||` que quedan están en comentarios que explican qué se quitó.
@@ -183,24 +182,16 @@ que decían tachado, porque una lista que se reescribe borra la evidencia de qu�
   dependen de este comando eran compuertas verdes sobre un archivo vacío.
 
 Sacar los archivos del repositorio y hacer obligatorias —sin fallback—
-`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` lo hizo **T-E1**; partir el canal en los
-tres comandos de `02-editorial.md` §8.1 sigue pendiente, y es de la tarea que parta
-`ejecutar`. **Eliminar del workflow el paso *persistir estado y corpus* no era de T-E1: era
-de T-E3**, el trabajo sobre este directorio, y está hecho. Sus valores concretos viven
-únicamente en el `.env`
-local de Rodrigo; este documento no declara rutas. **Las variables obligatorias son dos, y
-`EDITORIAL_PIEZAS` no es una de ellas: T-E1 la elimina, no la renombra** (`02-editorial.md`
-§8.3 y §8.6, fila 2). El corpus intermedio que esa variable apunta deja de existir, porque
-el borrador vive en `EDITORIAL_REDACCIONES_DIR` y lo único que llega al árbol público lo
-escribe `autorizar` en `content/noticias/`.
-
-**Lo que T-E1 cerró de esa fila y lo que no.** T-E1 quitó el respaldo al repositorio:
-`rutaPiezas()` devuelve `null` sin la variable y la corrida no escribe corpus en ningún
-sitio, así que el `||` ya no existe. La **eliminación** de la función y la variable queda
-para la tarea que parta `ejecutar` en `generar` y `verificar`: añadir `autorizar` (2026-09-24)
-no la toca, porque el corpus intermedio que `rutaPiezas()` resuelve sigue siendo el que esa
-corrida escribe. Está declarado así en `02-editorial.md` §8.6, al cierre
-de la sección, y en el comentario de `ejecutar.mjs` sobre la propia función.
+`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` lo hizo **T-E1**. **Partir el canal en
+los tres comandos de `02-editorial.md` §8.1 está hecho desde el 2026-09-25**: el orquestador
+único se eliminó y en su lugar hay `generar.mjs` y `verificar-canal.mjs`, con `autorizar.mjs`
+ya aparte desde el 2026-09-24. **Eliminar del workflow el paso *persistir estado y corpus* no
+era de T-E1: era de T-E3**, el trabajo sobre este directorio, y está hecho. Sus valores
+concretos viven únicamente en el `.env` local de Rodrigo; este documento no declara rutas.
+**Las variables obligatorias siguen siendo dos**, y la del corpus intermedio **se eliminó con
+su función** al partir el comando (`02-editorial.md` §8.3 y §8.6, fila 2): el borrador vive
+en `EDITORIAL_REDACCIONES_DIR/<id>.json` y lo único que llega al árbol público lo escribe
+`autorizar` en `content/noticias/`.
 
 Hay además una compuerta que no estaba en la lista: `auditoria-exposicion.mjs`. Este
 repositorio es público y la corrida acaba de escribir en disco; si algo nombra un repositorio
@@ -302,7 +293,8 @@ La regla de arriba tenía una segunda mitad que faltaba, y la encontró la revis
 2026-09-24 (hallazgo F-01). Un paso con `always()` no publicaba nada —eso estaba bien— pero
 **escribía**: el registro salía de `mkdir -p "$EDITORIAL_ESTADO_DIR"` y una redirección del
 shell. Y el shell no sabe nada de §8.3. Con `EDITORIAL_ESTADO_DIR` apuntando dentro del
-checkout, el canal rechazaba la ruta y abortaba —`ejecutar.mjs` sí valida—, pero el paso del
+checkout, el canal rechazaba la ruta y abortaba —el comando del canal sí validaba, y hoy validan los
+dos en que se partió—, pero el paso del
 registro corría igual, **después** del rechazo, y creaba el directorio dentro del
 repositorio público.
 
