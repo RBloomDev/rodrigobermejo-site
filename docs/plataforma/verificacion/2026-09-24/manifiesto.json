@@ -1,0 +1,280 @@
+{
+  "sha": "21194ef7df22897d1a8a92dc36db196c84b9fdb6",
+  "base_url": "http://localhost:3401",
+  "generado_en": "2026-09-25T03:28:15.764Z",
+  "como_se_midio": "El viewport se emula con Emulation.setDeviceMetricsOverride y se verifica leyendo window.innerWidth DESPUES de emular y ANTES de capturar. Redimensionar la ventana no cambia el viewport: en la linea base se pidio 390 y salio 502. Si el ancho medido no coincide con el nominal, la captura NO se guarda y el script sale con codigo 1.",
+  "rutas_cubiertas": [
+    "/",
+    "/noticias",
+    "/actividad",
+    "/proyectos",
+    "/proyectos/contenido-ia",
+    "/sobre-mi",
+    "/colaborar",
+    "/evidencia",
+    "/blog",
+    "/blog/mitos-sobre-automatizacion"
+  ],
+  "capturas": [
+    {
+      "archivo": "capturas/portada-escritorio.webp",
+      "ruta": "/",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Rodrigo Bermejo — CTO, constructor y docente",
+      "h1": [
+        "Dirijo tecnología.Construyo sistemas.Formo talento."
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/noticias-escritorio.webp",
+      "ruta": "/noticias",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Noticias | Rodrigo Bermejo",
+      "h1": [
+        "Noticias"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/actividad-escritorio.webp",
+      "ruta": "/actividad",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Actividad registrada | Rodrigo Bermejo",
+      "h1": [
+        "Actividad registrada"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/proyectos-escritorio.webp",
+      "ruta": "/proyectos",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Proyectos | Rodrigo Bermejo",
+      "h1": [
+        "Proyectos"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3 H3 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/proyecto-detalle-escritorio.webp",
+      "ruta": "/proyectos/contenido-ia",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Producción de contenido con IA — Rodrigo Bermejo | Rodrigo Bermejo",
+      "h1": [
+        "Producción de contenido con IA"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/sobre-mi-escritorio.webp",
+      "ruta": "/sobre-mi",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Trayectoria | Rodrigo Bermejo",
+      "h1": [
+        "Trayectoria"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/colaborar-escritorio.webp",
+      "ruta": "/colaborar",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Trabajar conmigo | Rodrigo Bermejo",
+      "h1": [
+        "Sistemas que eliminan el caos operativo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H3 H3 H3 H2 H3 H3 H3 H3 H2 H3 H3 H2 H2 H3 H3 H3 H3 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/evidencia-escritorio.webp",
+      "ruta": "/evidencia",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Cómo respaldo lo que afirmo | Rodrigo Bermejo",
+      "h1": [
+        "Cómo respaldo lo que afirmo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H3 H3 H3 H2 H3 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/blog-escritorio.webp",
+      "ruta": "/blog",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "Escribo | Rodrigo Bermejo",
+      "h1": [
+        "Escribo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/blog-detalle-escritorio.webp",
+      "ruta": "/blog/mitos-sobre-automatizacion",
+      "viewport_nominal": 1280,
+      "viewport_medido": 1280,
+      "desborda_horizontal": false,
+      "scroll_width": 1265,
+      "titulo": "3 mitos que frenan a los negocios cuando escuchan 'automatización' | Rodrigo Bermejo",
+      "h1": [
+        "3 mitos que frenan a los negocios cuando escuchan 'automatización'"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H2 H3 H3 H3"
+    },
+    {
+      "archivo": "capturas/portada-movil.webp",
+      "ruta": "/",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Rodrigo Bermejo — CTO, constructor y docente",
+      "h1": [
+        "Dirijo tecnología.Construyo sistemas.Formo talento."
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/noticias-movil.webp",
+      "ruta": "/noticias",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Noticias | Rodrigo Bermejo",
+      "h1": [
+        "Noticias"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/actividad-movil.webp",
+      "ruta": "/actividad",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Actividad registrada | Rodrigo Bermejo",
+      "h1": [
+        "Actividad registrada"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/proyectos-movil.webp",
+      "ruta": "/proyectos",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Proyectos | Rodrigo Bermejo",
+      "h1": [
+        "Proyectos"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3 H3 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/proyecto-detalle-movil.webp",
+      "ruta": "/proyectos/contenido-ia",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Producción de contenido con IA — Rodrigo Bermejo | Rodrigo Bermejo",
+      "h1": [
+        "Producción de contenido con IA"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/sobre-mi-movil.webp",
+      "ruta": "/sobre-mi",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Trayectoria | Rodrigo Bermejo",
+      "h1": [
+        "Trayectoria"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/colaborar-movil.webp",
+      "ruta": "/colaborar",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Trabajar conmigo | Rodrigo Bermejo",
+      "h1": [
+        "Sistemas que eliminan el caos operativo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H3 H3 H3 H2 H3 H3 H3 H3 H2 H3 H3 H2 H2 H3 H3 H3 H3 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/evidencia-movil.webp",
+      "ruta": "/evidencia",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Cómo respaldo lo que afirmo | Rodrigo Bermejo",
+      "h1": [
+        "Cómo respaldo lo que afirmo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H3 H3 H3 H2 H3 H3 H2 H3"
+    },
+    {
+      "archivo": "capturas/blog-movil.webp",
+      "ruta": "/blog",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "Escribo | Rodrigo Bermejo",
+      "h1": [
+        "Escribo"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H3"
+    },
+    {
+      "archivo": "capturas/blog-detalle-movil.webp",
+      "ruta": "/blog/mitos-sobre-automatizacion",
+      "viewport_nominal": 390,
+      "viewport_medido": 390,
+      "desborda_horizontal": false,
+      "scroll_width": 390,
+      "titulo": "3 mitos que frenan a los negocios cuando escuchan 'automatización' | Rodrigo Bermejo",
+      "h1": [
+        "3 mitos que frenan a los negocios cuando escuchan 'automatización'"
+      ],
+      "jerarquia_de_encabezados": "H1 H2 H2 H2 H2 H3 H3 H3"
+    }
+  ]
+}

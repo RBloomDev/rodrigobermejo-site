@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { getPostData, getAllPostIds } from "@/lib/posts";
 import { SubscriptionBlock } from "@/components/SubscriptionBlock";
 import { Metadata } from "next";
@@ -16,6 +17,7 @@ export async function generateMetadata({
 }: PostProps): Promise<Metadata> {
   const { slug } = await params;
   const postData = await getPostData(slug);
+  if (!postData) return {};
   return {
     title: postData.title,
     description: postData.excerpt,
@@ -32,6 +34,9 @@ export async function generateStaticParams() {
 export default async function Post({ params }: PostProps) {
   const { slug } = await params;
   const postData = await getPostData(slug);
+  // El mismo `notFound()` que usan /noticias/[slug] y /proyectos/[slug]. Esta ruta era la
+  // unica de las tres que no lo hacia.
+  if (!postData) notFound();
 
   return (
     <div className="flex flex-col flex-grow">

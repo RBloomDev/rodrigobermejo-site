@@ -57,6 +57,25 @@ export function periodosCompletos(publicados: string[]): string[] {
   return resultado;
 }
 
+/**
+ * El primer par mes/trimestre que cubre los mismos segundos, o `null`.
+ *
+ * Un mes `AAAA-MM` esta dentro del trimestre `AAAA-Qn` cuando comparten ano y
+ * `n === ceil(MM / 3)`. Se devuelve el par y no un booleano para que el mensaje de error
+ * pueda nombrar los dos culpables: «hay un solape» no le dice a nadie cual corregir.
+ */
+export function periodosSolapados(periodos: string[]): [string, string] | null {
+  const meses = periodos.filter(p => !p.includes("Q"));
+  const trimestres = new Set(periodos.filter(p => p.includes("Q")));
+  for (const mes of meses) {
+    const ano = mes.slice(0, 4);
+    const n = Math.ceil(Number(mes.slice(5)) / 3);
+    const trimestre = `${ano}-Q${n}`;
+    if (trimestres.has(trimestre)) return [mes, trimestre];
+  }
+  return null;
+}
+
 export function leerActividad(dir = raizDelFeed()) {
   const proceso = opcional(dir, "proceso", procesoSchema);
   const actividad = opcional(dir, "activity", activitySchema);
@@ -72,6 +91,22 @@ export function leerActividad(dir = raizDelFeed()) {
     for (const entrada of [...proceso.records, ...proceso.absences]) {
       if (pares.has(entrada.period)) throw new FeedInvalidoError("proceso.json repite un periodo de WakaTime.");
       pares.add(entrada.period);
+    }
+    // Repetir una CADENA no es la unica forma de contar dos veces los mismos segundos.
+    //
+    // `docs/05` §proceso.json:370 admite mes `AAAA-MM` y trimestre `AAAA-Qn`, asi que un
+    // artefacto puede declarar `2026-01` Y `2026-Q1` sin repetir ninguna cadena --- y son
+    // los MISMOS segundos, presentados dos veces en la misma lista. Quien la lea de un
+    // vistazo sumara mal, y nada se lo advierte.
+    //
+    // No se prohibe mezclar granularidades, porque el contrato las permite y docs/ es
+    // autoridad sobre el codigo. Se prohibe el SOLAPE, que es lo que hace falsa la suma.
+    const solapado = periodosSolapados([...pares]);
+    if (solapado) {
+      throw new FeedInvalidoError(
+        `proceso.json declara ${solapado[0]} y ${solapado[1]}, que cubren los mismos segundos. ` +
+        "Mes y trimestre pueden convivir, pero no solaparse: se presentarian dos veces.",
+      );
     }
   }
   return { proceso, actividad, claims, generatedAt: estado?.estado === "presente" ? estado.feed.meta.generated_at : null };
