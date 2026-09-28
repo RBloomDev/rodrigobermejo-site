@@ -206,9 +206,12 @@ Cinco etapas. La implementación vive en `scripts/editorial/`.
 > escriben.** Cómo se agrupan en **tres comandos** —generar, verificar, autorizar—, qué
 > escribe cada uno y dónde vive su estado lo fija **§8**, que manda sobre cualquier lectura
 > de ubicación que se derive de aquí. **Ninguna de estas cinco etapas debe publicar nada**:
-> publicar es la autorización de §8.4 y no ocurre dentro de una corrida. Hoy sí ocurre
-> —`ejecutar.mjs:276` escribe el corpus al final de la misma corrida que redacta y
-> verifica—, y separarlo es T-E1 (§8.6).
+> publicar es la autorización de §8.4 y no ocurre dentro de una corrida. **Medido el
+> 2026-09-25, ya no ocurre**: el corpus intermedio que se escribía al final de la misma
+> corrida que redactaba y verificaba se retiró al partir el comando, y lo único que llega a
+> `content/noticias/` lo escribe `autorizar` (§8.4). Las cinco etapas se reparten en tres
+> invocaciones —`generar.mjs`, `verificar-canal.mjs`, `autorizar.mjs`— y ninguna de las dos
+> primeras nombra el árbol público (§8.1, §8.6).
 
 ### 5.0 Una sola puerta de red, y por qué está guardada
 
@@ -398,17 +401,41 @@ Las cinco etapas de §5 se agrupan en **tres comandos**. La separación no es or
 es la que hace que «verificado» y «publicado» no puedan confundirse, y la que deja **una
 sola** puerta hacia el árbol público del repositorio.
 
-Hoy el canal es **un solo comando** (`node scripts/editorial/ejecutar.mjs`) que detecta,
-redacta, verifica y escribe el corpus de un tirón. Esta sección es normativa y ese comando
-no la cumple todavía; qué falta y quién lo cierra está en §8.6.
+**Medido el 2026-09-25, los comandos del canal son tres, y son tres archivos distintos**:
+`scripts/editorial/generar.mjs`, `scripts/editorial/verificar-canal.mjs` y
+`scripts/editorial/autorizar.mjs`. Los tres llevan rama de CLI (`esCli(import.meta.url)`) y
+los tres —y solo esos tres— están en `package.json` como `editorial:generar`,
+`editorial:verificar` y `editorial:autorizar`. Contar ramas de CLI en `scripts/editorial/`
+devuelve **seis**, no tres, y no contradice nada: las otras tres son diagnósticos de una
+etapa suelta y ninguna escribe una transición. La cuenta, con su evidencia, está al final
+de §8.6. No son tres banderas del mismo comando ni tres envoltorios de una
+función común: el grafo de importaciones de `generar` **no alcanza** `verificar.mjs`, y el
+de `verificar-canal` no alcanza `detectar.mjs`, `deduplicar.mjs` ni `redactar.mjs`, que es
+la forma comprobable de decir que el código de una etapa no está a mano en la otra. Lo
+comprueban `scripts/editorial/pruebas/tres-comandos.test.mjs`, casos 1 y 3, y
+`scripts/editorial/pruebas/tres-comandos-falsable.test.mjs`, que corre **la misma**
+comprobación del caso 1 —importada de `pruebas/separacion-de-etapas.mjs`, no copiada—
+contra un `generar` que además sella y exige que se ponga **roja**. El archivo de
+falsabilidad está aparte a propósito: un verde no dice si mide algo o si no puede fallar, y
+esas dos cosas se ven igual desde fuera.
+
+El comando único (`ejecutar.mjs`) que encadenaba detectar → redactar → verificar → escribir
+un corpus intermedio **ya no existe**: el archivo se eliminó, no se renombró.
 
 ### 8.1 Tres comandos, tres salidas, tres transiciones
 
 | Etapa | Comando | Lee | Qué escribe — **exhaustivo** | Transición |
 |---|---|---|---|---|
-| **Generar** | `generar` | Feeds de §6 y la bitácora | Un borrador en `$EDITORIAL_REDACCIONES_DIR` y eventos en `$EDITORIAL_ESTADO_DIR` | `detectada → pendiente_redaccion → pendiente_verificacion` |
-| **Verificar** | `verificar` | El borrador y sus fuentes | El sello `procedencia.verificado` sobre **ese mismo borrador privado**, y los eventos —la transición y los fallos— en `$EDITORIAL_ESTADO_DIR` | `pendiente_verificacion → terminada`, o `→ fallida_reintentable` |
-| **Autorizar** | `autorizar <id>` | Un borrador en `terminada` | **Un archivo en `content/noticias/`** —la única escritura de todo el canal en el árbol público— y el evento `autorizada` en la bitácora de `$EDITORIAL_ESTADO_DIR` (§8.4, paso 5). Nada más | `terminada → autorizada` |
+| **Generar** | `node scripts/editorial/generar.mjs` | Feeds de §6 y la bitácora | Un borrador en `$EDITORIAL_REDACCIONES_DIR/<id>.json` y eventos en `$EDITORIAL_ESTADO_DIR` | `detectada → pendiente_redaccion → pendiente_verificacion` |
+| **Verificar** | `node scripts/editorial/verificar-canal.mjs` | El borrador y sus fuentes | El sello `procedencia.verificado` sobre **ese mismo borrador privado**, y los eventos —la transición y los fallos— en `$EDITORIAL_ESTADO_DIR` | `pendiente_verificacion → terminada`, o `→ fallida_reintentable` |
+| **Autorizar** | `node scripts/editorial/autorizar.mjs <id>` | Un borrador en `terminada` | **Un archivo en `content/noticias/`** —la única escritura de todo el canal en el árbol público— y el evento `autorizada` en la bitácora de `$EDITORIAL_ESTADO_DIR` (§8.4, paso 5). Nada más | `terminada → autorizada` |
+
+> **Por qué el ejecutable de verificar se llama `verificar-canal.mjs` y no `verificar.mjs`.**
+> Ese nombre ya lo ocupa el **motor** de §5.4 —el módulo que consulta fuentes y emite el
+> veredicto—, que importan tanto el comando como las pruebas. Renombrar el motor para
+> liberar el nombre habría tocado media docena de archivos sin cambiar nada de lo que esta
+> sección exige: lo normativo es que sean tres invocaciones, y «los nombres concretos de los
+> ejecutables» quedaron fuera de lo normativo desde la primera versión de esta tabla.
 
 **La columna «qué escribe» es exhaustiva**: lo que no aparece en esa celda, el comando no lo
 escribe. Lo que es **único** de `autorizar` no es escribir en un solo sitio —escribe en dos—,
@@ -416,8 +443,10 @@ sino ser el único de los tres que toca el árbol público. Los otros dos no lo 
 
 **Los tres son invocaciones separadas, no tres banderas del mismo comando.** Un
 `--autorizar` dentro de la corrida vuelve a juntar lo que esta sección separa: bastaría un
-valor por defecto mal puesto para publicar sin decisión. Los nombres concretos de los
-ejecutables los fija T-E1; lo normativo es que sean tres.
+valor por defecto mal puesto para publicar sin decisión. Y dos scripts que llamaran al
+mismo comando con una bandera distinta serían **dos puertas al mismo comando**, no una
+partición: lo que hace falta es que el código de una etapa no esté disponible en la otra.
+Los nombres concretos de los ejecutables no son normativos; que sean tres, sí.
 
 Las tres reglas que la tabla existe para imponer:
 
@@ -433,11 +462,13 @@ Las tres reglas que la tabla existe para imponer:
    comando se niega: lo que hay que hacer es volver a generar o volver a verificar, y eso
    tiene su propio comando.
 
-> **Por qué `terminada` cambia de significado, y hay que decirlo.** Hoy `estado.mjs`
-> documenta `terminada` como «la pieza pasó §5.4 y **entró al corpus**». Con este modelo,
-> entrar al corpus público es la autorización, no la verificación. `terminada` pasa a ser
-> «hay borrador verificado, sin publicar». Es la spec la que manda sobre el código
-> (`CLAUDE.md`), así que la divergencia se cierra en el código.
+> **Por qué `terminada` cambió de significado, y hay que decirlo.** `estado.mjs` documentaba
+> `terminada` como «la pieza pasó §5.4 y **entró al corpus**». Con este modelo, entrar al
+> corpus público es la autorización, no la verificación. **Cerrado el 2026-09-25**:
+> `terminada` es «hay borrador verificado, sin publicar», y así lo dice la tabla de
+> transiciones de `estado.mjs` y el contrato de `marcarVerificada()`. Lo que no cambió es la
+> disciplina detrás: un estado TERMINAL solo se escribe con el hecho ya en disco, y el hecho
+> que ahora se relee del disco es **el sello sobre el borrador**, no una fila en un corpus.
 
 ### 8.2 El cuarto estado: `autorizada`
 
@@ -445,9 +476,9 @@ La máquina de `scripts/editorial/estado.mjs` ya distingue `detectada`,
 `pendiente_redaccion`, `pendiente_verificacion`, `fallida_reintentable`, `descartada` y
 `terminada`. Le falta el estado que representa la única decisión humana del canal.
 
-**T-E1 añade** a la tabla de transiciones exactamente esto, y nada más. No está añadido:
-`estado.mjs:98` sigue listando seis estados y `estado.mjs:135` sigue declarando `terminada`
-como terminal (§8.6).
+La tabla de transiciones gana exactamente esto, y nada más. **Añadido el 2026-09-24**:
+`estado.mjs:105-113` lista los siete estados, `TRANSICIONES.terminada` es
+`{ autorizada: 'autorizada' }` y `TRANSICIONES.autorizada` es `{}` (§8.6).
 
 | Desde | Evento | Hacia | Cuándo |
 |---|---|---|---|
@@ -482,63 +513,82 @@ Condiciones duras del evento `autorizada`:
 | Bitácora, fallos y el `vistos.jsonl` heredado | `$EDITORIAL_ESTADO_DIR` | **No** | `generar` y `verificar`; y `autorizar`, **solo** para emitir su evento `autorizada` (§8.1, §8.4 paso 5). Los tres comandos escriben aquí porque la bitácora es donde vive la máquina de estados, y la transición `terminada → autorizada` es una transición como las otras |
 | Borradores y redacciones | `$EDITORIAL_REDACCIONES_DIR` | **No** | `generar`; `verificar` solo sella |
 | **Corpus publicado** | **`content/noticias/`** | **Sí** | **Únicamente `autorizar`** |
-| Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Hoy sí lo escriben dos caminos del canal** —`ejecutar.mjs:276` y `reverificar-corpus.mjs:58`—, y retirarlos es T-E1 (§8.6) |
+| Fixture del prototipo (`prototipo/datos/piezas.json`) | `docs/plataforma/prototipo/` | Sí | **Política: nadie del canal.** Es referencia no normativa (§3). **Los dos caminos que lo escribían están retirados**, vuelto a medir el 2026-09-25: el corpus intermedio dejó de existir con el comando único, y el comando que reverificaba ese corpus se retiró con él (§8.6). La constante que nombra el fixture sigue en `comun.mjs` como `RUTA_FIXTURE_PROTOTIPO` y **solo se lee**: la usa `guard:canal` para comprobar, al terminar, que no la tocó |
 
-> **Lo que sigue en esta sección —la tabla de arriba incluida— es la política, no una
-> descripción del canal de hoy.** Medido el 2026-09-17, el código **no la cumple, y las dos
-> variables no se incumplen de la misma forma**: `EDITORIAL_ESTADO_DIR` existe y resuelve con
-> un `||` a una ruta del repositorio (`estado.mjs:153`); `EDITORIAL_REDACCIONES_DIR` **no
-> existe todavía en ningún `.mjs`** —`grep -rn "EDITORIAL_REDACCIONES_DIR" scripts/` devuelve
-> cero—, así que las redacciones se resuelven por la constante `DIR_REDACCIONES`
-> (`comun.mjs:16`). Además hay **tres** rutas que resuelven dentro del repositorio **sin
-> consultar variable alguna** —dos de ellas escriben (`comun.mjs:62`,
-> `reverificar-corpus.mjs:58`) y la de redacciones hoy solo lee—, y `content/noticias/` no
-> existe. La distinción no es de redacción: **quitar los `||` no cierra T-E1**, porque una
-> constante sin variable resuelve dentro aunque la variable esté puesta y sea correcta. El
-> inventario completo, con el tipo de cada camino y quién lo cierra, está en §8.6. Cada
-> prohibición lleva abajo su propia medición, incluidas las dos que hoy no se rompen.
+> **La tabla de arriba fue política antes que descripción, y conviene recordar desde dónde
+> se llegó.** Medido el 2026-09-17 el código **no la cumplía, y las dos variables no se
+> incumplían de la misma forma**: `EDITORIAL_ESTADO_DIR` resolvía con un `||` a una ruta del
+> repositorio; `EDITORIAL_REDACCIONES_DIR` **no existía en ningún `.mjs`**, así que las
+> redacciones se resolvían por una constante. Había además **tres** rutas que resolvían
+> dentro del repositorio **sin consultar variable alguna** —dos de ellas escribían—, y
+> `content/noticias/` no existía. La distinción importaba porque **quitar los `||` no
+> bastaba**: una constante sin variable resuelve dentro aunque la variable esté puesta y sea
+> correcta.
+>
+> **Vuelto a medir el 2026-09-25, la tabla describe el canal.** Las dos variables son
+> obligatorias y se resuelven por `exigirDirectorio()`; las tres constantes se redirigieron
+> o se fueron con el comando que las usaba (§8.6); `content/noticias/` sigue vacío porque
+> nadie ha autorizado nada, que es lo correcto. Lo que **no** está cerrado es el punto 4 de
+> §8.6, y está dicho donde toca en vez de aquí.
 
 **`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR` son OBLIGATORIAS y NO tienen valor
 por defecto.** Si falta cualquiera de las dos, el canal **aborta** al arrancar —antes de
 leer un feed, antes de abrir un archivo—, sale con código distinto de 0 y **no escribe
-nada**. No hay modo degradado. Hoy no aborta, y por dos motivos distintos: la de estado corre
-con su `||` (`estado.mjs:153`) y las redacciones ni siquiera consultan variable —se resuelven
-por constante (`comun.mjs:16`)—. En los dos casos el canal escribe dentro del repositorio.
+nada**. No hay modo degradado.
 
-**Son dos, y solo dos.** No hay una tercera variable para un corpus intermedio. La actual
-`EDITORIAL_PIEZAS` —que hoy apunta al fixture del prototipo (`ejecutar.mjs:66`)— **no se
-renombra ni se sustituye: desaparece**, junto con la función `rutaPiezas()` que la resuelve.
-El corpus intermedio deja de existir porque ya no hace falta: `generar` escribe el borrador
-en `$EDITORIAL_REDACCIONES_DIR` (§8.1) y lo único que llega al árbol público lo escribe
-`autorizar` en `content/noticias/`. Quien lea que `EDITORIAL_REDACCIONES_DIR` «sustituye» a
-`EDITORIAL_PIEZAS` está leyendo una versión anterior de este modelo: no la sustituye, porque
-no cumplen la misma función.
+**Medido el 2026-09-25, aborta, y aborta en los dos comandos.** Las dos variables se
+resuelven por la misma función, `exigirDirectorio()` de `comun.mjs`: sin la variable lanza
+`ConfiguracionAusente` y no hay respaldo al que caer —el `||` que había en `estado.mjs` y la
+constante de redacciones de `comun.mjs` ya no existen—. `generar.mjs` y `verificar-canal.mjs`
+la llaman en su **primera línea**, antes de leer un feed y antes de abrir un archivo, y
+además en su rama de CLI fuera del `try`, para que el aborto no se confunda con un fallo de
+corrida. Lo comprueba `pruebas/rutas-obligatorias.test.mjs` sobre los dos, no sobre uno.
+
+**Son dos, y solo dos.** No hay una tercera variable para un corpus intermedio, y ya no
+puede haberla: la variable del corpus intermedio **desapareció** el 2026-09-25, junto con la
+función que la resolvía —no se renombró ni se sustituyó—. El corpus intermedio dejó de
+existir porque ya no hace falta: `generar` escribe el borrador en
+`$EDITORIAL_REDACCIONES_DIR/<id>.json` (§8.1), `verificar` lo sella ahí mismo y lo único que
+llega al árbol público lo escribe `autorizar` en `content/noticias/`. Quien lea que
+`EDITORIAL_REDACCIONES_DIR` «sustituye» a la variable retirada está leyendo una versión
+anterior de este modelo: no la sustituye, porque no cumplían la misma función.
+
+Los tres comandos resuelven la ruta del borrador con **la misma función**,
+`comun.rutaBorrador(id)`. No es una comodidad: mientras cada uno la derivaba por su lado,
+`generar` escribía donde decía una variable de ruta completa y `autorizar` leía
+`<id>.json`, así que los dos solo coincidían si quien corría el canal los apuntaba a mano.
+
+`EDITORIAL_MAX_LLAMADAS` **no es una tercera variable de este tipo y no contradice la regla
+de arriba**: no localiza estado, no tiene ruta, es opcional y sin ella no hay tope. Es un
+límite de consumo de quien ejecuta el canal en un runner, lo lee `generar` y ata (§8.6).
 
 Está prohibido, y cada prohibición nombra la forma concreta de romper la regla:
 
 - **Un valor por defecto dentro del repositorio.** Es exactamente como esta regla se rompe
   sin que nadie lo note: el canal corre, no falla, y el estado aparece en un `git status`
-  que alguien commitea sin leer. Hoy `estado.mjs` resuelve
-  `process.env.EDITORIAL_ESTADO_DIR || DIR_ESTADO`, y ese `||` es el defecto.
+  que alguien commitea sin leer. El `||` de `estado.mjs`
+  —`process.env.EDITORIAL_ESTADO_DIR || DIR_ESTADO`— era esa forma concreta. **Cerrado:**
+  la resolución pasa por `exigirDirectorio()` (`comun.mjs`), que lanza en vez de caer a
+  ningún sitio, y no queda ni una constante de respaldo a la que caer. Las apariciones que
+  `grep -rn "DIR_ESTADO" scripts/` todavía devuelve son **tres comentarios** que explican
+  por qué se quitó, ninguna es código.
 - **Caer a `process.cwd()`, a un `tmpdir` silencioso o a cualquier ruta inventada.** Perder
   el estado en silencio no es mejor que publicarlo en silencio: rompe la deduplicación de
-  §5.2 sin decirlo. **Esta hoy no se rompe**, y conviene decirlo para no confundir el
-  diagnóstico: los dos `||` caen a una constante del repositorio, no a `cwd` ni a `tmpdir`.
-  Se prohíbe de todos modos porque es el atajo evidente al quitar el fallback.
+  §5.2 sin decirlo. Nunca se rompió —los `||` que hubo caían a una constante del
+  repositorio, no a `cwd` ni a `tmpdir`— y se prohíbe igual, porque es el atajo evidente al
+  quitar un respaldo.
 - **Aceptar una ruta que resuelva dentro de un árbol de trabajo de git**, sea este
   repositorio u otro. Un directorio privado dentro de un repo privado tampoco vale: la regla
   es que el estado no está versionado, no que el repositorio sea discreto.
-  **Hoy no existe esa comprobación:** ninguna función del canal mira la ruta resuelta, así
-  que T-E1 tiene que añadirla, no conservarla.
+  **Cerrado:** `exigirDirectorio()` camina hacia arriba buscando `.git` —directorio o
+  archivo, para que un worktree enlazado cuente— y lanza `DirectorioVersionado`. Su prueba
+  es `pruebas/directorio-fuera-de-git.test.mjs`, sobre los **dos** comandos.
 - **Que las pruebas usen la ruta real.** Cada prueba monta su propio directorio en `tmpdir`
   y lo pasa por estas mismas variables, igual que `PROOF_FEED_DIR` en el sitio.
-  **Hoy se cumple a medias, y la mitad que falta es la que importa:**
-  `scripts/editorial/pruebas/ayuda.mjs:25-30` monta `EDITORIAL_ESTADO_DIR` y
-  `EDITORIAL_PIEZAS` en `tmpdir`, pero las redacciones no tienen variable que apuntar y
-  `errores.jsonl` se resuelve por constante (`comun.mjs:62`), así que ninguna de esas dos
-  rutas se puede desviar desde una prueba. No es un descuido del que escribió las pruebas:
-  es que la variable no existe (§8.6). Cuando T-E1 retire `EDITORIAL_PIEZAS`, las pruebas
-  montan en `tmpdir` las **dos** variables obligatorias y ninguna más.
+  **Cerrado el 2026-09-25:** `nuevoEntorno()` en `scripts/editorial/pruebas/ayuda.mjs` monta
+  las **dos** variables obligatorias y **ninguna más** —la tercera, la del corpus
+  intermedio, se fue con el corpus—, y `errores.jsonl` se resuelve desde
+  `$EDITORIAL_ESTADO_DIR` (`comun.rutaErrores()`), no por constante.
 
 Los valores concretos viven en el entorno de ejecución —en local, el `.env` de Rodrigo—.
 **Esta spec no declara rutas**, porque una ruta escrita aquí es una ruta publicada.
@@ -548,20 +598,36 @@ Los valores concretos viven en el entorno de ejecución —en local, el `.env` d
 > `content/posts/`. Lo que la hace segura ahí no es el directorio, es que un humano decidió
 > publicarla. Y al revés: nada es seguro por estar fuera del repositorio —fuera solo
 > significa «todavía no es una decisión», y lo de fuera tampoco está respaldado (§8.5).
-> De ahí las dos consecuencias, que **hoy no las verifica ninguna compuerta** —el gate que
-> tiene que verificarlas lo entrega T-E1 (§8.6)—:
+> De ahí las dos consecuencias, y **cuál compuerta mira cada una**, vuelto a medir el
+> 2026-09-25:
 >
 > - **Nada llega a `content/noticias/` sin pasar por `autorizar`.** Ni un archivo de
->   ejemplo, ni una prueba, ni «solo para ver cómo se renderiza».
+>   ejemplo, ni una prueba, ni «solo para ver cómo se renderiza». La vigila
+>   `pruebas/autorizar.test.mjs` (AC-AUT-05), que recorre `scripts/` y `lib/` enteros
+>   detectando la ruta por normalización y no por cadena literal, y trae su propia sonda de
+>   falsabilidad. `tres-comandos.test.mjs` caso 3 añade la otra mitad: ninguno de los dos
+>   comandos nuevos nombra el corpus.
 > - **Ninguna otra etapa escribe dentro del repositorio.** Si una etapa necesita dejar algo
->   en disco, lo deja en su directorio privado.
+>   en disco, lo deja en su directorio privado. La vigilan `exigirDirectorio()` en cada
+>   arranque —con `pruebas/directorio-fuera-de-git.test.mjs` sobre los dos comandos— y
+>   `guard:estado-editorial`, que comprueba que git no rastrea nada bajo las dos rutas
+>   históricas.
+>
+> Lo que **sigue sin compuerta** es el punto 4 de §8.6 —la ausencia en disco de las rutas
+> históricas—, que depende de que la migración haya corrido y hasta entonces se declara
+> **NO MEDIDA**, no verde.
 
 ### 8.4 Qué hace exactamente `autorizar`
 
-**Este comando no existe todavía.** Medido el 2026-09-17: no hay ningún ejecutable de
-autorización en `scripts/editorial/`, y `content/noticias/` tampoco existe (`git ls-files
-content` devuelve solo `content/posts/`). Lo que sigue es el contrato que T-E1 tiene que
-construir, en presente normativo porque describe el comando terminado —no el árbol de hoy—.
+**El comando existe desde el 2026-09-24: `scripts/editorial/autorizar.mjs`.** Se invoca
+`node scripts/editorial/autorizar.mjs <id> --registro <archivo.json>` y lee el borrador en
+`$EDITORIAL_REDACCIONES_DIR/<id>.json`. El registro de la decisión humana que exige el paso 2
+—quién, cuándo, sobre qué versión exacta y con qué pendientes— lo fija **§8.8**.
+
+**`content/noticias/` sigue sin existir, y ese es el estado correcto, no un trabajo a
+medias:** el corpus arranca vacío porque nadie ha autorizado nada todavía. El comando crea el
+directorio al escribir la primera pieza. Un canal que publica en cuanto existe un borrador es
+exactamente lo que este diseño evita (§1, §7).
 
 1. Exige un borrador en `terminada`. Cualquier otro estado: se niega, con el estado actual
    en el mensaje.
@@ -570,7 +636,9 @@ construir, en presente normativo porque describe el comando terminado —no el �
    `no_establece` no vacío, `tipo` presente— y **vuelve a comprobar los términos de §6**: una
    fuente de solo-detectar no se reproduce. Falla cualquiera: no publica.
 4. Escribe **un** archivo en `content/noticias/`, con `estado: "autorizada"` y
-   `procedencia.publicado` lleno con el humano y la fecha. La forma queda fijada aquí y no
+   `procedencia.publicado` lleno con el humano y la fecha —`{ "por": "humano", "detalle":
+   "Autorizada por <nombre> el <fecha>." }`, sin claves nuevas: los cinco campos
+   estructurados de la decisión viven en el evento privado (§8.8)—. La forma queda fijada aquí y no
    se deja a elección del implementador: **un archivo JSON por pieza, `content/noticias/<id>.json`,
    con exactamente el esquema de §3** —el mismo objeto, sin envoltorio y sin campos añadidos—.
    No es markdown con *frontmatter*, aunque `content/posts/` lo sea: el registro editorial es
@@ -618,15 +686,30 @@ es parte de activarla, y no se decide aquí.
 
 ### 8.6 Estado medido y qué falta
 
-Medido el 2026-09-17 sobre este árbol. Esta spec es normativa; el código todavía no la
-cumple, y decirlo es parte de la spec:
+**Las dos tablas que siguen son el registro fechado de lo que se midió aquel día, no el
+estado de hoy.** Se conservan porque borrar una medición para que el documento quede más
+limpio es falsificar el registro; se escriben en pasado para que nadie las lea como una
+afirmación vigente. El estado de hoy es la tabla de cierre del final de esta sección.
 
-| Hecho medido | Evidencia |
+Medido el 2026-09-17 sobre este árbol. La spec era normativa y el código todavía no la
+cumplía, y decirlo era parte de la spec:
+
+| Hecho medido aquel día | Evidencia de entonces |
 |---|---|
-| El estado y una redacción están **versionados en este repositorio público** | `git ls-files scripts/editorial` devuelve `estado/bitacora.jsonl`, `estado/errores.jsonl`, `estado/fallos.jsonl`, `estado/vistos.jsonl` y `redacciones/marco-ailit-alfabetizacion-ia-educacion.json` |
-| Hay **un** comando, no tres | `scripts/editorial/ejecutar.mjs` encadena detectar → redactar → verificar → escribir corpus |
-| No existe el estado `autorizada` | `estado.mjs:98` lista seis estados y `terminada` es terminal |
-| No existe `content/noticias/` | `git ls-files content` devuelve solo `content/posts/` |
+| El estado y una redacción estaban **versionados en este repositorio público** | `git ls-files scripts/editorial` devuelve `estado/bitacora.jsonl`, `estado/errores.jsonl`, `estado/fallos.jsonl`, `estado/vistos.jsonl` y `redacciones/marco-ailit-alfabetizacion-ia-educacion.json`. **Cerrado por T-E1:** `git ls-files scripts/editorial/estado scripts/editorial/redacciones` devuelve **0** —vuelto a medir el 2026-09-24— y `guard:estado-editorial` lo vigila. Ojo con la cita anterior, que decía «ese `git ls-files` ya no devuelve nada»: `git ls-files scripts/editorial` devuelve **37 archivos**, que son los módulos del canal. Lo que se sacó del repositorio fueron los dos subdirectorios, no el directorio |
+| Había **un** comando, no tres | el orquestador `ejecutar.mjs` encadenaba detectar → redactar → verificar → escribir corpus |
+| No existía el estado `autorizada` | `estado.mjs:98` listaba seis estados y `terminada` era terminal |
+| No existía `content/noticias/` | `git ls-files content` devolvía solo `content/posts/` |
+
+Vuelto a medir el **2026-09-24**, tras añadir `autorizar`. Lo que cambió y lo que no —también
+en pasado, y por lo mismo:
+
+| Hecho medido aquel día | Evidencia de entonces |
+|---|---|
+| Había **dos** comandos, no tres | `scripts/editorial/autorizar.mjs` ya era una invocación separada; `ejecutar.mjs` seguía encadenando detectar → redactar → verificar, o sea **`generar` y `verificar` fundidos en uno**. **Superado el 2026-09-25**: hoy son tres, medidos en la tabla de cierre |
+| El estado `autorizada` **existe** | `estado.mjs:105-113` lista siete estados; `TRANSICIONES.terminada` es `{ autorizada: 'autorizada' }` y `TRANSICIONES.autorizada` es `{}`. Su prueba está en `pruebas/estado.test.mjs` |
+| `content/noticias/` **sigue sin existir**, y es correcto | `ls content` devuelve solo `posts`. El corpus arranca vacío: nadie ha autorizado nada. Lo crea `autorizar` al escribir la primera pieza (§8.4) |
+| `autorizar` es la **única** ruta al corpus | Ningún otro módulo de `scripts/` ni de `lib/` resuelve `content/noticias`, y hay una prueba que lo comprueba recorriendo los dos árboles enteros y detectando la ruta por normalización, no por una cadena literal (`pruebas/autorizar.test.mjs`). Su propia falsabilidad está probada. **Límite:** una ruta compuesta desde variables no se ve, y `app/` queda fuera a propósito —leer el corpus es el objetivo del diseño; la invariante es sobre quién lo escribe— |
 
 **Los caminos que resuelven a rutas dentro del repositorio son cinco, no dos**, y no todos son
 del mismo tipo. La distinción importa porque cambia el arreglo: un **default con respaldo**
@@ -637,15 +720,15 @@ puesta y sea correcta. Quitar los `||` no toca las tres últimas filas:
 | Camino de escritura | Tipo | Evidencia | Qué tiene que hacer T-E1 |
 |---|---|---|---|
 | Bitácora y estado de la máquina | Default con respaldo | `estado.mjs:153` — `process.env.EDITORIAL_ESTADO_DIR \|\| DIR_ESTADO` | Quitar el `\|\| DIR_ESTADO` y abortar si falta la variable |
-| Corpus del prototipo | Default con respaldo | `ejecutar.mjs:66` — `process.env.EDITORIAL_PIEZAS \|\| RUTA_PIEZAS`, escrito en `ejecutar.mjs:276` al final de la misma corrida que redacta y verifica | **Eliminar `rutaPiezas()` y su variable `EDITORIAL_PIEZAS`**, no hacerla obligatoria: el corpus intermedio deja de existir porque `generar` escribe el borrador en `$EDITORIAL_REDACCIONES_DIR` y solo `autorizar` escribe corpus, en `content/noticias/` (§8.3) |
+| Corpus del prototipo | Default con respaldo | la variable del corpus intermedio con respaldo a la constante del fixture, escrita al final de la misma corrida que redactaba y verificaba | **Eliminar la función y su variable**, no hacerla obligatoria: el corpus intermedio deja de existir porque `generar` escribe el borrador en `$EDITORIAL_REDACCIONES_DIR` y solo `autorizar` escribe corpus, en `content/noticias/` (§8.3). **CERRADA el 2026-09-25**: las dos desaparecieron con `ejecutar.mjs` |
 | `errores.jsonl` | **Constante sin variable** | `comun.mjs:62` (`registrarError`) anexa a `RUTA_ERRORES`, derivada de `DIR_ESTADO` en `comun.mjs:15,18`. No consulta `EDITORIAL_ESTADO_DIR`: no es un respaldo, es la única ruta | Redirigir `RUTA_ERRORES` al directorio de estado resuelto. Un fallo del canal no puede ser lo que publique el estado |
 | Redacciones | **Constante sin variable**, y hoy **solo de lectura** | `DIR_REDACCIONES` en `comun.mjs:16`, leída en `redactar.mjs:92-95` (`existsSync`, `readdirSync`, `leerJson`). `grep -rn "DIR_REDACCIONES" scripts/` devuelve esas cinco líneas y **ninguna escritura**: la redacción versionada del repositorio no la puso el canal. Y `EDITORIAL_REDACCIONES_DIR` **no aparece en ningún `.mjs`**: `grep -rn "EDITORIAL_REDACCIONES_DIR" scripts/` devuelve cero | **Crear la variable**, que hoy solo existe en esta spec, y resolver `DIR_REDACCIONES` desde ella. Aquí T-E1 no redirige una escritura existente: tiene que **crear** la de `generar` (§8.1), que hoy no existe en ningún `.mjs` |
-| Reverificación del corpus | **Constante sin variable** | `reverificar-corpus.mjs:24` lee y `:58` escribe `RUTA_PIEZAS` importada de `comun.mjs:19`, sin pasar por `EDITORIAL_PIEZAS` | Resolver desde `$EDITORIAL_REDACCIONES_DIR` —reverificar es sellar un borrador, y los borradores viven ahí—, **o retirar el comando del canal** si su corpus ya no existe. Lo que no puede hacer es pasar a resolver por `rutaPiezas()`: hoy no la usa —importa `RUTA_PIEZAS` directo (`reverificar-corpus.mjs:20`)— y esa función se elimina en la fila 2 |
+| Reverificación del corpus | **Constante sin variable** | `reverificar-corpus.mjs` leía y reescribía la constante del fixture importada de `comun.mjs`, sin consultar variable alguna | Resolver desde `$EDITORIAL_REDACCIONES_DIR` —reverificar es sellar un borrador, y los borradores viven ahí—, **o retirar el comando del canal** si su corpus ya no existe. **CERRADA el 2026-09-25 por la segunda salida**: el comando se retiró. Su corpus dejó de existir al partir el canal, y resellar borradores es exactamente lo que hace `verificar-canal.mjs` sobre `<id>.json`. Un comando que lee un archivo que nadie escribe no reverifica nada |
 
 Cerrar esa distancia —mover los archivos, **hacer obligatoria la variable de estado,
-eliminar `EDITORIAL_PIEZAS` con su función, crear `EDITORIAL_REDACCIONES_DIR` y redirigir las
-tres rutas constantes**, partir el comando, añadir el estado y ajustar `.gitignore`— es
-**T-E1**, y no ocurre en este documento. Mientras T-E1 no cierre, el canal
+eliminar la variable del corpus intermedio con su función, crear `EDITORIAL_REDACCIONES_DIR`
+y redirigir las tres rutas constantes**, partir el comando, añadir el estado y ajustar
+`.gitignore`— es **T-E1**, y no ocurre en este documento. Mientras T-E1 no cierre, el canal
 no debe correr fuera de la máquina de Rodrigo.
 
 **T-E1 no está cerrado mientras no exista la compuerta que lo sostenga.** Las cuatro
@@ -699,46 +782,63 @@ la primera sub-comprobación del punto 4 tampoco: depende de que la **migración
 corrido**, que es un hecho que la propia máquina detecta, y hasta entonces se declara NO
 MEDIDA en vez de pasar en silencio.
 
-**Lo que T-E1 dejó sin cerrar de esta sección, dicho aquí para que no parezca un olvido.**
-La fila 2 de la tabla de arriba pide *eliminar* `rutaPiezas()` y `EDITORIAL_PIEZAS`, no
-hacerlas obligatorias, y esa eliminación **no cabe en T-E1**: depende de partir el comando
-en `generar` y `autorizar` (§8.1), que necesita `content/noticias/` —hoy inexistente— y que
-ningún criterio de aceptación de T-E1 cubre. Lo que T-E1 sí hizo es el retiro que cabía:
-`rutaPiezas()` **ya no tiene respaldo dentro del repositorio** —devuelve `null` sin la
-variable y entonces la corrida no escribe corpus en ningún sitio—, con lo que desaparece el
-`||` que era el mismo patrón que esta tarea quitó de `dirEstado()`. La eliminación completa
-queda para **la tarea que parta el comando en `generar`/`autorizar`**. La fila 5
-(`reverificar-corpus.mjs`) sí está cerrada: resuelve desde `$EDITORIAL_REDACCIONES_DIR` y
-aborta sin ella, que es la primera de las dos salidas que esa fila autoriza.
+#### La tabla de cierre: el estado de hoy
 
-**Y mientras las dos filas coexistan, los dos comandos resuelven corpus por caminos
-distintos.** `ejecutar.mjs` escribe en `$EDITORIAL_PIEZAS` —una ruta de archivo completa, que
-no se deriva de nada—; `reverificar-corpus.mjs` lee y resella
-`$EDITORIAL_REDACCIONES_DIR/piezas.json`. Para que operen sobre **el mismo** corpus,
-`EDITORIAL_PIEZAS` tiene que apuntar a `$EDITORIAL_REDACCIONES_DIR/piezas.json`; apuntada a
-otro sitio son dos corpus y `reverificar` resella uno que `ejecutar` nunca escribió, sin que
-ninguno de los dos avise. **No se deriva sola a propósito**: derivarla sería fabricar otra
-vez el valor por defecto que esta tarea existe para quitar, y la fila 2 no pide renombrar la
-variable sino eliminarla. Queda declarado en la cabecera de los dos comandos, y lo pone quien
-los corre.
+**Lo que quedaba abierto tras añadir `autorizar`, y cómo se cerró.** Vuelto a medir el
+**2026-09-25**, sobre este árbol. Esta tabla —y no las dos de arriba, que son registro
+fechado— es la que describe el canal vigente: **son TRES comandos**, y la cuenta se hace
+sobre el árbol, no sobre este párrafo. Los tres son `generar.mjs`, `verificar-canal.mjs` y
+`autorizar.mjs`: los tres llevan `esCli(import.meta.url)` y los tres —y **solo** esos tres—
+están en `package.json` como `editorial:generar`, `editorial:verificar` y
+`editorial:autorizar`. `tres-comandos.test.mjs` caso 3 lo comprueba archivo por archivo.
 
-**Un estado terminal solo se escribe con el hecho ya en disco.** `terminada` afirma, literal,
-que la pieza entró al corpus, y §8.1 lo hace TERMINAL: una entrada marcada así no vuelve a la
-cola de deduplicación nunca. Por eso `ejecutar.mjs` la marca **releyendo el corpus
-persistido**, no el resultado del upsert en memoria: sin `EDITORIAL_PIEZAS` no se escribe
-corpus en ningún sitio, y marcar `terminada` ahí cerraba para siempre una pieza que nadie
-guardó. Lo que no se guardó se queda donde estaba —`pendiente_verificacion`— y la corrida
-siguiente lo recupera. **No se registra como fallo**: no tener corpus configurado no es culpa
-de la entrada, y contarlo como intento la descartaría a las tres corridas, que es cambiar una
+> **Al contar, `grep -l "esCli(import.meta.url)" scripts/editorial/*.mjs` devuelve seis, no
+> tres, y no es una contradicción.** Los otros tres —`detectar.mjs`, `redactar.mjs` y
+> `verificar-afirmaciones.mjs`— son CLIs de diagnóstico de **una etapa suelta** (§5), no
+> comandos del canal: no aparecen en `package.json` y **ninguno escribe una transición** de
+> la máquina de estados —`detectar.mjs` importa de `estado.mjs` una sola función,
+> `registrarFallo`, que anexa a `fallos.jsonl` y no mueve ninguna entrada de estado; los
+> otros dos no la importan—. La cuenta de §8.1 es sobre los comandos del canal, y el
+> criterio comprobable de cuáles son es el trío de `package.json`.
+
+| Lo que faltaba | Cómo se cerró, y con qué se comprueba |
+|---|---|
+| **Había dos comandos y no tres**: `generar` y `verificar` seguían fundidos en `ejecutar.mjs` | `ejecutar.mjs` **se eliminó**; en su lugar hay `generar.mjs` y `verificar-canal.mjs`, dos archivos con su propia rama de CLI. `tres-comandos.test.mjs` caso 1 lo comprueba **por la transición en la bitácora**: tras `generar` la entrada está en `pendiente_verificacion` y su borrador no lleva sello; tras `verificar` está en `terminada` y el sello está en el archivo. `tres-comandos-falsable.test.mjs` es su prueba negativa: corre **esa misma** comprobación contra un `generar` que además sella y exige el rojo, más el control de que con el `generar` real pasa |
+| **La variable del corpus intermedio y su función seguían ahí**, y aceptaban cualquier destino | Las dos desaparecieron con `ejecutar.mjs`. `tres-comandos.test.mjs` caso 2 recorre `scripts/`, `package.json` y `docs/` y exige cero apariciones, con su caso negativo: reintroducir el nombre pone la comprobación en rojo. Queda fuera `docs/plataforma/registros/`, que son bitácoras fechadas de corridas reales: reescribir lo que se corrió ese día sería falsificar el registro |
+| **Los dos comandos resolvían corpus por caminos distintos** | Ya no hay dos caminos ni hay corpus intermedio: los tres comandos resuelven el borrador con `comun.rutaBorrador(id)` (§8.3) |
+| **`EDITORIAL_MAX_LLAMADAS` estaba declarado en el workflow y no ataba** | `generar.mjs` lo lee (`topeDeLlamadas()`) y envuelve la vía de inferencia (`contadorDeLlamadas()`): al llegar al tope **aborta la corrida**, sale 2 y deja pendiente lo que no intentó, sin subirle `intentos` a ninguna entrada —el tope no es un fallo de la entrada—. `tres-comandos.test.mjs` caso 4 trae el par que importa: **superar el tope aborta, y no superarlo no**. Un tope que se lee pero nunca puede dispararse es el mismo defecto con otra cara |
+
+Lo que **no** cambió, y conviene decirlo para que el verde no se lea de más: las tres reglas
+de §8.1 —generar no toca el árbol público, verificar no autoriza, autorizar no redacta ni
+reverifica— ya se sostenían antes de partir el comando. Lo que la partición añade no es que
+se cumplan, es que **el código de una etapa ya no está a mano en la otra**, que es lo que
+hace que sigan cumpliéndose cuando nadie esté mirando.
+
+**Un estado terminal solo se escribe con el hecho ya en disco.** `terminada` es TERMINAL:
+una entrada marcada así no vuelve a la cola de deduplicación nunca. El hecho que afirma
+cambió con el corpus —antes «entró al corpus», ahora «el borrador quedó **sellado**»— y la
+disciplina es la misma: `verificar-canal.mjs` marca `terminada` **releyendo el borrador del
+disco** y comprobando que el sello está ahí, no fiándose de que la escritura no lanzara. Lo
+que no quedó sellado se queda donde estaba —`pendiente_verificacion`— y la corrida siguiente
+lo recupera. **No se registra como fallo**: no tener dónde escribir no es culpa de la
+entrada, y contarlo como intento la descartaría a las tres corridas, que es cambiar una
 pérdida silenciosa por otra. La prueba es `pruebas/canal.test.mjs` caso 6, con su receta de
 cómo ponerla roja.
 
+**El sello se reconoce por su `veredicto`, y esa elección tiene consecuencia.** Un sellado
+que no hiciera nada dejaría `procedencia.verificado` sin `veredicto`, y `autorizar` **se
+niega** ante un veredicto que no sea uno de los tres de §5.4. Marcar `terminada` en ese caso
+dejaría una entrada en un estado TERMINAL con un borrador que nadie podrá autorizar nunca.
+Por eso la relectura exige las dos cosas: que lo escrito esté en el archivo y que lleve
+veredicto.
+
 ### 8.7 La frontera con la evidencia, que la autorización no mueve
 
-Autorizar una pieza la vuelve **contenido publicado**; no la vuelve evidencia. Como §8.4,
-esto es el contrato del comando terminado, no una medición: `autorizar` no existe todavía
-(§8.6), así que los requisitos de abajo son lo que T-E1 tiene que cumplir, no lo que el
-código cumple hoy. La regla de `docs/03-privacy-and-publication-policy.md` §4, tabla
+Autorizar una pieza la vuelve **contenido publicado**; no la vuelve evidencia. Los tres
+requisitos de abajo se cumplen hoy, medido el 2026-09-24 sobre `autorizar.mjs`: no nombra
+`public/proof` ni en lectura ni en escritura, y la pieza que publica es el objeto de §3 sin
+un campo más. Hay prueba de las dos cosas en `pruebas/autorizar.test.mjs`.
+La regla de `docs/03-privacy-and-publication-policy.md` §4, tabla
 «Fronteras que nunca se cruzan», sigue intacta y se reitera entera:
 
 > «Contenido editorial (`content/`) → Evidencia: El blog puede *enlazar* a evidencia;
@@ -759,3 +859,135 @@ directorio de distancia del feed— no acerca los dos registros ni un milímetro
 > crecer `docs/03`. Las citas de §0 y de esta sección quedan corregidas **por sección**, que
 > no se desplaza, y lo mismo en `decisions/0015`. El hallazgo está registrado en
 > `docs/plataforma/01-noticias-y-actividad.md` §1.2.
+
+### 8.8 Registro de la decisión humana
+
+`autorizar` **no toma la decisión: la registra.** Lo que el comando aporta es la negativa —se
+niega cuando el registro no describe exactamente lo que hay delante— y la constancia de lo que
+se decidió. Quien decide es Rodrigo, y sin su registro el comando no escribe nada.
+
+**Los cuatro datos, y sin los cuatro no hay registro: hay una firma en blanco.**
+
+| Dato | Significado | Por qué sin él no vale |
+|---|---|---|
+| **Quién** | El humano que revisó y autorizó | Nunca se infiere del agente, del usuario del sistema ni de la corrida. Un `autorizado_por: "agente"` no existe: sería autopublicación con otro nombre (§1, §8.2) |
+| **Cuándo** | Fecha y hora de esa autorización, con zona horaria explícita | Una hora sin zona no ordena dos decisiones |
+| **Sobre qué versión** | El `sha256` del JSON canónico del borrador revisado | Una firma sobre «el borrador» sin decir cuál es una firma en blanco |
+| **Con qué pendientes** | La enumeración de lo que se acepta sin comprobar | Aceptar «los límites» sin decir cuáles no acepta nada en concreto |
+
+Una pieza con veredicto `parcial` **o** con afirmaciones pendientes necesita además la marca
+explícita de que el humano la revisó y acepta publicarla así. **La marca va en el registro, no
+en un comentario.** Si falta la marca, o si los pendientes no coinciden, el comando sale con
+código distinto de cero **sin escribir corpus y sin emitir el evento**.
+
+Aceptar pendientes no los borra, no convierte el sello en verificación completa y no cambia la
+atribución: `procedencia.verificado` se conserva tal cual. Y la ausencia de registro de
+verificación no es una verificación parcial aceptable: una pieza sin sello no es autorizable.
+
+**`procedencia.verificado.veredicto` se enumera contra los tres valores de §5.4** —`verificada`,
+`parcial`, `no_verificada`— **antes de decidir nada con él, y no se normaliza.** Es el campo que
+determina si la marca humana es obligatoria, así que un valor fuera de la enumeración se rechaza
+en vez de caer por omisión en la rama «sin límites»: un `"Parcial"` con mayúscula publicaría una
+pieza con límites sin que nadie los hubiera aceptado. Aquí la regla de §3 —lo que no está
+enumerado se rechaza, no se ignora— aplica igual que a cualquier otro campo, y con más motivo.
+
+#### Identidad de la versión
+
+La versión es `sha256:<hexadecimal minúsculo>` del **JSON canónico del objeto completo del
+borrador** —`procedencia.verificado` incluido—, calculado antes de tocar `estado` o
+`procedencia.publicado`. No es `huella`, que identifica el **hecho** (§5.2) y no cambia al
+editar el texto; no es el nombre del archivo, que se reusa; no es la fecha, que no distingue
+dos ediciones del mismo día.
+
+La canonicalización es: recorrer objetos ordenando sus claves por unidades UTF-16, conservar el
+orden de los arreglos, serializar primitivas con las reglas de `JSON.stringify`, sin espacios ni
+salto final, y calcular SHA-256 de los bytes UTF-8. No se normalizan cadenas, acentos ni
+puntuación. **Un JSON con claves duplicadas se rechaza al leerlo**: se lee de dos formas y se
+hashea de una, así que la versión firmada dejaría de estar definida.
+
+Cambiar indentación u orden de claves no cambia el contenido canónico. **Cambiar un valor, aunque
+sea una coma dentro de un texto, sí**: el comando recalcula el hash, ve que no es el firmado y se
+niega diciendo que la aceptación corresponde a otra versión.
+
+#### Interfaz y dónde vive el registro
+
+```
+node scripts/editorial/autorizar.mjs <id> --registro <archivo.json>
+node scripts/editorial/autorizar.mjs <id> --version    # solo lectura: imprime el sha256
+```
+
+`--version` existe para que quien va a firmar pueda nombrar la versión que leyó, en vez de copiar
+un hash de otro sitio. No escribe corpus, no emite evento y no autoriza nada.
+
+El archivo de registro lo aporta el humano y **vive bajo `$EDITORIAL_ESTADO_DIR`** —fuera de todo
+árbol de git, como el resto del estado (§8.3)—. Un registro dentro del repositorio sería una firma
+commiteada en un repositorio público. **No hay bandera de aceptación implícita ni modo
+automático**: un `--sí` que rellenara el registro por su cuenta volvería a juntar lo que §8.1
+separa.
+
+| Campo | Forma |
+|---|---|
+| `autorizado_por` | Nombre humano no vacío. Se rechazan las identidades de agente |
+| `autorizado_en` | ISO 8601 con zona horaria explícita |
+| `version_borrador` | El `sha256` canónico de arriba |
+| `pendientes_aceptados` | Arreglo de cadenas, sin duplicados. **Obligatorio incluso vacío**: su ausencia no es «ninguno», es «no se dijo» |
+| `acepta_limites` | Booleano. **Equivalencia exacta** (ver abajo) |
+
+El evento `autorizada` de la bitácora incorpora esos cinco campos más el id de la pieza. Se añade
+un registro por autorización; **nunca se reescribe ni se borra**. No almacena el borrador, ni
+prompts, ni respuestas del modelo. El archivo de entrada no sustituye al evento persistido: lo que
+queda como registro es el evento. Repetir la autorización sobre una pieza ya `autorizada` conserva
+la idempotencia de §8.2: no añade evento y no reescribe el archivo publicado.
+
+**Esto no es una autenticación criptográfica y no se presenta como tal.** Documenta un acto humano
+explícito; no prueba por sí solo quién operó la terminal.
+
+#### `acepta_limites` es una equivalencia exacta, no un mínimo
+
+`acepta_limites === true` **si y solo si** el veredicto es `parcial` **o** `pendientes_aceptados`
+no está vacío. Las dos direcciones se rechazan igual:
+
+- `false` sobre una pieza que sí tiene límites: se autorizarían límites sin aceptarlos.
+- `true` sobre una pieza que no los tiene: **un campo que siempre se puede poner en `true` se
+  acaba poniendo en `true` siempre, y entonces ya no distingue nada.** Un mínimo —«debe ser
+  `true` si hay límites»— deja legal esa segunda forma, y por eso no es un mínimo.
+
+#### El conjunto de pendientes, comparado en las dos direcciones
+
+La fuente de comparación es `procedencia.verificado.pendientes`: un arreglo de cadenas, cada una
+identificando su pendiente entero (afirmación y motivo). No se compara por índice ni por
+coincidencia parcial, no se recorta ni se normaliza, y el orden no importa: es **igualdad de
+conjuntos de cadenas exactas**, sin duplicados en ninguno de los dos lados.
+
+- **Apareció un pendiente nuevo** → la autorización no cubre esta versión. Se niega.
+- **Desapareció un pendiente aceptado** → también se niega. El humano aceptó un estado concreto,
+  no uno mejor; una pieza que mejoró sola tampoco está cubierta por esa firma.
+
+Un veredicto `parcial` con el arreglo vacío sigue necesitando `acepta_limites: true` —puede haber
+fuentes no consultadas—, y el hash cubre el detalle de esos límites.
+
+#### El detector de contenido prohibido, y su límite
+
+Antes de cualquier escritura, el comando recorre **todas** las cadenas del objeto final, incluidas
+las anidadas dentro de campos permitidos, y rechaza la pieza si encuentra rastro de prompt,
+transcripción o respuesta cruda. Para detectar normaliza con NFKC y compara sin distinguir
+mayúsculas; **el contenido publicado no se modifica**. Se rechazan marcadores de conversación de
+modelo, encabezados de instrucciones o de volcado, secuencias de turnos con encabezado en líneas
+separadas, y envoltorios de respuesta serializados dentro de una cadena. Se valida además el
+**esquema cerrado de §3**: lo que no está enumerado se rechaza, no se ignora, así que un campo
+`prompt` no llega ni a existir.
+
+**El límite, dicho aquí para que su verde no se lea de más:** ningún detector de patrones demuestra
+que prosa arbitraria no provenga de una respuesta cruda sin marcadores. La prohibición de §3 es
+total; el detector es una mitigación acotada y la marca humana no la exceptúa. Lo mismo vale para
+los términos de §6: el comando comprueba que la cita de una fuente de solo-detectar no lleve más
+que título, URL, medio y fecha (§5.1) —que el registro no carga cuerpo ajeno—, y eso no decide si
+la prosa es una paráfrasis pegada. Eso no se lee en el registro.
+
+> **Qué de esta sección eligió quien la implementó, dicho para que se pueda discutir.** Los
+> principios —los cuatro datos, la identidad por contenido, la comparación exacta, la prohibición
+> por contenido— son de §3, §8.2 y §8.4. La **representación concreta** es una elección mínima:
+> `sha256` del JSON canónico, la bandera `--registro <archivo.json>`, los cinco campos con esos
+> nombres, la igualdad de conjuntos y la cobertura del detector. Se eligió lo más simple que
+> cumple lo anterior, usando el JSON y la bitácora que ya existían, sin añadir dependencias ni
+> otro almacén (`AGENTS.md`).

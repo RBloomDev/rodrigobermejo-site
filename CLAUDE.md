@@ -29,7 +29,14 @@ npm run guard:estado-editorial  # git no rastrea el estado del canal editorial
 npm run guard:canal             # canal determinista, sin red y sin inferencia
 
 PROOF_FEED_DIR=<ruta> npm run build   # construir contra un feed que no sea public/proof/v1/
+NOTICIAS_CORPUS_DIR=<ruta> npm run build   # construir contra un corpus que no sea content/noticias/
 ```
+
+`NOTICIAS_CORPUS_DIR` es **solo de lectura**, y existe por la misma razón que `PROOF_FEED_DIR`:
+el corpus real está vacío y solo lo llena `autorizar` —decisión de Rodrigo—, así que sin esta
+variable no habría forma de probar qué renderiza `/noticias` con una pieza publicada sin
+escribir una en `content/noticias/`, que es publicarla. No abre ninguna vía de escritura: el
+comando de autorización deriva su destino de su propia ubicación y no lee esta variable.
 
 El canal editorial necesita **`EDITORIAL_ESTADO_DIR` y `EDITORIAL_REDACCIONES_DIR`**, las dos
 obligatorias y **sin valor por defecto**: sin ellas aborta y no escribe un byte

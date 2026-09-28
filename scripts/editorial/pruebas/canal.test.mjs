@@ -1,24 +1,37 @@
 /**
- * Las cinco propiedades que Rodrigo puso como entregable.
+ * Las cinco propiedades que Rodrigo puso como entregable, mas la sexta que salio de un
+ * defecto medido.
  *
  * Cada una tiene un bloque «COMO SE PONE ROJA» que dice exactamente que hay que romper en
  * la implementacion para verla fallar. Se comprobaron una por una: una prueba verde que no
  * puede ponerse roja no prueba nada.
  *
+ * ================== SE EJERCITAN LOS DOS COMANDOS, EN SU ORDEN ==================
+ *
+ * Desde que el canal se partio (§8.1), una pasada completa es `generar()` y despues
+ * `verificarPendientes()`. `pasada()` hace eso y devuelve los dos resultados, para que
+ * cada assert pueda exigirle lo suyo al comando que corresponde. Que las dos etapas sean
+ * dos invocaciones y sigan produciendo lo mismo es la prueba de que se repartieron sin
+ * romperse; que NO hagan la del otro esta en `tres-comandos.test.mjs`.
+ *
  * Sin red: las etapas que la usarian se inyectan como dobles (`ayuda.mjs`).
- * Sin tocar el estado real: cada prueba monta su `EDITORIAL_ESTADO_DIR` en `tmpdir`.
+ * Sin tocar el estado real: cada prueba monta sus dos variables en `tmpdir`.
  */
 
 import assert from 'node:assert/strict';
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 
-import { borrador, etapasFalsas, item, nuevoEntorno, referencia, DIR_EDITORIAL } from './ayuda.mjs';
+import {
+  borrador, borradorEnDisco, borradoresEnDisco, etapasFalsas, item, nuevoEntorno, referencia,
+  DIR_EDITORIAL,
+} from './ayuda.mjs';
 import { deduplicar } from '../deduplicar.mjs';
-import { ejecutar } from '../ejecutar.mjs';
+import { generar } from '../generar.mjs';
+import { verificarPendientes } from '../verificar-canal.mjs';
 import {
   estadoDe,
   fallosRegistrados,
@@ -30,8 +43,12 @@ import {
   rutaBitacora,
 } from '../estado.mjs';
 
-const correr = (etapas, banderas = {}) => ejecutar({ silencioso: true, ...banderas }, { etapas });
-const corpus = () => JSON.parse(readFileSync(process.env.EDITORIAL_PIEZAS, 'utf8'));
+/** Una pasada completa del canal: los dos comandos, con las mismas etapas dobles. */
+async function pasada(etapas, banderas = {}) {
+  const generado = await generar({ silencioso: true, ...banderas }, { etapas });
+  const verificado = await verificarPendientes({ silencioso: true, ...banderas }, { etapas });
+  return { generado, verificado };
+}
 
 // =====================================================================================
 test('1. una entrada sin redaccion sigue disponible y se completa en una corrida posterior', async () => {
@@ -43,11 +60,11 @@ test('1. una entrada sin redaccion sigue disponible y se completa en una corrida
   });
 
   // --- Corrida 1: se detecta, NO hay redactor. ---
-  const r1 = await correr(etapasFalsas({ deteccion: { items: [noticia] } }));
-  assert.equal(r1.nuevos, 1);
-  assert.equal(r1.despues, 0, 'no debe entrar nada al corpus sin borrador');
-  assert.equal(r1.pendientes, 1);
-  assert.equal(r1.parcial, false, 'un expediente esperando redactor no es un fallo');
+  const c1 = await pasada(etapasFalsas({ deteccion: { items: [noticia] } }));
+  assert.equal(c1.generado.nuevos, 1);
+  assert.deepEqual(borradoresEnDisco(), [], 'no debe escribirse ningun borrador sin redaccion');
+  assert.equal(c1.generado.pendientes, 1);
+  assert.equal(c1.generado.parcial, false, 'un expediente esperando redactor no es un fallo');
 
   const tras1 = porUrlCanonica(noticia.url_canonica);
   assert.equal(tras1.estado, 'pendiente_redaccion');
@@ -63,16 +80,17 @@ test('1. una entrada sin redaccion sigue disponible y se completa en una corrida
     ],
   })]]);
 
-  const r2 = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
-  assert.equal(r2.repetidos, 0, 'no puede descartarse por «ya vista»: nunca llego a pieza');
-  assert.equal(r2.yaPendientes, 1, 'la bitacora la reconoce como trabajo sin terminar');
-  assert.deepEqual(r2.insertadas, ['sep-marco-ia']);
+  const c2 = await pasada(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+  assert.equal(c2.generado.repetidos, 0, 'no puede descartarse por «ya vista»: nunca llego a pieza');
+  assert.equal(c2.generado.yaPendientes, 1, 'la bitacora la reconoce como trabajo sin terminar');
+  assert.deepEqual(c2.generado.borradores.map((b) => b.pieza_id), ['sep-marco-ia']);
+  assert.deepEqual(c2.verificado.selladas.map((s) => s.pieza_id), ['sep-marco-ia']);
   assert.equal(porUrlCanonica(noticia.url_canonica).estado, 'terminada');
-  assert.equal(corpus().length, 1);
+  assert.deepEqual(borradoresEnDisco(), ['sep-marco-ia']);
 
   // COMO SE PONE ROJA: en `estado.mjs`, quitar `'pendiente_redaccion'` del predicado de
-  // `pendientesDeRedaccion()`. Comprobado: la corrida 2 no encuentra la entrada, deja
-  // el corpus en 0 y el assert de `insertadas` falla.
+  // `pendientesDeRedaccion()`. Comprobado: la corrida 2 no encuentra la entrada, no
+  // escribe borrador y el assert de `borradores` falla.
 });
 
 // =====================================================================================
@@ -92,17 +110,17 @@ test('2. una fuente que falla y luego responde deja continuar la entrada', async
       ],
     })]]);
 
-    const r1 = await correr(etapasFalsas({
+    const c1 = await pasada(etapasFalsas({
       deteccion: { fallo: { codigo: 403, mensaje: 'HTTP 403 Forbidden', fuente_id: 'medio-uno' } },
       redacciones,
     }));
-    assert.equal(r1.detectados, 0);
-    assert.equal(r1.parcial, true, 'una fuente caida es exito PARCIAL, no exito');
-    assert.equal(r1.despues, 0, 'una fuente caida no fabrica una noticia');
+    assert.equal(c1.generado.detectados, 0);
+    assert.equal(c1.generado.parcial, true, 'una fuente caida es exito PARCIAL, no exito');
+    assert.deepEqual(borradoresEnDisco(), [], 'una fuente caida no fabrica una noticia');
 
-    const r2 = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
-    assert.equal(r2.parcial, false);
-    assert.deepEqual(r2.insertadas, ['tutores-automaticos']);
+    const c2 = await pasada(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+    assert.equal(c2.generado.parcial, false);
+    assert.deepEqual(c2.verificado.selladas.map((s) => s.pieza_id), ['tutores-automaticos']);
     assert.equal(porUrlCanonica(noticia.url_canonica).estado, 'terminada');
   });
 
@@ -133,9 +151,13 @@ test('2. una fuente que falla y luego responde deja continuar la entrada', async
       detalle: 'VEREDICTO no_verificada — una fuente citada no existe',
     }]]);
 
-    const r1 = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones, verificaciones: falla }));
-    assert.equal(r1.parcial, true);
-    assert.equal(r1.despues, 0);
+    const c1 = await pasada(etapasFalsas({ deteccion: { items: [noticia] }, redacciones, verificaciones: falla }));
+    assert.equal(c1.generado.parcial, false, 'generar no falla: el borrador se escribio bien');
+    assert.equal(c1.verificado.parcial, true, 'el fallo es de verificacion, y sale por ese comando');
+    assert.equal(
+      borradorEnDisco('padron-conectividad').procedencia.verificado.detalle, 'sin verificar',
+      'una pieza que no paso §5.4 no puede quedar sellada',
+    );
 
     const tras1 = porUrlCanonica(noticia.url_canonica);
     assert.equal(tras1.estado, 'fallida_reintentable', 'un fallo de verificacion no descarta la entrada');
@@ -149,17 +171,19 @@ test('2. una fuente que falla y luego responde deja continuar la entrada', async
     assert.equal(fallo.codigo, 'VERIFICACION');
     assert.match(fallo.consecuencia, /reintentable|reintenta/);
 
-    // --- La fuente se recupera. ---
-    const r2 = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
-    assert.equal(r2.repetidos, 0, 'una entrada reintentable no es una entrada descartada');
-    assert.deepEqual(r2.insertadas, ['padron-conectividad']);
+    // --- La fuente se recupera. El reintento lo hace `verificar` SOLO: la entrada ya
+    //     tiene borrador, asi que `generar` no la vuelve a mirar. ---
+    const c2 = await pasada(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+    assert.equal(c2.generado.repetidos, 0, 'una entrada reintentable no es una entrada descartada');
+    assert.equal(c2.generado.borradores.length, 0, 'generar no vuelve a redactar lo que ya tiene borrador');
+    assert.deepEqual(c2.verificado.selladas.map((s) => s.pieza_id), ['padron-conectividad']);
     assert.equal(porUrlCanonica(noticia.url_canonica).estado, 'terminada');
   });
 
   // COMO SE PONE ROJA: en `estado.mjs`, cambiar el evento `fallo` para que lleve a
   // `descartada` en lugar de `fallida_reintentable`. Comprobado: 2b falla en el assert
   // de `fallida_reintentable` y, al quitarlo, la corrida 2 descarta la entrada y deja
-  // `insertadas` vacio.
+  // `selladas` vacio.
 });
 
 // =====================================================================================
@@ -242,8 +266,8 @@ test('4. reprocesar una pieza terminada no la duplica', async () => {
     ],
   })]]);
 
-  const r1 = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
-  assert.deepEqual(r1.insertadas, ['evaluacion-lectura']);
+  const c1 = await pasada(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+  assert.deepEqual(c1.verificado.selladas.map((s) => s.pieza_id), ['evaluacion-lectura']);
   const idEntrada = porUrlCanonica(noticia.url_canonica).id;
   assert.equal(estadoDe(idEntrada).estado, 'terminada');
 
@@ -254,14 +278,13 @@ test('4. reprocesar una pieza terminada no la duplica', async () => {
     url: 'https://www.medio-uno.mx/evaluacion-lectura/?utm_campaign=boletin#nota',
   });
   for (const entradas of [[noticia], [sucia], [noticia, sucia]]) {
-    const r = await correr(etapasFalsas({ deteccion: { items: entradas }, redacciones }));
-    assert.equal(r.nuevos, 0);
-    assert.equal(r.despues, 1, 'el corpus no crece al reprocesar');
-    assert.equal(r.parcial, false, 'reprocesar algo terminado no es un fallo');
+    const c = await pasada(etapasFalsas({ deteccion: { items: entradas }, redacciones }));
+    assert.equal(c.generado.nuevos, 0);
+    assert.deepEqual(borradoresEnDisco(), ['evaluacion-lectura'], 'no aparecen borradores al reprocesar');
+    assert.equal(c.generado.parcial, false, 'reprocesar algo terminado no es un fallo');
+    assert.equal(c.verificado.selladas.length, 0, 'nada que volver a sellar');
   }
 
-  assert.equal(corpus().length, 1);
-  assert.equal(corpus().filter((p) => p.id === 'evaluacion-lectura').length, 1);
   assert.equal(estadoDe(idEntrada).estado, 'terminada');
   assert.equal(
     plegar().entradas.size, 1,
@@ -271,7 +294,7 @@ test('4. reprocesar una pieza terminada no la duplica', async () => {
   // COMO SE PONE ROJA: en `estado.mjs`, quitar de `aplicar()` la rama que ignora un
   // evento `detectada` sobre una entrada existente, y en `registrarDeteccion()` emitir
   // siempre. Comprobado: la entrada vuelve a `detectada`, se vuelve a redactar y el
-  // assert `despues === 1` falla en la segunda corrida.
+  // assert `nuevos === 0` falla en la segunda corrida.
 });
 
 // =====================================================================================
@@ -312,14 +335,14 @@ test('5. dos noticias distintas que citan un mismo documento no se descartan por
       })],
     ]);
 
-    const r1 = await correr(etapasFalsas({ deteccion: { items: [noticiaUno] }, redacciones }));
-    assert.deepEqual(r1.insertadas, ['ocde-marco-alfabetizacion-ia']);
+    const c1 = await pasada(etapasFalsas({ deteccion: { items: [noticiaUno] }, redacciones }));
+    assert.deepEqual(c1.verificado.selladas.map((s) => s.pieza_id), ['ocde-marco-alfabetizacion-ia']);
 
-    const r2 = await correr(etapasFalsas({ deteccion: { items: [noticiaDos] }, redacciones }));
-    assert.equal(r2.repetidos, 0, 'compartir una fuente no convierte dos hechos en uno');
-    assert.deepEqual(r2.insertadas, ['escuelas-mexicanas-marco-ia-2027']);
+    const c2 = await pasada(etapasFalsas({ deteccion: { items: [noticiaDos] }, redacciones }));
+    assert.equal(c2.generado.repetidos, 0, 'compartir una fuente no convierte dos hechos en uno');
+    assert.deepEqual(c2.verificado.selladas.map((s) => s.pieza_id), ['escuelas-mexicanas-marco-ia-2027']);
 
-    assert.equal(corpus().length, 2);
+    assert.equal(borradoresEnDisco().length, 2);
     assert.equal(porUrlCanonica(noticiaUno.url_canonica).estado, 'terminada');
     assert.equal(porUrlCanonica(noticiaDos.url_canonica).estado, 'terminada');
   });
@@ -374,13 +397,13 @@ test('5. dos noticias distintas que citan un mismo documento no se descartan por
 });
 
 // =====================================================================================
-test('6. una pieza que no se guardo en el corpus NO se marca terminada, y se recupera', async (t) => {
-  const entorno = nuevoEntorno('p6');
-
-  // Sin corpus configurado. Es la corrida real de quien pone las dos variables
-  // obligatorias y no `EDITORIAL_PIEZAS`: se redacta, se verifica, y no se escribe nada.
-  const piezas = entorno.piezas;
-  delete process.env.EDITORIAL_PIEZAS;
+test('6. una pieza cuyo sello no quedo en disco NO se marca terminada, y se recupera', async (t) => {
+  // El defecto original: `terminada` es TERMINAL y afirma un hecho sobre el disco. Cuando
+  // ese hecho era «entro al corpus», una corrida sin corpus configurado lo declaraba igual
+  // y cerraba para siempre trabajo que nadie guardo. Partido el canal, el hecho es otro
+  // —«el borrador quedo SELLADO»— pero la regla es la misma y se comprueba igual: releyendo
+  // el disco.
+  nuevoEntorno('p6');
 
   const noticia = item({
     titulo: 'Un consejo publica su guia de evaluacion de tutores',
@@ -400,45 +423,101 @@ test('6. una pieza que no se guardo en el corpus NO se marca terminada, y se rec
     ],
   })]]);
 
-  await t.test('6a. sin corpus donde guardarla, la entrada queda PENDIENTE', async () => {
-    const r = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
+  await t.test('6a. si el sello no queda escrito, la entrada se queda PENDIENTE', async () => {
+    const etapas = etapasFalsas({ deteccion: { items: [noticia] }, redacciones });
+    // Un sellado que no persiste: devuelve la pieza SIN tocar `procedencia.verificado`.
+    // Es el equivalente exacto de una escritura que no llego al disco, y lo que hay que
+    // comprobar es que el comando lo detecta releyendo en vez de fiarse.
+    const sinSellar = { ...etapas, sellarVerificacion: (pieza) => pieza };
 
-    // La pieza se verifico: lo que falta no es el trabajo, es donde guardarlo.
-    assert.equal(r.sinCorpus.length, 1, 'la corrida tiene que decir que verifico una pieza y no la guardo');
-    assert.equal(r.sinCorpus[0].pieza_id, 'guia-evaluacion-tutores');
-    // Se mide el DISCO, no el conteo que devuelve la corrida: `insertadas` cuenta el
-    // upsert en memoria, y lo que este defecto tiene que distinguir es si algo quedo
-    // guardado de verdad.
-    assert.equal(existsSync(piezas), false, 'sin EDITORIAL_PIEZAS no se escribe corpus en ningun sitio');
+    await generar({ silencioso: true }, { etapas });
+    const r = await verificarPendientes({ silencioso: true }, { etapas: sinSellar });
+
+    assert.equal(r.sinSellar.length, 1, 'el comando tiene que decir que verifico una pieza y no sello');
+    assert.equal(r.sinSellar[0].pieza_id, 'guia-evaluacion-tutores');
+    assert.equal(r.selladas.length, 0);
+    assert.equal(
+      r.parcial, true,
+      'un sello que no llego al disco deja trabajo sin terminar: la corrida NO es un exito, '
+      + 'y como este caso no registra fallo el codigo de salida es lo unico que lo dice',
+    );
+    assert.equal(
+      borradorEnDisco('guia-evaluacion-tutores').procedencia.verificado.detalle, 'sin verificar',
+      'el sello no llego al disco, que es la premisa del caso',
+    );
 
     const tras1 = porUrlCanonica(noticia.url_canonica);
     assert.notEqual(
       tras1.estado, 'terminada',
-      '`terminada` es TERMINAL y afirma que la pieza entro al corpus: sin corpus escrito seria declarar hecho lo que no se hizo',
+      '`terminada` es TERMINAL y afirma que el borrador quedo sellado: sin sello en disco seria declarar hecho lo que no se hizo',
     );
     assert.equal(tras1.estado, 'pendiente_verificacion');
-    assert.equal(tras1.pieza_id, null, 'no hay pieza_id que registrar: ninguna pieza quedo guardada');
+    assert.equal(tras1.pieza_id, null, 'no hay pieza_id que registrar: ningun sello quedo guardado');
   });
 
-  await t.test('6b. al configurar el corpus, la corrida siguiente la recupera y la cierra', async () => {
-    process.env.EDITORIAL_PIEZAS = piezas;
+  await t.test('6b. con el sellado que si escribe, la corrida siguiente la recupera y la cierra', async () => {
+    const etapas = etapasFalsas({ deteccion: { items: [noticia] }, redacciones });
+    const r = await verificarPendientes({ silencioso: true }, { etapas });
 
-    const r = await correr(etapasFalsas({ deteccion: { items: [noticia] }, redacciones }));
-
-    assert.equal(r.sinCorpus.length, 0);
-    assert.equal(r.insertadas.length, 1, 'la entrada recuperada tiene que llegar al corpus esta vez');
-    assert.equal(corpus().length, 1, 'y sin duplicar: una pieza, no dos');
+    assert.equal(r.sinSellar.length, 0);
+    assert.equal(r.selladas.length, 1, 'la entrada recuperada tiene que quedar sellada esta vez');
+    assert.equal(
+      r.parcial, false,
+      'la otra mitad: sin nada pendiente la corrida SI es un exito. Sin este assert, '
+      + '«parcial cuando falta un sello» podria estar implementado como «parcial siempre»',
+    );
+    assert.deepEqual(borradoresEnDisco(), ['guia-evaluacion-tutores'], 'y sin duplicar: un borrador, no dos');
+    assert.notEqual(
+      borradorEnDisco('guia-evaluacion-tutores').procedencia.verificado.detalle, 'sin verificar',
+      'ahora el sello si esta en el archivo',
+    );
 
     const tras2 = porUrlCanonica(noticia.url_canonica);
-    assert.equal(tras2.estado, 'terminada', 'ahora si existe la pieza en el corpus, y el estado lo puede afirmar');
+    assert.equal(tras2.estado, 'terminada', 'ahora si existe el sello en disco, y el estado lo puede afirmar');
     assert.equal(tras2.pieza_id, 'guia-evaluacion-tutores');
   });
 
-  // COMO SE PONE ROJA: en `ejecutar.mjs`, quitar el filtro por `idsEnDisco` y volver a
-  // llamar a `marcarVerificada()` para toda `verificadas`, que es como estaba:
-  //   for (const { entrada, pieza } of verificadas) marcarVerificada(entrada.id, {...})
-  // Comprobado: 6a falla en la primera asercion —`r.sinCorpus.length` es 0 porque la lista
-  // deja de existir— y, con esa linea quitada tambien, en `tras1.estado`, que pasa a ser
-  // `terminada` con el corpus vacio. 6b queda entonces sin nada que recuperar: la entrada
-  // ya esta en un estado TERMINAL y la corrida siguiente no la vuelve a mirar.
+  await t.test('6c. sin borrador en disco, el CLI real NO sale 0: sale 2', async () => {
+    // Las dos mitades de arriba miden `parcial`, que es la variable. Esta mide el CODIGO DE
+    // SALIDA del ejecutable, que es lo unico que ve el workflow, y sobre el otro caso que
+    // tampoco registra fallo: una entrada de la cola cuyo borrador ya no esta en disco.
+    // Medir la variable y dar por hecho el codigo seria medir contra el registro en vez de
+    // contra el sistema.
+    nuevoEntorno('p6c');
+    const etapas = etapasFalsas({ deteccion: { items: [noticia] }, redacciones });
+    await generar({ silencioso: true }, { etapas });
+
+    // El borrador desaparece entre las dos etapas —un `git clean`, un tmpdir barrido, un
+    // worktree cambiado—. La entrada sigue en la cola y no hay nada que verificar.
+    unlinkSync(join(process.env.EDITORIAL_REDACCIONES_DIR, 'guia-evaluacion-tutores.json'));
+
+    const hijo = spawnSync(process.execPath, [join(DIR_EDITORIAL, 'verificar-canal.mjs')], {
+      env: process.env,
+      encoding: 'utf8',
+    });
+
+    assert.equal(
+      hijo.status, 2,
+      `el CLI tiene que salir 2 (exito PARCIAL), no 0. stdout:\n${hijo.stdout}\nstderr:\n${hijo.stderr}`,
+    );
+    assert.match(hijo.stdout, /EXITO PARCIAL/, 'y tiene que decirlo, no solo salir distinto de 0');
+    assert.match(hijo.stdout, /1 sin borrador/, 'nombrando el caso concreto que quedo pendiente');
+    assert.equal(
+      porUrlCanonica(noticia.url_canonica).estado, 'pendiente_verificacion',
+      'y sin mover la entrada: lo que falta es el borrador, no un intento gastado',
+    );
+  });
+
+  // COMO SE PONE ROJA: en `verificar-canal.mjs`, devolver `parcial` a `rechazadas.length > 0`.
+  // Comprobado: 6a falla en el assert de `r.parcial` y 6c sale 0 en vez de 2 —el comando
+  // declara EXITO sobre una cola que no verifico nada—. 6b sigue verde, que es lo que
+  // demuestra que el assert nuevo no es «parcial siempre».
+  //
+  // COMO SE PONE ROJA: en `verificar-canal.mjs`, quitar la relectura y llamar a
+  // `marcarVerificada()` siempre:
+  //   escribirJson(ruta, sellada); marcarVerificada(entrada.id, {...});
+  // Comprobado: 6a falla en la primera asercion —`r.sinSellar` queda vacio— y, con esa
+  // linea quitada tambien, en `tras1.estado`, que pasa a ser `terminada` sobre un borrador
+  // sin sellar. 6b queda entonces sin nada que recuperar: la entrada ya esta en un estado
+  // TERMINAL y la corrida siguiente no la vuelve a mirar.
 });

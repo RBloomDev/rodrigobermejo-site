@@ -6,10 +6,13 @@
 > **no pide saltarse `AGENTS.md:8`** — cada superficie nueva necesita su spec antes de
 > implementarse. Sin este documento, `/noticias` y `/actividad` no se construyen.
 >
-> **Esta autoridad no afirma que nada de lo aquí descrito esté implementado ni publicado.**
-> Hoy no existe `app/noticias`, no existe `app/actividad`, y no existe
-> `public/proof/v1/activity.json`. §5 dice qué se renderiza en ese estado y por qué ese estado
-> es el correcto.
+> **Esta autoridad no afirma que nada de lo aquí descrito esté publicado.** Vuelto a medir el
+> 2026-09-24: **`app/noticias/page.tsx` y `app/noticias/[slug]/page.tsx` ya existen** y leen
+> `content/noticias/`; **`app/actividad` sigue sin existir** y `public/proof/v1/activity.json`
+> tampoco. Que la ruta exista no implica que haya contenido: el corpus editorial está vacío
+> —autorizar una pieza es una decisión de Rodrigo (`02-editorial.md` §8.4)— así que `/noticias`
+> renderiza su estado declarado y `/noticias/[slug]` no tiene ni una ruta. §5 dice qué se
+> renderiza en ese estado y por qué ese estado es el correcto.
 
 ## Autoridad y precedencia
 

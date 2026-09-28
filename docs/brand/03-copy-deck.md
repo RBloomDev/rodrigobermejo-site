@@ -152,11 +152,18 @@ del feed. La lista canónica vive en `/proyectos`.
 | Etiqueta | Destino |
 |---|---|
 | Trabajo | `/proyectos` |
+| Noticias | `/noticias` |
 | Inadaptados | `/sobre-mi#inadaptados` |
 | Docencia | `/sobre-mi#docencia` |
 | Escribo | `/blog` |
 | Trayectoria | `/sobre-mi` |
 | **Trabajar conmigo** | `/colaborar` |
+
+Siete filas, las mismas que `02-arquitectura-y-urls.md` §2 y en el mismo orden. La fila
+de «Noticias» faltaba aquí: el destino entró en `02` §2 sin que la etiqueta llegara a este
+documento, y `02` §2 declara que **las etiquetas las manda este deck**. Una etiqueta
+ausente del documento que la manda es una etiqueta sin dueño, y la toma quien escriba el
+menú. Se repone con la palabra que `02` §2 ya usa, sin inventar ninguna.
 
 «Escribo» en vez de «Blog»: es un verbo, como el resto del sitio, y dice qué hay ahí.
 «Trabajar conmigo» en vez de «Contacto»: nombra la acción, no el buzón.
@@ -271,6 +278,7 @@ monten navegación y pie —hoy no lo hacen, y se entra en ellas sin forma de vo
 | `/sobre-mi` | Trayectoria | Dirección tecnológica en Inadaptados, sistemas en producción y docencia universitaria. |
 | `/colaborar` | Trabajar conmigo | Diseño, construyo y opero sistemas de automatización para negocios que sostienen su operación a mano. |
 | `/blog` | Escribo | Notas sobre sistemas, decisiones técnicas y lo que se aprende operando lo que uno construye. |
+| `/actividad` | Actividad registrada | Qué volumen de trabajo quedó registrado por periodo, de qué fuente sale y qué parte del trabajo no cubre. |
 
 **`keywords`**: hoy las ocho de `app/layout.tsx` son todas de automatización. Se
 reorientan a las tres dimensiones —dirección tecnológica, CTO, arquitectura de software,

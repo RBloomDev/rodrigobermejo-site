@@ -16,8 +16,14 @@
  *                                                                     `pendiente_verificacion`
  *   3. REINTENTO            fallo una etapa, se puede reintentar   -> `fallida_reintentable`
  *   4. BORRADOR TERMINADO   hay pieza; reprocesar no duplica       -> `terminada`
+ *   5. DECISION HUMANA      un humano autorizo publicar            -> `autorizada`
  *
- * Y un quinto estado para lo que no debe volver: `descartada`.
+ * Y un sexto estado para lo que no debe volver: `descartada`.
+ *
+ * `terminada` y `autorizada` NO son lo mismo y la distancia entre las dos es el producto:
+ * `terminada` es «hay borrador verificado, sin publicar»; `autorizada` es «un humano
+ * decidio publicarlo». Solo el segundo escribe en `content/noticias/`
+ * (`docs/plataforma/02-editorial.md` §8.1, §8.2).
  *
  * ================================ TABLA DE TRANSICIONES ================================
  *
@@ -30,7 +36,7 @@
  * | pendiente_redaccion    | redactada        | pendiente_verificacion | el redactor entrego borrador                              |
  * | pendiente_redaccion    | fallo            | fallida_reintentable   | el borrador no compone contra el esquema de §3            |
  * | pendiente_redaccion    | descartada       | descartada             | decision explicita                                        |
- * | pendiente_verificacion | verificada       | terminada              | la pieza paso §5.4 y entro al corpus                      |
+ * | pendiente_verificacion | verificada       | terminada              | la pieza paso §5.4 y su borrador quedo SELLADO en disco   |
  * | pendiente_verificacion | fallo            | fallida_reintentable   | una fuente no resuelve, fecha discrepante, cifra huerfana |
  * | pendiente_verificacion | descartada       | descartada             | decision explicita                                        |
  * | fallida_reintentable   | expediente_listo | pendiente_redaccion    | el reintento reconstruyo el expediente                    |
@@ -39,7 +45,8 @@
  * | fallida_reintentable   | fallo            | fallida_reintentable   | vuelve a fallar; `intentos` sube en uno                   |
  * | fallida_reintentable   | fallo (agotado)  | descartada             | `intentos` alcanzo MAX_INTENTOS                           |
  * | fallida_reintentable   | descartada       | descartada             | decision explicita                                        |
- * | terminada              | (ninguno)        | terminada              | TERMINAL. Reprocesar una terminada no hace nada.          |
+ * | terminada              | autorizada       | autorizada             | un humano autorizo la publicacion (§8.2). Unica salida    |
+ * | autorizada             | (ninguno)        | autorizada             | TERMINAL. Una correccion posterior va en `correcciones[]` |
  * | descartada             | reabierta        | detectada              | unica salida, y es explicita: `reabrir(id, motivo)`       |
  *
  * Cualquier par (estado, evento) que no aparezca en esta tabla es ilegal y `aplicar()`
@@ -102,6 +109,7 @@ export const ESTADOS = [
   'fallida_reintentable',
   'descartada',
   'terminada',
+  'autorizada',
 ];
 
 /**
@@ -132,7 +140,11 @@ export const TRANSICIONES = Object.freeze({
     fallo: 'fallida_reintentable',
     descartada: 'descartada',
   },
-  terminada: {},
+  // `terminada` gana EXACTAMENTE una salida, y ninguna otra (§8.2). `expediente_listo`,
+  // `redactada` y `fallo` siguen siendo ilegales desde aqui: autorizar no redacta ni
+  // reverifica, y una pieza publicada no vuelve a la cola.
+  terminada: { autorizada: 'autorizada' },
+  autorizada: {},
   descartada: { reabierta: 'detectada' },
 });
 
@@ -281,6 +293,13 @@ function nuevaEntrada(id, datos, ts) {
     redaccion_id: null,
     modelo: null,
     pieza_id: null,
+    // La decision humana de §8.8. `null` mientras nadie haya autorizado, que es el estado
+    // correcto de una entrada sobre la que no se ha decidido nada.
+    autorizado_por: null,
+    autorizado_en: null,
+    version_borrador: null,
+    pendientes_aceptados: null,
+    acepta_limites: null,
     detectada_en: ts,
     actualizada_en: ts,
   };
@@ -338,6 +357,16 @@ export function aplicar(entrada, evento) {
     sig.etapa_fallida = null;
     sig.ultimo_error = null;
   }
+  if (evento.evento === 'autorizada') {
+    // Los cinco campos del registro de §8.8, tal cual llegaron. `aplicar()` es pura y no
+    // valida: quien emite el evento es `marcarAutorizada()`, y ahi estan las exigencias.
+    sig.pieza_id = evento.pieza_id ?? sig.pieza_id;
+    sig.autorizado_por = evento.autorizado_por ?? null;
+    sig.autorizado_en = evento.autorizado_en ?? null;
+    sig.version_borrador = evento.version_borrador ?? null;
+    sig.pendientes_aceptados = evento.pendientes_aceptados ?? null;
+    sig.acepta_limites = evento.acepta_limites ?? null;
+  }
   if (evento.evento === 'expediente_listo') sig.etapa_fallida = null;
   if (evento.evento === 'descartada') sig.motivo_descarte = evento.motivo ?? 'sin motivo declarado';
   if (evento.evento === 'reabierta') {
@@ -368,7 +397,7 @@ export function plegar() {
   // Migracion del canal anterior: `vistos.jsonl` decia «visto», que en la semantica nueva
   // es `detectada` y NADA MAS. Lo que el canal anterior dio por cerrado al detectarlo
   // vuelve a ser trabajo pendiente, que es lo que siempre fue. Lo que si llego a pieza lo
-  // cierra `conciliarConCorpus()`.
+  // cierra su propio evento de la bitacora, que es el unico registro que queda.
   for (const v of leerLog(rutaVistosLegado()).filas) {
     if (!v.url_canonica) continue;
     const id = claveDe(v);
@@ -406,7 +435,7 @@ function emitir(evento) {
 }
 
 // =====================================================================================
-//  API PUBLICA — la que consumen `redactar.mjs` y `ejecutar.mjs`
+//  API PUBLICA — la que consumen `generar.mjs`, `verificar-canal.mjs` y `autorizar.mjs`
 // =====================================================================================
 
 /**
@@ -494,15 +523,19 @@ export function pendientesDeVerificacion({ limite = Infinity } = {}) {
 }
 
 /**
- * La pieza paso §5.4 y entro al corpus.
+ * La pieza paso §5.4 y su borrador quedo SELLADO en `$EDITORIAL_REDACCIONES_DIR`.
  * `pendiente_verificacion | fallida_reintentable -> terminada`.
  *
- * QUIEN LLAMA A ESTO SE COMPROMETE A QUE LA PIEZA ESTA EN EL CORPUS **PERSISTIDO**, no a
- * que haya pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no
- * vuelve a la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo
- * verificada —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
- * `ejecutar.mjs` lo resuelve releyendo el corpus del disco antes de llamar; una entrada sin
- * pieza guardada se queda donde estaba y la corrida siguiente la recupera.
+ * **`terminada` significa «borrador verificado, SIN PUBLICAR»** (§8.1). Antes decia «entro
+ * al corpus», y con el corpus intermedio retirado esa frase ya no describe nada: entrar al
+ * corpus publicado es `autorizada`, que es la decision de un humano.
+ *
+ * QUIEN LLAMA A ESTO SE COMPROMETE A QUE EL SELLO ESTA **EN DISCO**, no a que la pieza haya
+ * pasado la verificacion. `terminada` es TERMINAL: una entrada que llega aqui no vuelve a
+ * la cola de pendientes ni la mira la deduplicacion. Llamarla con la pieza solo verificada
+ * —sin escribir— cierra para siempre trabajo que nadie guardo, y en silencio.
+ * `verificar-canal.mjs` lo resuelve releyendo el borrador del disco antes de llamar; una
+ * entrada sin sello guardado se queda donde estaba y la corrida siguiente la recupera.
  *
  * @param {string} id
  * @param {{pieza_id?: string, corrida?: string}} [datos]
@@ -510,6 +543,50 @@ export function pendientesDeVerificacion({ limite = Infinity } = {}) {
  */
 export function marcarVerificada(id, { pieza_id = null, corrida = null } = {}) {
   return transicionar(id, { evento: 'verificada', pieza_id, corrida });
+}
+
+/**
+ * Un humano autorizo la publicacion. `terminada -> autorizada`, la unica transicion que
+ * acompaña a una escritura en `content/noticias/` (§8.2).
+ *
+ * **Sin el nombre del humano no se emite, y esa negativa es el mecanismo entero.** Un
+ * `autorizado_por: "agente"` no existe: si el canal pudiera emitir este evento solo, esto
+ * seria autopublicacion con otro nombre (§1, §8.2). Los otros cuatro campos —cuando, sobre
+ * que version exacta, que pendientes se aceptan y si se aceptan limites— se exigen por la
+ * misma razon: cuatro datos que faltan convierten el registro en una firma en blanco
+ * (§8.8).
+ *
+ * No valida el contenido de los campos contra el borrador —eso lo hace `autorizar.mjs`
+ * antes de escribir nada—; exige que esten, que es lo que la maquina de estados puede
+ * sostener sola.
+ *
+ * @param {string} id  entrada de la bitacora, no el id de la pieza
+ * @param {{pieza_id: string, autorizado_por: string, autorizado_en: string,
+ *   version_borrador: string, pendientes_aceptados: string[], acepta_limites: boolean,
+ *   corrida?: string}} registro
+ * @returns {object} la entrada tras la transicion
+ */
+export function marcarAutorizada(id, registro = {}) {
+  const faltantes = ['pieza_id', 'autorizado_por', 'autorizado_en', 'version_borrador']
+    .filter((c) => typeof registro[c] !== 'string' || registro[c].trim() === '');
+  if (!Array.isArray(registro.pendientes_aceptados)) faltantes.push('pendientes_aceptados');
+  if (typeof registro.acepta_limites !== 'boolean') faltantes.push('acepta_limites');
+  if (faltantes.length) {
+    throw new Error(
+      `marcarAutorizada: falta ${faltantes.join(', ')}. Un registro incompleto no es un `
+      + 'registro: es una firma en blanco (docs/plataforma/02-editorial.md §8.8)',
+    );
+  }
+  return transicionar(id, {
+    evento: 'autorizada',
+    pieza_id: registro.pieza_id,
+    autorizado_por: registro.autorizado_por,
+    autorizado_en: registro.autorizado_en,
+    version_borrador: registro.version_borrador,
+    pendientes_aceptados: registro.pendientes_aceptados,
+    acepta_limites: registro.acepta_limites,
+    corrida: registro.corrida ?? null,
+  });
 }
 
 /**
@@ -587,6 +664,26 @@ export function porUrlCanonica(url) {
   return id ? entradas.get(id) : null;
 }
 
+/**
+ * La entrada cuya pieza tiene ese id. Es la puerta que `autorizar.mjs` necesita: el
+ * comando recibe el id de la PIEZA —el kebab-case de §3— y la bitacora indexa por el id
+ * del HECHO, que es otra cosa.
+ *
+ * Mira `pieza_id` y tambien `redaccion_id`, y no es laxitud: `pieza_id` solo se escribe al
+ * verificar, asi que buscando solo por el una entrada a medio camino seria invisible y
+ * `autorizar` diria «no existe» donde la verdad es «todavia no esta verificada». Decir el
+ * estado real es justo lo que §8.4 paso 1 exige del mensaje.
+ *
+ * @param {string} id  id de la pieza (kebab-case de §3)
+ * @returns {object|null}
+ */
+export function porIdDePieza(id) {
+  const entradas = [...plegar().entradas.values()];
+  return entradas.find((e) => e.pieza_id === id)
+    ?? entradas.find((e) => e.redaccion_id === id)
+    ?? null;
+}
+
 /** @returns {object|null} la entrada con esa huella (titulo + dominio del medio) */
 export function porHuellaDeEntrada(huella) {
   const { entradas, porHuella } = plegar();
@@ -606,40 +703,23 @@ export function todas() {
   return [...plegar().entradas.values()];
 }
 
-/**
- * Cierra como `terminada` toda entrada cuya huella ya tiene pieza en el corpus. Sirve para
- * dos cosas: absorber el `vistos.jsonl` del canal anterior sin reprocesar lo ya publicado,
- * y sostener la propiedad 4 aunque alguien borre la bitacora y el corpus sobreviva.
- *
- * @param {object[]} piezas  corpus actual (`piezas.json`)
- * @param {{corrida?: string}} [opciones]
- * @returns {string[]} ids conciliados
- */
-export function conciliarConCorpus(piezas, { corrida = null } = {}) {
-  const { entradas, porHuella } = plegar();
-  const cerrados = [];
-  for (const p of piezas ?? []) {
-    if (!p?.huella) continue;
-    const id = porHuella.get(p.huella);
-    if (!id) continue;
-    const e = entradas.get(id);
-    if (!e || e.estado === 'terminada' || e.estado === 'descartada') continue;
-    // Se llega a `terminada` por el camino legal de la tabla, no saltandoselo.
-    if (e.estado === 'detectada') emitir({ id, evento: 'expediente_listo', corrida });
-    if (e.estado !== 'pendiente_verificacion') {
-      emitir({
-        id,
-        evento: 'redactada',
-        redaccion_id: p.id,
-        modelo: p.procedencia?.redactado?.modelo ?? null,
-        corrida,
-      });
-    }
-    emitir({ id, evento: 'verificada', pieza_id: p.id, corrida });
-    cerrados.push(id);
-  }
-  return cerrados;
-}
+// =====================================================================================
+//  RETIRADO: `conciliarConCorpus()`
+//
+//  Cerraba como `terminada` toda entrada cuya huella ya tuviera pieza en el corpus
+//  intermedio. **Ese corpus ya no existe**: al partir el canal en `generar` y `verificar`
+//  (§8.1), el borrador terminado vive en `$EDITORIAL_REDACCIONES_DIR` y lo unico que llega
+//  al arbol publico lo escribe `autorizar` (§8.6, fila 2). Una funcion que concilia contra
+//  un archivo que nadie escribe no concilia nada; dejarla exportada seria dejar una puerta
+//  que parece que hace algo.
+//
+//  Lo que sostenia y donde vive ahora:
+//    - absorber `vistos.jsonl` sin reprocesar lo ya publicado -> lo hace `plegar()`, que
+//      lo traduce a `detectada`; lo que llego a pieza lo cierra su propio evento en la
+//      bitacora, que es donde tiene que estar;
+//    - sobrevivir a un borrado de la bitacora con el corpus vivo -> ya no aplica: sin
+//      corpus intermedio no hay dos registros que puedan divergir.
+// =====================================================================================
 
 // --- Interno -------------------------------------------------------------------------
 

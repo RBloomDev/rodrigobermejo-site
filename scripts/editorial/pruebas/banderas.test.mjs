@@ -11,7 +11,7 @@
  * consumo por corrida. Un tope que significa lo contrario de lo que dice no es un tope.
  *
  * COMO SE PONEN ROJAS: devuelve `Number(crudo) || null` en `argumentos()`, o cambia el
- * `!= null` de `ejecutar.mjs` por un truthy.
+ * `!= null` de `generar.mjs` por un truthy.
  */
 
 import assert from 'node:assert/strict';

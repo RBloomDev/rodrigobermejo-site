@@ -67,6 +67,7 @@
           "required": [
             "dias_con_dato",
             "dias_del_periodo",
+            "periodo_abierto",
             "del_trabajo"
           ],
           "properties": {
@@ -76,7 +77,12 @@
             },
             "dias_del_periodo": {
               "type": "integer",
-              "minimum": 1
+              "minimum": 1,
+              "description": "Días del mes o trimestre declarado cuando periodo_abierto es false; días transcurridos hasta la fecha de corte cuando es true."
+            },
+            "periodo_abierto": {
+              "type": "boolean",
+              "description": "El periodo seguía en curso en la fecha de corte. Se declara, no se infiere en el lector: un hueco por «aún no ha pasado» y uno por «no hay dato» se ven iguales en un cociente y significan lo opuesto."
             },
             "del_trabajo": {
               "const": "desconocida"

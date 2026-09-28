@@ -9,6 +9,11 @@ import {
   metaSchema,
   projectSchema,
 } from "../lib/proof/schema.ts";
+import {
+  procesoAbsenceSchema,
+  procesoRecordSchema,
+  procesoSchema,
+} from "../lib/proof/actividad.ts";
 
 /**
  * La contrapartida de haber elegido `zod` sobre `ajv`.
@@ -79,6 +84,37 @@ test("evidence: los mismos campos requeridos en zod y en el JSON Schema", () => 
 
 test("meta: los mismos campos requeridos en zod y en el JSON Schema", () => {
   assert.deepEqual(requeridosZod(metaSchema as never), requeridos("meta"));
+});
+
+/**
+ * `proceso` --- el par que esta prueba NO cubria, y que es justo el que se acaba de tocar.
+ *
+ * Levantado por el Reviewer de S-E: el archivo tenia paridad para projects, claims,
+ * evidence y meta, y ninguna para `proceso` ni `activity`. Este run edito A MANO los dos
+ * lados de ese par ---el JSON Schema y el zod--- para anadir `coverage.periodo_abierto`, y
+ * lo unico que garantizaba que coincidieran era haberlo hecho con cuidado.
+ *
+ * Una prueba de paridad que se salta el par que estas cambiando protege lo que ya
+ * funcionaba y deja sin cubrir lo unico que se movio.
+ */
+test("proceso: los mismos campos requeridos en zod y en el JSON Schema, en los tres niveles", () => {
+  assert.deepEqual(requeridosZod(procesoSchema as never), requeridos("proceso"), "la raiz");
+  assert.deepEqual(requeridosZod(procesoRecordSchema as never), requeridos("proceso", "record"), "$defs.record");
+  assert.deepEqual(requeridosZod(procesoAbsenceSchema as never), requeridos("proceso", "absence"), "$defs.absence");
+});
+
+test("proceso: `coverage` exige los cuatro campos en los dos lados", () => {
+  // El sub-objeto donde vive `periodo_abierto`. Sin bajar a este nivel, la paridad de
+  // `record` pasaria igual: `coverage` es UN campo requerido, mire lo que mire dentro.
+  const zodCoverage = (procesoRecordSchema as unknown as { shape: Record<string, unknown> }).shape["coverage"];
+  const enZod = requeridosZod(zodCoverage as never);
+  // El descenso se escribe paso a paso y no con un cast anidado: un cast de cuatro niveles
+  // se lee como tipado y no comprueba ninguno de los cuatro.
+  const defs = schemaJson("proceso")["$defs"] as Record<string, { properties: Record<string, { required?: string[] }> }>;
+  const enJson = [...(defs["record"].properties["coverage"].required ?? [])].sort();
+
+  assert.deepEqual(enZod, enJson);
+  assert.ok(enZod.includes("periodo_abierto"), "es obligatorio a proposito: sin el, dos denominadores distintos se ven iguales");
 });
 
 test("los enums cerrados coinciden valor a valor", () => {

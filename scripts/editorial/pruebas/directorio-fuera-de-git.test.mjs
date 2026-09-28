@@ -48,7 +48,12 @@ import test from 'node:test';
 import { DIR_EDITORIAL } from './ayuda.mjs';
 import { dirEstado, dirRedacciones } from '../comun.mjs';
 
-const EJECUTAR = join(DIR_EDITORIAL, 'ejecutar.mjs');
+/** Los dos comandos del canal que escriben. La regla se comprueba en los DOS (§8.1). */
+const COMANDOS = [
+  { nombre: 'generar', cli: join(DIR_EDITORIAL, 'generar.mjs') },
+  { nombre: 'verificar', cli: join(DIR_EDITORIAL, 'verificar-canal.mjs') },
+];
+const RUTA_ESTADO = join(DIR_EDITORIAL, 'ruta-estado.mjs');
 
 /** Corre un cuerpo con el entorno dado y restaura despues, pase lo que pase. */
 function conEntorno({ estado, redacciones }, cuerpo) {
@@ -121,45 +126,112 @@ test('una ruta de ESTE repositorio no vale como directorio privado', async (t) =
 });
 
 // =====================================================================================
-test('el canal aborta ante un arbol de git AJENO, y no deja un byte dentro', () => {
-  // «Sea este repositorio u otro»: un repo privado ajeno tampoco vale. Montarlo en
-  // `tmpdir` es la unica forma de probar esa mitad sin escribir en el arbol real.
-  const raiz = mkdtempSync(join(tmpdir(), 'editorial-repo-ajeno-'));
-  const privado = join(raiz, 'privado');
-  mkdirSync(privado, { recursive: true });
-  const entradas = join(raiz, 'entradas.json');
-  writeFileSync(entradas, '[]', 'utf8');
+test('los dos comandos abortan ante un arbol de git AJENO, y no dejan un byte dentro', async (t) => {
+  for (const comando of COMANDOS) {
+    await t.test(comando.nombre, () => {
+      // «Sea este repositorio u otro»: un repo privado ajeno tampoco vale. Montarlo en
+      // `tmpdir` es la unica forma de probar esa mitad sin escribir en el arbol real.
+      const raiz = mkdtempSync(join(tmpdir(), 'editorial-repo-ajeno-'));
+      const privado = join(raiz, 'privado');
+      mkdirSync(privado, { recursive: true });
+      const entradas = join(raiz, 'entradas.json');
+      writeFileSync(entradas, '[]', 'utf8');
 
-  const env = { ...process.env };
-  env.EDITORIAL_ESTADO_DIR = join(privado, 'estado');
-  env.EDITORIAL_REDACCIONES_DIR = join(privado, 'redacciones');
-  env.EDITORIAL_PIEZAS = join(raiz, 'piezas.json');
-  const correr = () =>
-    spawnSync(process.execPath, [EJECUTAR, '--entradas', entradas, '--silencioso'], {
-      env,
-      encoding: 'utf8',
+      const env = { ...process.env };
+      env.EDITORIAL_ESTADO_DIR = join(privado, 'estado');
+      env.EDITORIAL_REDACCIONES_DIR = join(privado, 'redacciones');
+      const correr = () =>
+        spawnSync(process.execPath, [comando.cli, '--entradas', entradas, '--silencioso'], {
+          env,
+          encoding: 'utf8',
+        });
+
+      // --- CONTROL primero: sin `.git`, el mismo directorio deja correr el comando. ---
+      const verde = correr();
+      assert.equal(verde.status, 0, `sin .git ${comando.nombre} deberia correr; stderr: ${verde.stderr}`);
+
+      // --- ROJO: se convierte el ancestro en un arbol de trabajo de git. ---
+      assert.equal(
+        spawnSync('git', ['-c', 'init.defaultBranch=main', 'init', '-q'], { cwd: raiz, encoding: 'utf8' }).status,
+        0,
+        'git init tiene que funcionar',
+      );
+      const antes = readdirSync(privado).sort();
+
+      const rojo = correr();
+      assert.notEqual(rojo.status, 0, `dentro de un arbol de git ${comando.nombre} tiene que abortar`);
+      assert.match(rojo.stderr, /EDITORIAL_ESTADO_DIR/, 'tiene que nombrar la variable');
+      assert.match(rojo.stderr, /arbol de trabajo de git/i, 'y el motivo');
+      assert.match(rojo.stderr, /no se escribio nada/i);
+
+      // Ni un byte nuevo dentro del arbol ajeno. El control de arriba ya creo lo suyo, asi
+      // que lo que se compara es que la corrida ABORTADA no anadio nada.
+      assert.deepEqual(readdirSync(privado).sort(), antes, 'la corrida abortada no escribe dentro del arbol de git');
+      assert.equal(existsSync(join(raiz, '.git', 'estado')), false);
     });
+  }
+});
 
-  // --- CONTROL primero: sin `.git`, el mismo directorio deja correr el canal. ---
-  const verde = correr();
-  assert.equal(verde.status, 0, `sin .git el canal deberia correr; stderr: ${verde.stderr}`);
-
-  // --- ROJO: se convierte el ancestro en un arbol de trabajo de git. ---
+// =====================================================================================
+// El destino del registro del workflow, que es el hallazgo F-01 de la revision del
+// 2026-09-24.
+//
+// El workflow preparado escribe el registro de la corrida con `mkdir -p` y una
+// redireccion del shell, en un paso que corre con `always()` —tiene que correr aunque la
+// corrida falle, que es justo cuando hay algo que registrar—. Sobre la variable CRUDA eso
+// escribia dentro del repositorio publico aunque el canal acabara de rechazar esa misma
+// ruta: el shell no sabe nada de §8.3. Ahora el destino lo resuelve
+// `ruta-estado.mjs`, que aplica la validacion canonica y no imprime nada si la rechaza.
+//
+// EL CASO ES EL DEL REPORTE, no uno parecido: una ruta IGNORADA por git dentro del arbol.
+// Se comprueba ademas por que hacia falta cerrarlo aqui —`git status --porcelain` no ve
+// ese archivo—, porque esa es la razon por la que el defecto sobrevivia a la mitigacion
+// que deberia haberlo detectado.
+// =====================================================================================
+test('el destino del registro se rechaza antes de escribir, tambien si git lo ignora', () => {
+  const raiz = mkdtempSync(join(tmpdir(), 'editorial-ignorado-'));
   assert.equal(
     spawnSync('git', ['-c', 'init.defaultBranch=main', 'init', '-q'], { cwd: raiz, encoding: 'utf8' }).status,
     0,
     'git init tiene que funcionar',
   );
-  const antes = readdirSync(privado).sort();
+  writeFileSync(join(raiz, '.gitignore'), 'estado/\n', 'utf8');
+  const destino = join(raiz, 'estado');
 
-  const rojo = correr();
-  assert.notEqual(rojo.status, 0, 'dentro de un arbol de git el canal tiene que abortar');
+  const correr = (estado) =>
+    spawnSync(process.execPath, [RUTA_ESTADO], {
+      env: { ...process.env, EDITORIAL_ESTADO_DIR: estado, EDITORIAL_REDACCIONES_DIR: tmpdir() },
+      encoding: 'utf8',
+    });
+
+  const rojo = correr(destino);
+  assert.notEqual(rojo.status, 0, 'una ruta dentro de un arbol de git no puede resolver');
+  assert.equal(rojo.stdout.trim(), '', 'no puede imprimir destino: lo que imprime se usa como destino');
   assert.match(rojo.stderr, /EDITORIAL_ESTADO_DIR/, 'tiene que nombrar la variable');
-  assert.match(rojo.stderr, /arbol de trabajo de git/i, 'y el motivo');
-  assert.match(rojo.stderr, /no se escribio nada/i);
+  assert.match(rojo.stderr, /DIRECTORIO_VERSIONADO/, 'y el codigo, que es lo que distingue el motivo');
+  // El mensaje canonico lleva la ruta y la salida de Actions en un repo publico la lee
+  // cualquiera: aqui sale el codigo, no el valor.
+  assert.ok(
+    !rojo.stderr.includes(destino),
+    'el mensaje no puede imprimir la ruta: el registro de una corrida publica es publico',
+  );
+  assert.equal(existsSync(destino), false, 'no se crea el directorio: el paso del workflow ni llega al mkdir');
 
-  // Ni un byte nuevo dentro del arbol ajeno. El control de arriba ya creo lo suyo, asi
-  // que lo que se compara es que la corrida ABORTADA no anadio nada.
-  assert.deepEqual(readdirSync(privado).sort(), antes, 'la corrida abortada no escribe dentro del arbol de git');
-  assert.equal(existsSync(join(raiz, '.git', 'estado')), false);
+  // POR QUE NO BASTABA CON MEDIR EL ARBOL DESPUES. Si el archivo se hubiera escrito ahi,
+  // `git status --porcelain` habria devuelto vacio, porque no lista lo ignorado. Se
+  // demuestra en vez de afirmarse: es el motivo de la segunda cerradura del workflow.
+  mkdirSync(destino, { recursive: true });
+  writeFileSync(join(destino, 'registro-corrida-1.txt'), 'corridas: 0\n', 'utf8');
+  const status = spawnSync('git', ['status', '--porcelain'], { cwd: raiz, encoding: 'utf8' });
+  assert.equal(status.status, 0);
+  assert.ok(
+    !status.stdout.includes('estado/'),
+    'si git status viera lo ignorado, la segunda cerradura del workflow sobraria',
+  );
+
+  // Control: la misma llamada con una ruta fuera de git imprime el destino y sale 0. Sin
+  // el, la prueba pasaria igual si el script abortara siempre.
+  const verde = correr(mkdtempSync(join(tmpdir(), 'editorial-destino-')));
+  assert.equal(verde.status, 0, `fuera de git tiene que resolver; stderr: ${verde.stderr}`);
+  assert.ok(verde.stdout.trim().length > 0, 'tiene que imprimir la ruta resuelta');
 });

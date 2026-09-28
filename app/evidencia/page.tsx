@@ -178,6 +178,7 @@ export default function EvidenciaPage() {
           </footer>
         </>
       )}
+      <p className="mt-8"><Link href="/actividad" className="underline underline-offset-2">Explorar la actividad registrada y sus límites</Link></p>
     </main>
   );
 }

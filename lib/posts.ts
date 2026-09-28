@@ -56,8 +56,16 @@ export function getAllPostIds() {
   });
 }
 
-export async function getPostData(id: string): Promise<PostData> {
+export async function getPostData(id: string): Promise<PostData | null> {
   const fullPath = path.join(postsDirectory, `${id}.md`);
+  // Un slug que no existe devuelve `null`, no lanza.
+  //
+  // Antes esto era un `readFileSync` a secas: `/blog/lo-que-sea` reventaba con ENOENT y
+  // Next lo servia como **500**, mientras `/noticias/no-existe` y `/proyectos/no-existe`
+  // devolvian 404 correctamente. Medido el 2026-09-24 contra el servidor de produccion
+  // local; estaba asi en `main`. Un 500 le dice a un buscador «este recurso existe y esta
+  // roto» y a una persona «el sitio fallo», cuando lo cierto es que la pagina no existe.
+  if (!fs.existsSync(fullPath)) return null;
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
   // Use gray-matter to parse the post metadata section
