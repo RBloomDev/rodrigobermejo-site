@@ -1,4 +1,11 @@
 @import "tailwindcss";
+/*
+ * Las clases `prose*` de app/blog/[slug]/page.tsx salen de este plugin. En Tailwind v4 un
+ * plugin se carga aquí, no basta con que esté en package.json: sin esta línea los artículos
+ * se renderizaban sin estilos de lectura (medido 2026-10-29). Lo vigila
+ * tests/prose-tiene-plugin.test.ts.
+ */
+@plugin "@tailwindcss/typography";
 
 /*
  * DOS CAPAS, NOMBRES DISTINTOS.
